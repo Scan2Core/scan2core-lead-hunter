@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scan2Core — Lead Hunter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#08090b; --bg2:#0f1115; --bg3:#15181e; --bg4:#1a1e26;
+  --border:#1e222a; --border2:#272c36;
+  --orange:#f97316; --orange-dim:rgba(249,115,22,0.12); --orange-glow:rgba(249,115,22,0.25);
+  --blue:#38bdf8; --blue-dim:rgba(56,189,248,0.1);
+  --green:#4ade80; --green-dim:rgba(74,222,128,0.1);
+  --red:#f87171; --red-dim:rgba(248,113,113,0.1);
+  --yellow:#fbbf24; --yellow-dim:rgba(251,191,36,0.1);
+  --purple:#a78bfa; --purple-dim:rgba(167,139,250,0.1);
+  --text:#e2e8f0; --text2:#94a3b8; --text3:#4b5563;
+  --mono:'JetBrains Mono',monospace; --sans:'Barlow',sans-serif; --cond:'Barlow Condensed',sans-serif;
+}
+html { scroll-behavior:smooth; }
+body { font-family:var(--sans); background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+.topbar {
+  position:sticky; top:0; z-index:100;
+  background:rgba(8,9,11,0.94); backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px; display:flex; align-items:center; gap:16px; height:56px;
+}
+.logo { font-family:var(--cond); font-size:20px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; flex-shrink:0; }
+.logo span { color:var(--orange); }
+.topbar-div { width:1px; height:24px; background:var(--border2); flex-shrink:0; }
+.search-wrap { flex:1; position:relative; max-width:500px; }
+.search-wrap svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--text3); pointer-events:none; }
+#searchInput {
+  width:100%; background:var(--bg3); border:1px solid var(--border2); border-radius:8px;
+  padding:9px 14px 9px 36px; color:var(--text); font-family:var(--sans); font-size:14px; outline:none;
+  transition:border-color 0.15s, box-shadow 0.15s;
+}
+#searchInput:focus { border-color:var(--orange); box-shadow:0 0 0 3px var(--orange-dim); }
+#searchInput::placeholder { color:var(--text3); }
+.topbar-right { display:flex; align-items:center; gap:10px; margin-left:auto; }
+.live-dot { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+.btn-icon {
+  display:flex; align-items:center; gap:6px; background:var(--bg3); border:1px solid var(--border2);
+  border-radius:7px; padding:7px 14px; color:var(--text2); font-family:var(--sans); font-size:13px;
+  font-weight:500; cursor:pointer; transition:all 0.15s; white-space:nowrap;
+}
+.btn-icon:hover { border-color:var(--orange); color:var(--orange); }
+.btn-icon svg { width:14px; height:14px; }
+.spinning svg { animation:spin 0.8s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.stats-row { display:flex; gap:1px; background:var(--border); border-bottom:1px solid var(--border); }
+.stat-block { flex:1; background:var(--bg2); padding:14px 20px; min-width:90px; }
+.stat-num { font-family:var(--cond); font-size:26px; font-weight:800; line-height:1; }
+.stat-label { font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px; }
+.s-orange .stat-num{color:var(--orange)} .s-red .stat-num{color:var(--red)} .s-blue .stat-num{color:var(--blue)} .s-green .stat-num{color:var(--green)}
+.filter-bar {
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  padding:10px 24px; display:flex; align-items:center; gap:7px; flex-wrap:wrap;
+}
+.filter-label { font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; flex-shrink:0; margin-right:2px; }
+.chip {
+  background:transparent; border:1px solid var(--border2); border-radius:5px;
+  padding:5px 12px; font-family:var(--cond); font-size:13px; font-weight:600;
+  letter-spacing:0.04em; text-transform:uppercase; color:var(--text3); cursor:pointer; transition:all 0.12s; white-space:nowrap;
+}
+.chip:hover { border-color:var(--orange); color:var(--orange); }
+.chip.on { background:var(--orange); border-color:var(--orange); color:#000; }
+.chip-sep { width:1px; height:18px; background:var(--border2); }
+.sort-wrap { margin-left:auto; display:flex; align-items:center; gap:8px; }
+.sort-label { font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; }
+#sortSel { background:var(--bg3); border:1px solid var(--border2); border-radius:6px; padding:5px 10px; color:var(--text); font-family:var(--mono); font-size:12px; outline:none; cursor:pointer; }
+.main { flex:1; display:grid; grid-template-columns:1fr; padding:20px 24px; gap:10px; max-width:1600px; margin:0 auto; width:100%; }
+@media(min-width:860px){ .main{grid-template-columns:1fr 1fr} }
+@media(min-width:1280px){ .main{grid-template-columns:1fr 1fr 1fr} }
+.result-info { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:4px 0 8px; border-bottom:1px solid var(--border); margin-bottom:4px; }
+.result-count { font-family:var(--mono); font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; }
+.result-count b { color:var(--orange); }
+.clear-btn { font-family:var(--mono); font-size:11px; color:var(--text3); cursor:pointer; text-decoration:underline; }
+.clear-btn:hover { color:var(--orange); }
+.card {
+  background:var(--bg2); border:1px solid var(--border); border-radius:10px;
+  overflow:hidden; cursor:pointer; transition:transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+  display:flex; flex-direction:column; animation:up 0.2s ease both;
+}
+@keyframes up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.card:hover { transform:translateY(-2px); border-color:var(--border2); box-shadow:0 8px 24px rgba(0,0,0,0.4); }
+.card.open { border-color:var(--orange); box-shadow:0 0 0 1px var(--orange),0 8px 32px rgba(249,115,22,0.15); cursor:default; }
+.card-stripe { height:3px; flex-shrink:0; }
+.s10{background:linear-gradient(90deg,#ef4444,#f97316)} .s9{background:linear-gradient(90deg,#f97316,#fbbf24)}
+.s8{background:linear-gradient(90deg,#fbbf24,#84cc16)} .s7{background:linear-gradient(90deg,#38bdf8,#818cf8)} .s6{background:var(--border2)}
+.card-top { padding:14px 14px 0; display:flex; gap:10px; align-items:flex-start; }
+.pnum { font-family:var(--cond); font-size:34px; font-weight:800; line-height:1; flex-shrink:0; width:34px; text-align:center; }
+.pn10,.pn9{color:var(--orange)} .pn8{color:var(--yellow)} .pn7{color:var(--blue)} .pn6{color:var(--text3)}
+.title-block { flex:1; min-width:0; }
+.card-title { font-family:var(--cond); font-size:16px; font-weight:700; letter-spacing:0.02em; line-height:1.3; color:var(--text); word-break:break-word; }
+.card-src { font-family:var(--mono); font-size:10px; color:var(--text3); margin-top:3px; text-transform:uppercase; letter-spacing:0.06em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.svc-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:4px; font-family:var(--mono); font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:0.05em; border:1px solid transparent; margin-top:6px; }
+.svc-gpr { background:var(--blue-dim); color:var(--blue); border-color:rgba(56,189,248,0.25); }
+.svc-core { background:var(--orange-dim); color:var(--orange); border-color:rgba(249,115,22,0.25); }
+.svc-both { background:var(--purple-dim); color:var(--purple); border-color:rgba(167,139,250,0.25); }
+.svc-tbd { background:transparent; color:var(--text3); border-color:var(--border2); }
+.card-tags { padding:8px 14px 12px; display:flex; flex-wrap:wrap; gap:5px; }
+.tag { display:inline-flex; align-items:center; padding:3px 8px; border-radius:4px; font-family:var(--mono); font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:0.05em; border:1px solid transparent; }
+.t-city{background:var(--green-dim);color:var(--green);border-color:rgba(74,222,128,0.2)}
+.t-county{background:var(--blue-dim);color:var(--blue);border-color:rgba(56,189,248,0.2)}
+.t-time{background:transparent;color:var(--text3);border-color:var(--border2)}
+.card-detail { display:none; background:var(--bg3); border-top:1px solid var(--border); }
+.card.open .card-detail { display:block; }
+.quote-box {
+  background:linear-gradient(135deg,rgba(249,115,22,0.08) 0%,rgba(249,115,22,0.03) 100%);
+  border-bottom:1px solid var(--border); padding:14px 16px;
+}
+.quote-box-title { font-family:var(--mono); font-size:10px; color:var(--orange); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
+.quote-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.quote-item { background:var(--bg4); border:1px solid var(--border2); border-radius:6px; padding:8px 10px; }
+.quote-item-label { font-family:var(--mono); font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; }
+.quote-item-val { font-family:var(--cond); font-size:18px; font-weight:700; color:var(--text); margin-top:2px; }
+.quote-item-val.orange { color:var(--orange); }
+.quote-rec { margin-top:10px; font-size:13px; color:var(--text2); line-height:1.5; }
+.quote-rec strong { color:var(--text); }
+.bid-info { padding:14px 16px; border-bottom:1px solid var(--border); }
+.bid-info-title { font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
+.info-rows { display:grid; gap:0; }
+.info-row { display:grid; grid-template-columns:90px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.03); align-items:start; }
+.info-row:last-child { border-bottom:none; padding-bottom:0; }
+.info-key { font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; padding-top:1px; }
+.info-val { font-size:13px; font-weight:500; color:var(--text); word-break:break-word; line-height:1.4; }
+.info-val a { color:var(--blue); text-decoration:none; }
+.info-val a:hover { text-decoration:underline; }
+.info-val.yellow { color:var(--yellow); }
+.action-bar { padding:12px 14px; display:flex; gap:8px; }
+.abtn { flex:1; padding:11px 16px; border-radius:7px; font-family:var(--cond); font-size:14px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; border:none; transition:all 0.12s; }
+.abtn-primary { background:var(--orange); color:#000; }
+.abtn-primary:hover { background:#fb923c; transform:translateY(-1px); box-shadow:0 4px 16px var(--orange-glow); }
+.abtn-sec { background:transparent; border:1px solid var(--border2); color:var(--text2); }
+.abtn-sec:hover { border-color:var(--text2); color:var(--text); }
+.abtn-green { background:var(--green-dim); border:1px solid rgba(74,222,128,0.3); color:var(--green); }
+.abtn-green:hover { background:rgba(74,222,128,0.2); }
+.load-screen { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 24px; text-align:center; gap:14px; }
+.ls-icon { font-size:50px; line-height:1; }
+.ls-title { font-family:var(--cond); font-size:26px; font-weight:800; letter-spacing:0.04em; }
+.ls-sub { font-size:14px; color:var(--text2); max-width:440px; line-height:1.6; }
+.url-form { display:flex; flex-direction:column; gap:8px; width:100%; max-width:540px; }
+.url-inp { background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:12px 16px; color:var(--text); font-family:var(--mono); font-size:12px; outline:none; width:100%; transition:border-color 0.15s; }
+.url-inp:focus { border-color:var(--orange); }
+.big-btn { padding:14px 28px; border-radius:8px; font-family:var(--cond); font-size:16px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; border:none; transition:all 0.12s; display:flex; align-items:center; justify-content:center; gap:8px; }
+.bb-primary { background:var(--orange); color:#000; }
+.bb-primary:hover { background:#fb923c; transform:translateY(-1px); box-shadow:0 6px 20px var(--orange-glow); }
+.bb-ghost { background:transparent; border:1px solid var(--border2); color:var(--text2); font-size:13px; }
+.bb-ghost:hover { border-color:var(--text2); color:var(--text); }
+.err-box { background:var(--red-dim); border:1px solid rgba(248,113,113,0.3); border-radius:8px; padding:12px 16px; color:var(--red); font-size:13px; font-family:var(--mono); text-align:left; width:100%; max-width:540px; }
+.spin-wrap { display:flex; align-items:center; gap:12px; font-family:var(--mono); font-size:13px; color:var(--text2); }
+.spinner { width:20px; height:20px; border:2px solid var(--border2); border-top-color:var(--orange); border-radius:50%; animation:spin 0.7s linear infinite; }
+.toast { position:fixed; bottom:24px; right:24px; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:11px 18px; font-size:13px; color:var(--text); box-shadow:0 8px 32px rgba(0,0,0,0.5); opacity:0; transform:translateY(8px); transition:all 0.2s; z-index:9999; pointer-events:none; font-family:var(--mono); }
+.toast.show { opacity:1; transform:translateY(0); }
+.empty { grid-column:1/-1; text-align:center; padding:60px 20px; }
+.empty-icon { font-size:42px; margin-bottom:12px; }
+.empty-title { font-family:var(--cond); font-size:22px; font-weight:800; margin-bottom:8px; }
+.empty-sub { font-size:14px; color:var(--text2); }
+@media(max-width:640px){
+  .topbar{padding:0 14px;gap:8px;height:50px}
+  .btn-icon span{display:none}
+  .stats-row{overflow-x:auto}
+  .stat-block{min-width:85px;padding:10px 14px}
+  .stat-num{font-size:20px}
+  .filter-bar{padding:8px 14px;overflow-x:auto;flex-wrap:nowrap}
+  .sort-wrap{display:none}
+  .main{padding:12px 14px}
+  .quote-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div style="display:flex;flex-direction:column;min-height:100vh">
+
+<div class="topbar">
+  <div class="logo">SCAN<span>2</span>CORE</div>
+  <div class="topbar-div"></div>
+  <div class="search-wrap">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+    <input type="search" id="searchInput" placeholder="Search leads, cities, counties, sources..." oninput="doSearch(this.value)">
+  </div>
+  <div class="topbar-right">
+    <div class="live-dot" id="liveDot" style="display:none"></div>
+    <button class="btn-icon" id="refreshBtn" onclick="doRefresh()">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      <span>Refresh</span>
+    </button>
+  </div>
+</div>
+
+<div class="stats-row" id="statsRow" style="display:none">
+  <div class="stat-block s-orange"><div class="stat-num" id="sTotal">0</div><div class="stat-label">Total Leads</div></div>
+  <div class="stat-block s-red"><div class="stat-num" id="sHot">0</div><div class="stat-label">Priority 9–10</div></div>
+  <div class="stat-block s-blue"><div class="stat-num" id="sToday">0</div><div class="stat-label">Last 24 Hours</div></div>
+  <div class="stat-block s-green"><div class="stat-num" id="sCounties">0</div><div class="stat-label">Counties</div></div>
+</div>
+
+<div class="filter-bar" id="filterBar" style="display:none">
+  <span class="filter-label">Filter:</span>
+  <button class="chip on" data-f="all" onclick="setFilter(this,'all')">All</button>
+  <button class="chip" data-f="hot" onclick="setFilter(this,'hot')">🔥 Hot</button>
+  <div class="chip-sep"></div>
+  <button class="chip" data-f="King" onclick="setFilter(this,'King')">King</button>
+  <button class="chip" data-f="Pierce" onclick="setFilter(this,'Pierce')">Pierce</button>
+  <button class="chip" data-f="Snohomish" onclick="setFilter(this,'Snohomish')">Snohomish</button>
+  <button class="chip" data-f="Kitsap" onclick="setFilter(this,'Kitsap')">Kitsap</button>
+  <button class="chip" data-f="Thurston" onclick="setFilter(this,'Thurston')">Thurston</button>
+  <button class="chip" data-f="State" onclick="setFilter(this,'State')">State/UW</button>
+  <div class="chip-sep"></div>
+  <button class="chip" data-f="gpr" onclick="setFilter(this,'gpr')">GPR Only</button>
+  <button class="chip" data-f="core" onclick="setFilter(this,'core')">Core Drill</button>
+  <div class="chip-sep"></div>
+  <button class="chip" data-f="nogc" onclick="setFilter(this,'nogc')">Hide GC</button>
+  <div class="sort-wrap">
+    <span class="sort-label">Sort:</span>
+    <select id="sortSel" onchange="setSort(this.value)">
+      <option value="priority">Priority ↓</option>
+      <option value="newest">Newest First</option>
+      <option value="oldest">Oldest First</option>
+      <option value="az">Name A–Z</option>
+      <option value="city">City A–Z</option>
+    </select>
+  </div>
+</div>
+
+<div class="main" id="mainGrid">
+  <div class="load-screen" id="loadScreen">
+    <div class="ls-icon">📡</div>
+    <div class="ls-title">Lead Hunter</div>
+    <div class="ls-sub">Click Load to pull today's leads from GitHub.</div>
+    <div class="url-form">
+      <input class="url-inp" id="urlInput" value="https://raw.githubusercontent.com/Scan2Core/scan2core-lead-hunter/main/found_projects.json">
+      <button class="big-btn bb-primary" onclick="doLoad()">📡 Load Leads from GitHub</button>
+      <button class="big-btn bb-ghost" onclick="loadDemo()">Load Demo Data</button>
+    </div>
+    <div class="err-box" id="errBox" style="display:none"></div>
+  </div>
+  <div class="load-screen" id="loadingScreen" style="display:none">
+    <div class="spin-wrap"><div class="spinner"></div>Fetching leads...</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+const GPR_KEYWORDS = ['utility locate','utility detection','slab scan','concrete scan','rebar',
+  'post-tension','conduit','underground','subsurface','void','pavement','parking','overlay',
+  'road','street','asphalt','bridge deck','retaining wall','utility','storm','sewer',
+  'water main','watermain','transmission','drainage'];
+
+const CORE_KEYWORDS = ['core drill','coring','core sample','boring','anchor','epoxy anchor',
+  'concrete core','asphalt core','pavement core','structural penetration','seismic','retrofit',
+  'reinforce','demolish','demolition','annex','renovation','remodel','building','facility',
+  'campus','school','hospital','clinic','medical','apartment','multifamily','residential',
+  'housing','tower','high-rise','garage','parking structure','construction','infrastructure',
+  'replacement','new build'];
+
+const NOISE_WORDS = ['how do i','how can i','who should i','what is','register','supplier registration',
+  'previous bid','bid list','contact if','finding available','finding bid','locating executed',
+  'how does the','doing business','learn more','bid tabulation','finding bid tabulation',
+  'bid openings:','2025 bid openings','2024 bid openings','version options'];
+
+function detectService(name) {
+  const n = name.toLowerCase();
+  if (NOISE_WORDS.some(w => n.includes(w))) return 'noise';
+  const hasGPR = GPR_KEYWORDS.some(w => n.includes(w));
+  const hasCore = CORE_KEYWORDS.some(w => n.includes(w));
+  if (hasGPR && hasCore) return 'both';
+  if (hasGPR) return 'gpr';
+  if (hasCore) return 'core';
+  return 'tbd';
+}
+
+function estimateQuote(name, svc) {
+  const n = name.toLowerCase();
+  let gprMin=0,gprMax=0,coreMin=0,coreMax=0,gprNote='',coreNote='',complexity='Standard';
+  if (svc==='noise') return null;
+  if (svc==='gpr'||svc==='both') {
+    if (n.includes('parking')||n.includes('garage')) { gprMin=1350;gprMax=4050;gprNote='1–3 deck scans @ $675/scan';complexity='Multi-deck likely'; }
+    else if (n.includes('bridge')) { gprMin=2025;gprMax=6750;gprNote='Multiple scan passes';complexity='Bridge deck protocol'; }
+    else if (n.includes('hospital')||n.includes('medical')||n.includes('clinic')) { gprMin=1350;gprMax=3375;gprNote='Multi-floor slabs';complexity='Occupied facility'; }
+    else if (n.includes('campus')||n.includes('university')||n.includes('school')) { gprMin=675;gprMax=3375;gprNote='1–5 slabs est.';complexity='Multi-building'; }
+    else if (n.includes('overlay')||n.includes('road')||n.includes('street')||n.includes('pavement')) { gprMin=675;gprMax=2025;gprNote='Linear scan + utility';complexity='Public works'; }
+    else { gprMin=675;gprMax=2025;gprNote='Estimated 1–3 scans';complexity='Standard'; }
+  }
+  if (svc==='core'||svc==='both') {
+    if (n.includes('seismic')||n.includes('retrofit')) { coreMin=3000;coreMax=15000;coreNote='High core count, structural';complexity='Seismic scope'; }
+    else if (n.includes('parking')||n.includes('garage')) { coreMin=2000;coreMax=8000;coreNote='Deck anchors + samples';complexity='Multi-level'; }
+    else if (n.includes('hospital')||n.includes('medical')) { coreMin=2500;coreMax=10000;coreNote='Occupied facility premium';complexity='Medical grade'; }
+    else if (n.includes('demolish')||n.includes('demolition')) { coreMin=1500;coreMax=5000;coreNote='Pre-demo coring';complexity='Demo scope'; }
+    else if (n.includes('campus')||n.includes('university')) { coreMin=2000;coreMax=8000;coreNote='Multi-building scope';complexity='Campus scale'; }
+    else { coreMin=1500;coreMax=5000;coreNote='Formula: 3.25 × dia × depth × count';complexity='Standard'; }
+  }
+  return { gprMin,gprMax,gprNote,coreMin,coreMax,coreNote,totalMin:gprMin+coreMin,totalMax:gprMax+coreMax,complexity };
+}
+
+function fmtMoney(n) { return n?'$'+n.toLocaleString():'—'; }
+function isGC(lead) { return (lead.source||'').startsWith('GC -'); }
+function isNoise(lead) { return detectService(lead.name||'')==='noise'; }
+
+let ALL=[],VIEW=[],activeFilter='all',activeSort='priority',query='',openIdx=null;
+
+const DEMO=[
+  {name:"Everett Medical Campus Expansion - Structural Engineering Services",city:"Everett",county:"Snohomish",source:"Technical Specifications",priority:10,type:"Public Bid",url:"https://www.everettwa.gov/319/Procurement",found_date:new Date().toISOString()},
+  {name:"2026-016 IFB Dyes Inlet Lagoon Bulkhead Removal",city:"Silverdale",county:"Kitsap",source:"City Bids - Kitsap County PW",priority:9,type:"Public Bid",url:"https://www.kitsap.gov/pw/",found_date:new Date(Date.now()-3600000).toISOString()},
+  {name:"SPU RFP Water Transmission Drainage Asset Engineering",city:"Seattle",county:"King",source:"Seattle Consultant Connection",priority:9,type:"Public Bid",url:"https://consultants.seattle.gov",found_date:new Date(Date.now()-7200000).toISOString()},
+  {name:"Auburn CP2418 2026 Local Street Preservation Bid",city:"Auburn",county:"King",source:"City Bids - Auburn",priority:8,type:"Public Bid",url:"https://www.auburnwa.gov",found_date:new Date(Date.now()-86400000).toISOString()},
+  {name:"Cirque Drive Overlay Materials Testing Services",city:"University Place",county:"Pierce",source:"City Bids - University Place",priority:7,type:"Public Bid",url:"https://cityofup.com/Bids.aspx",found_date:new Date(Date.now()-86400000).toISOString()},
+];
+
+function timeAgo(iso) {
+  if (!iso) return '—';
+  const s=(Date.now()-new Date(iso))/1000;
+  if (s<60) return 'just now';
+  if (s<3600) return Math.floor(s/60)+'m ago';
+  if (s<86400) return Math.floor(s/3600)+'h ago';
+  if (s<604800) return Math.floor(s/86400)+'d ago';
+  return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+function fmtDate(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function stripeClass(p){ return p>=10?'s10':p>=9?'s9':p>=8?'s8':p>=7?'s7':'s6'; }
+function pnClass(p){ return p>=9?'pn9':p>=8?'pn8':p>=7?'pn7':'pn6'; }
+function svcBadgeHTML(svc) {
+  const map={gpr:['svc-gpr','📡 GPR Scan'],core:['svc-core','🔩 Core Drill'],both:['svc-both','📡🔩 GPR + Core'],tbd:['svc-tbd','? TBD'],noise:['svc-tbd','— Nav Link']};
+  const [cls,label]=map[svc]||map.tbd;
+  return `<span class="svc-badge ${cls}">${label}</span>`;
+}
+
+function applyAll() {
+  let r=ALL.filter(l=>!isNoise(l));
+  if (query) { const q=query.toLowerCase(); r=r.filter(l=>(l.name||'').toLowerCase().includes(q)||(l.city||'').toLowerCase().includes(q)||(l.county||'').toLowerCase().includes(q)||(l.source||'').toLowerCase().includes(q)); }
+  if (activeFilter==='hot') r=r.filter(l=>(l.priority||0)>=9);
+  else if (activeFilter==='gpr') r=r.filter(l=>['gpr','both'].includes(detectService(l.name)));
+  else if (activeFilter==='core') r=r.filter(l=>['core','both'].includes(detectService(l.name)));
+  else if (activeFilter==='nogc') r=r.filter(l=>!isGC(l));
+  else if (activeFilter!=='all') r=r.filter(l=>(l.county||'').includes(activeFilter)||(l.source||'').includes(activeFilter));
+  if (activeSort==='priority') r.sort((a,b)=>(b.priority||0)-(a.priority||0));
+  else if (activeSort==='newest') r.sort((a,b)=>new Date(b.found_date||0)-new Date(a.found_date||0));
+  else if (activeSort==='oldest') r.sort((a,b)=>new Date(a.found_date||0)-new Date(b.found_date||0));
+  else if (activeSort==='az') r.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  else if (activeSort==='city') r.sort((a,b)=>(a.city||'').localeCompare(b.city||''));
+  VIEW=r;
+}
+
+function updateStats() {
+  const clean=ALL.filter(l=>!isNoise(l));
+  document.getElementById('sTotal').textContent=clean.length;
+  document.getElementById('sHot').textContent=clean.filter(l=>(l.priority||0)>=9).length;
+  const yesterday=new Date(Date.now()-86400000);
+  document.getElementById('sToday').textContent=clean.filter(l=>l.found_date&&new Date(l.found_date)>yesterday).length;
+  document.getElementById('sCounties').textContent=new Set(clean.map(l=>l.county).filter(Boolean)).size;
+}
+
+function render() {
+  applyAll(); updateStats();
+  const grid=document.getElementById('mainGrid');
+  if (!ALL.length) return;
+  const info=`<div class="result-info"><div class="result-count">Showing <b>${VIEW.length}</b> of <b>${ALL.filter(l=>!isNoise(l)).length}</b> leads</div>${query?`<div class="clear-btn" onclick="clearAll()">Clear</div>`:''}</div>`;
+  if (!VIEW.length) { grid.innerHTML=info+`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">No matches</div><div class="empty-sub">Try adjusting search or filters.</div></div>`; return; }
+
+  const cards=VIEW.map((lead,i)=>{
+    const svc=detectService(lead.name||'');
+    const q=estimateQuote(lead.name||'',svc);
+    const isOpen=openIdx===i;
+    const p=lead.priority||6;
+    const src=(lead.source||'').replace('City Bids - ','').replace('Seattle ','SEA ');
+    const hasUrl=lead.url&&lead.url.length>4;
+    let detail='';
+    if (isOpen) {
+      let quoteHTML='';
+      if (q&&q.totalMax>0) {
+        quoteHTML=`<div class="quote-box"><div class="quote-box-title">⚡ Scan2Core Estimate</div><div class="quote-grid">${q.gprMax?`<div class="quote-item"><div class="quote-item-label">GPR Scan</div><div class="quote-item-val orange">${fmtMoney(q.gprMin)}–${fmtMoney(q.gprMax)}</div></div>`:''} ${q.coreMax?`<div class="quote-item"><div class="quote-item-label">Core Drill</div><div class="quote-item-val orange">${fmtMoney(q.coreMin)}–${fmtMoney(q.coreMax)}</div></div>`:''}<div class="quote-item"><div class="quote-item-label">Total Est.</div><div class="quote-item-val orange">${fmtMoney(q.totalMin)}–${fmtMoney(q.totalMax)}</div></div><div class="quote-item"><div class="quote-item-label">Complexity</div><div class="quote-item-val">${q.complexity}</div></div></div>${q.gprNote||q.coreNote?`<div class="quote-rec">${q.gprNote?`<strong>GPR:</strong> ${q.gprNote}<br>`:''}${q.coreNote?`<strong>Core:</strong> ${q.coreNote}`:''}</div>`:''}</div>`;
+      } else if (svc==='tbd') {
+        quoteHTML=`<div class="quote-box"><div class="quote-box-title">⚡ Scan2Core Estimate</div><div class="quote-rec" style="color:var(--text2)">Review specs to determine service. Base rate: <strong style="color:var(--orange)">$675/scan</strong> GPR, core formula: <strong style="color:var(--orange)">3.25 × dia × depth × count</strong>.</div></div>`;
+      }
+      const bidNum=(lead.name||'').match(/\b(CP|RFP|RFQ|IFB|ITB|#)[\s#-]*([\w-]+)/i);
+      const closeDate=(lead.name||'').match(/close[sd]?\s+(\w+\.?\s+\d+,?\s+\d{4}|\d{1,2}\/\d{1,2}\/\d{2,4})/i);
+      detail=`<div class="card-detail">
+        ${isGC(lead)?`<div style="background:rgba(251,191,36,0.08);border-bottom:1px solid rgba(251,191,36,0.2);padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--yellow);">⚠ GC Portfolio Page — links to a project showcase, not a bid portal. Contact the GC directly to get on their sub list.</div>`:''}
+        ${quoteHTML}
+        <div class="bid-info"><div class="bid-info-title">Bid Information</div><div class="info-rows">
+          <div class="info-row"><div class="info-key">Service</div><div class="info-val">${svc==='gpr'?'📡 GPR Scanning':svc==='core'?'🔩 Core Drilling':svc==='both'?'📡🔩 GPR + Core Drilling':'❓ Review Specs'}</div></div>
+          ${bidNum?`<div class="info-row"><div class="info-key">Bid #</div><div class="info-val">${bidNum[0]}</div></div>`:''}
+          ${closeDate?`<div class="info-row"><div class="info-key">Closes</div><div class="info-val yellow">${closeDate[1]}</div></div>`:''}
+          <div class="info-row"><div class="info-key">Source</div><div class="info-val">${lead.source||'—'}</div></div>
+          <div class="info-row"><div class="info-key">Location</div><div class="info-val">${[lead.city,lead.county].filter(Boolean).join(', ')||'—'}</div></div>
+          <div class="info-row"><div class="info-key">Found</div><div class="info-val">${fmtDate(lead.found_date)}</div></div>
+          ${hasUrl?`<div class="info-row"><div class="info-key">URL</div><div class="info-val"><a href="${lead.url}" target="_blank" onclick="event.stopPropagation()">${lead.url.replace(/^https?:\/\//,'').substring(0,55)}${lead.url.length>55?'…':''}</a></div></div>`:''}
+        </div></div>
+        <div class="action-bar">
+          ${hasUrl?`<button class="abtn ${isGC(lead)?'abtn-sec':'abtn-primary'}" onclick="event.stopPropagation();window.open('${lead.url}','_blank')">${isGC(lead)?'View Portfolio ↗':'Open Bid ↗'}</button>`:''}
+          <button class="abtn abtn-green" onclick="event.stopPropagation();buildQuote(${i})">Build Quote</button>
+          <button class="abtn abtn-sec" onclick="event.stopPropagation();copyLead(${i})">Copy</button>
+        </div>
+      </div>`;
+    }
+    return `<div class="card${isOpen?' open':''}" id="c${i}" onclick="toggle(${i})">
+      <div class="card-stripe ${stripeClass(p)}"></div>
+      <div class="card-top">
+        <div class="pnum ${pnClass(p)}">${p}</div>
+        <div class="title-block">
+          <div class="card-title">${lead.name||'Unnamed'}</div>
+          <div class="card-src">${src}</div>
+          ${svcBadgeHTML(svc)}
+        </div>
+      </div>
+      <div class="card-tags">
+        ${lead.city?`<span class="tag t-city">${lead.city}</span>`:''}
+        ${lead.county?`<span class="tag t-county">${lead.county}</span>`:''}
+        <span class="tag t-time">${timeAgo(lead.found_date)}</span>
+      </div>
+      ${detail}
+    </div>`;
+  }).join('');
+  grid.innerHTML=info+cards;
+}
+
+function toggle(i) { openIdx=openIdx===i?null:i; render(); if(openIdx!==null) setTimeout(()=>{document.getElementById('c'+i)?.scrollIntoView({behavior:'smooth',block:'nearest'});},60); }
+function setFilter(el,val) { document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); el.classList.add('on'); activeFilter=val; openIdx=null; render(); }
+function setSort(val) { activeSort=val; openIdx=null; render(); }
+function doSearch(v) { query=v; openIdx=null; render(); }
+function clearAll() { query=''; document.getElementById('searchInput').value=''; activeFilter='all'; document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on')); document.querySelector('[data-f="all"]').classList.add('on'); openIdx=null; render(); }
+
+function buildQuote(i) {
+  const lead=VIEW[i]; if (!lead) return;
+  const svc=detectService(lead.name); const q=estimateQuote(lead.name,svc);
+  let txt=`SCAN2CORE QUOTE ESTIMATE\n${'─'.repeat(40)}\nProject: ${lead.name}\nLocation: ${lead.city}, ${lead.county}\nSource: ${lead.source}\n\n`;
+  if (q&&q.totalMax>0) { if(q.gprMax) txt+=`GPR Scanning: ${fmtMoney(q.gprMin)} – ${fmtMoney(q.gprMax)}\n  (${q.gprNote})\n`; if(q.coreMax) txt+=`Core Drilling: ${fmtMoney(q.coreMin)} – ${fmtMoney(q.coreMax)}\n  (${q.coreNote})\n`; txt+=`\nTotal Estimate: ${fmtMoney(q.totalMin)} – ${fmtMoney(q.totalMax)}\nComplexity: ${q.complexity}\n`; }
+  else txt+=`Base GPR: $675/scan\nCore Drill: 3.25 × diameter × depth × count\n`;
+  txt+=`\nBid URL: ${lead.url||'N/A'}\nFound: ${fmtDate(lead.found_date)}`;
+  navigator.clipboard?.writeText(txt).then(()=>toast('✓ Quote copied')).catch(()=>toast('⚠ Copy failed'));
+}
+
+function copyLead(i) {
+  const lead=VIEW[i]; if (!lead) return;
+  const svc=detectService(lead.name);
+  const txt=`${lead.name}\nPriority: ${lead.priority} | Service: ${svc.toUpperCase()}\nCity: ${lead.city}, ${lead.county}\nSource: ${lead.source}\nFound: ${fmtDate(lead.found_date)}\n${lead.url||''}`;
+  navigator.clipboard?.writeText(txt).then(()=>toast('✓ Copied')).catch(()=>toast('⚠ Copy failed'));
+}
+
+function toast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2500); }
+
+function showLoaded() {
+  document.getElementById('loadScreen').style.display='none';
+  document.getElementById('loadingScreen').style.display='none';
+  document.getElementById('statsRow').style.display='flex';
+  document.getElementById('filterBar').style.display='flex';
+  document.getElementById('liveDot').style.display='block';
+}
+
+function doLoad() {
+  const url=(document.getElementById('urlInput')?.value||'').trim();
+  if (!url) return;
+  document.getElementById('loadScreen').style.display='none';
+  document.getElementById('loadingScreen').style.display='flex';
+  document.getElementById('errBox').style.display='none';
+  const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),10000);
+  fetch(url,{signal:ctrl.signal})
+    .then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(data=>{ if(!Array.isArray(data)) throw new Error('Expected JSON array'); ALL=data; showLoaded(); render(); toast('✓ Loaded '+ALL.filter(l=>!isNoise(l)).length+' leads'); })
+    .catch(e=>{ document.getElementById('loadingScreen').style.display='none'; document.getElementById('loadScreen').style.display='flex'; const eb=document.getElementById('errBox'); eb.style.display='block'; eb.textContent='⚠ '+(e.name==='AbortError'?'Timed out — check connection or try demo':e.message); });
+}
+
+function doRefresh() {
+  const url=(document.getElementById('urlInput')?.value||'').trim();
+  if (!url||!ALL.length) return;
+  const btn=document.getElementById('refreshBtn'); btn.classList.add('spinning');
+  const ctrl=new AbortController(); setTimeout(()=>ctrl.abort(),10000);
+  fetch(url+'?t='+Date.now(),{signal:ctrl.signal})
+    .then(r=>r.json()).then(data=>{ if(Array.isArray(data)){ const prev=ALL.filter(l=>!isNoise(l)).length; ALL=data; render(); const diff=ALL.filter(l=>!isNoise(l)).length-prev; toast(diff>0?'↑ '+diff+' new leads':'✓ Up to date'); }})
+    .catch(()=>toast('⚠ Refresh failed')).finally(()=>btn.classList.remove('spinning'));
+}
+
+function loadDemo() { ALL=DEMO; showLoaded(); render(); toast('Demo loaded'); }
+</script>
+</body>
+</html>
