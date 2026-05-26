@@ -2,12 +2,13 @@
 """
 Scan2Core Daily Lead Hunter v6
 Real scrapers with verified URLs
+
 Sources:
-  - publicbidtracker.com (aggregates WEBS - 80+ WA agencies)
-  - thebuyline.seattle.gov (Seattle construction bids blog)
-  - consultants.seattle.gov (Seattle construction RFQs)
-  - BXWA public city pages (Bellevue, Everett, Seattle, Kirkland, Redmond, Renton, Lynnwood etc.)
-  - GC project pages (Sellen, GLY, Howard S Wright, BNBuilders, Lease Crutcher Lewis)
+- publicbidtracker.com (aggregates WEBS - 80+ WA agencies)
+- thebuyline.seattle.gov (Seattle construction bids blog)
+- consultants.seattle.gov (Seattle construction RFQs)
+- BXWA public city pages (Bellevue, Everett, Seattle, Kirkland, Redmond, Renton, Lynnwood etc.)
+- GC project pages (Sellen, GLY, Howard S Wright, BNBuilders, Lease Crutcher Lewis)
 """
 
 import os
@@ -78,7 +79,7 @@ class Scan2CoreBot:
             try:
                 with open(FOUND_FILE, 'r') as f:
                     data = json.load(f)
-                    return {k: v for k, v in data.items() if isinstance(v, dict)}
+                return {k: v for k, v in data.items() if isinstance(v, dict)}
             except:
                 return {}
         return {}
@@ -256,7 +257,7 @@ class Scan2CoreBot:
                     if match:
                         toc_path = match.group(1)
                         toc_url = f'http://www.bxwa.com{toc_path}'
-                    break
+                        break
             if not toc_url:
                 return leads
             terms_url = f'http://www.bxwa.com/bxwa_toc/terms/public_terms.php?d={toc_url.replace("http://www.bxwa.com", "")}&a={city_name}'
@@ -326,4 +327,86 @@ class Scan2CoreBot:
             ('BNBuilders', 'https://www.bnbuilders.com/projects/', 'Seattle', 'King'),
             ('Absher Construction', 'https://www.absherco.com/projects/', 'Tacoma', 'Pierce'),
             ('Exxel Pacific', 'https://www.exxelpacific.com/projects/', 'Bothell', 'King'),
-            ('Venture General', 'ht
+            ('Venture General Contracting', 'https://www.venturegc.com/projects/', 'Tacoma', 'Pierce'),
+            ('Parametrix', 'https://www.parametrix.com/projects/', 'Auburn', 'King'),
+            ('Korsmo Construction', 'https://www.korsmoconstruction.com/projects/', 'Tacoma', 'Pierce'),
+        ]
+        for gc_name, gc_url, city, county in gc_sources:
+            try:
+                resp = self.session.get(gc_url, timeout=15)
+                if resp.status_code != 200 or not BeautifulSoup:
+                    continue
+                soup = BeautifulSoup(resp.content, 'html.parser')
+                for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
+                    tag.decompose()
+                for el in soup.find_all(['h1', 'h2', 'h3', 'h4', 'a']):
+                    text = el.get_text(strip=True)
+                    if len(text) < 15 or len(text) > 200:
+                        continue
+                    if self._should_skip(text):
+                        continue
+                    if not self._is_high_priority(text):
+                        continue
+                    link = el if el.name == 'a' else el.find('a', href=True)
+                    link_url = link.get('href', '') if link else gc_url
+                    if link_url and not link_url.startswith('http'):
+                        link_url = urljoin(gc_url, link_url)
+                    self._add_lead(leads, text, city, county,
+                                   f'GC - {gc_name}', link_url, gc=gc_name, text=text)
+            except Exception as e:
+                logger.debug(f"  GC {gc_name} error: {e}")
+        logger.info(f"  GC pages: {len(leads)} leads found")
+        return leads
+
+    def save_results(self, all_leads: List[Dict]):
+        existing = []
+        if os.path.exists(FOUND_FILE):
+            try:
+                with open(FOUND_FILE, 'r') as f:
+                    data = json.load(f)
+                if isinstance(data, list):
+                    existing = data
+                elif isinstance(data, dict):
+                    existing = [v for v in data.values() if isinstance(v, dict) and 'name' in v]
+            except:
+                existing = []
+
+        existing_names = {e.get('name', '') for e in existing}
+        new_leads = [l for l in all_leads if l.get('name', '') not in existing_names]
+        combined = new_leads + existing
+
+        with open(FOUND_FILE, 'w') as f:
+            json.dump(combined, f, indent=2)
+
+        logger.info(f"Saved {len(new_leads)} new leads ({len(combined)} total in file)")
+        return new_leads
+
+    def run(self):
+        logger.info("=" * 60)
+        logger.info("Scan2Core Daily Lead Hunter v6 starting...")
+        logger.info(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
+        logger.info("=" * 60)
+
+        all_leads = []
+        all_leads.extend(self.scrape_public_bid_tracker())
+        all_leads.extend(self.scrape_seattle_buyline())
+        all_leads.extend(self.scrape_seattle_consultants())
+        all_leads.extend(self.scrape_bxwa())
+        all_leads.extend(self.scrape_gc_projects())
+
+        new_leads = self.save_results(all_leads)
+
+        logger.info("=" * 60)
+        logger.info(f"DONE. New leads today: {len(new_leads)}")
+        if new_leads:
+            logger.info("NEW LEADS:")
+            for l in sorted(new_leads, key=lambda x: x.get('priority', 0), reverse=True):
+                logger.info(f"  [{l['priority']}] {l['name'][:60]} | {l['source']}")
+        else:
+            logger.info("No new leads found today.")
+        logger.info("=" * 60)
+
+
+if __name__ == '__main__':
+    bot = Scan2CoreBot()
+    bot.run()
