@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Scan2Core Daily Lead Hunter v7.1
+Scan2Core Daily Lead Hunter v7.2
 Direct scraping of verified WA city/county bid listing pages.
-Filters to current year bids only to avoid archived results.
+Filters to current year only to avoid archived results.
 """
 
 import os
@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 WORKSPACE = os.getenv('GITHUB_WORKSPACE', '/tmp')
 FOUND_FILE = os.path.join(WORKSPACE, 'found_projects.json')
 CURRENT_YEAR = str(datetime.now().year)
-PREV_YEAR = str(datetime.now().year - 1)
 
 HIGH_PRIORITY_TYPES = [
     'hospital', 'medical', 'clinic', 'healthcare', 'surgery', 'health',
@@ -108,9 +107,9 @@ WA_CITY_BID_PAGES = [
     ('Lacey', 'Thurston', 'http://www.ci.lacey.wa.us/city-government/city-departments/public-works/solicitations'),
     ('Olympia', 'Thurston', 'https://www.olympiawa.gov/government/contracts___purchasing/bids.php'),
     ('Thurston County', 'Thurston', 'https://www.thurstoncountywa.gov/cs/Pages/bids-projects.aspx'),
-    # Kitsap County
+    # Kitsap County - using PW current solicitations page only (DAS page has full archive)
     ('Bremerton', 'Kitsap', 'https://bremertonwa.gov/bids.aspx'),
-    ('Kitsap County', 'Kitsap', 'https://www.kitsapgov.com/das/Pages/Online-Bids.aspx'),
+    ('Kitsap County PW', 'Kitsap', 'https://www.kitsap.gov/pw/Pages/Current-Requests-For-Proposals-.aspx'),
     # State/regional
     ('WA Dept of Enterprise Services', 'State', 'https://des.wa.gov/services/contracting-purchasing/doing-business-state/bid-opportunities'),
     ('University of Washington', 'King', 'https://facilities.uw.edu/projects/business-opportunities/solicitations'),
@@ -148,11 +147,10 @@ class Scan2CoreBot:
         return any(k in text.lower() for k in CONSTRUCTION_KEYWORDS)
 
     def _is_current_year(self, text: str) -> bool:
-        """Returns True if text contains current year, prev year, or no year at all."""
         years_found = re.findall(r'20\d\d', text)
         if not years_found:
-            return True  # no year = probably fine
-        return any(y in (CURRENT_YEAR, PREV_YEAR) for y in years_found)
+            return True
+        return CURRENT_YEAR in years_found
 
     def _should_skip(self, text: str) -> bool:
         t = text.lower().strip()
@@ -262,7 +260,6 @@ class Scan2CoreBot:
             soup = BeautifulSoup(resp.content, 'html.parser')
             for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
                 tag.decompose()
-            # Grab post titles — h2 is the standard WordPress post title tag
             for post in soup.find_all(['h2', 'h3', 'article']):
                 text = post.get_text(separator=' ', strip=True)
                 if self._should_skip(text) or len(text) > 200:
@@ -431,7 +428,7 @@ class Scan2CoreBot:
 
     def run(self):
         logger.info("=" * 60)
-        logger.info("Scan2Core Daily Lead Hunter v7.1 starting...")
+        logger.info("Scan2Core Daily Lead Hunter v7.2 starting...")
         logger.info(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
         logger.info("=" * 60)
 
