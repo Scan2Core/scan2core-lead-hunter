@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 """
-Scan2Core Daily Lead Hunter v6
-Real scrapers with verified URLs
+Scan2Core Daily Lead Hunter v7
+Direct scraping of verified WA city/county bid listing pages.
 
 Sources:
-- publicbidtracker.com (aggregates WEBS - 80+ WA agencies)
-- thebuyline.seattle.gov (Seattle construction bids blog)
-- consultants.seattle.gov (Seattle construction RFQs)
-- BXWA public city pages (Bellevue, Everett, Seattle, Kirkland, Redmond, Renton, Lynnwood etc.)
-- GC project pages (Sellen, GLY, Howard S Wright, BNBuilders, Lease Crutcher Lewis)
+- publicbidtracker.com (WEBS aggregator)
+- thebuyline.seattle.gov (Seattle bids blog)
+- consultants.seattle.gov (Seattle RFQs)
+- 35+ WA city/county/agency direct bid pages
+- GC project pages
 """
 
 import os
@@ -60,8 +60,67 @@ SKIP_EXACT = {
     'home', 'contact', 'about', 'login', 'search', 'menu',
     'next', 'previous', 'submit', 'more', 'back', 'top',
     'facebook', 'twitter', 'linkedin', 'instagram', 'youtube',
-    'subscribe', 'newsletter', 'sitemap', 'privacy',
+    'subscribe', 'newsletter', 'sitemap', 'privacy', 'register',
+    'bids', 'rfps', 'rfqs', 'procurement', 'purchasing',
 }
+
+NOISE_PHRASES = [
+    'click here', 'access the', 'please post', 'post the information',
+    'view the', 'read more', 'learn more', 'sign up', 'register',
+    'subscribe', 'follow us', 'contact us', 'get more info',
+    'no bids', 'no current', 'no open', 'there are no',
+    'return to', 'back to', 'go to', 'see all',
+]
+
+# Verified direct bid listing URLs for WA cities/counties/agencies
+WA_CITY_BID_PAGES = [
+    # King County
+    ('Auburn', 'King', 'https://www.auburnwa.gov/city_hall/documents/request_for_bids_proposals'),
+    ('Bellevue', 'King', 'https://bellevuewa.gov/city-government/departments/finance/bid-opportunities-rfps-and-rfqs'),
+    ('Bothell', 'King', 'http://www.ci.bothell.wa.us/bids.aspx'),
+    ('Burien', 'King', 'https://www.burienwa.gov/city_hall/working_with_us/bids_rfp_rfq'),
+    ('Federal Way', 'King', 'https://www.cityoffederalway.com/bids'),
+    ('Issaquah', 'King', 'https://issaquahwa.gov/1464/Bids-RFPs'),
+    ('Kenmore', 'King', 'https://www.kenmorewa.gov/government/departments/finance-administration/working-with-the-city/requests-for-proposals'),
+    ('Kent', 'King', 'https://www.kentwa.gov/pay-and-apply/bids-procurement-rfps'),
+    ('King County', 'King', 'https://kingcounty.gov/depts/finance-business-operations/procurement.aspx'),
+    ('Kirkland', 'King', 'https://www.kirklandwa.gov/Government/Departments/Finance-and-Administration/Purchasing-Services/Doing-Business-with-the-City'),
+    ('Mercer Island', 'King', 'https://www.mercerisland.gov/rfps'),
+    ('North Bend', 'King', 'https://northbendwa.gov/Bids.aspx'),
+    ('Redmond', 'King', 'https://www.redmond.gov/445/Bidding-Contracting'),
+    ('Renton', 'King', 'https://www.rentonwa.gov/city_hall/executive_services/city_clerk/CallForBids'),
+    ('Sammamish', 'King', 'https://www.sammamish.us/parks-recreation-facilities/vendor-opportunities/'),
+    ('SeaTac', 'King', 'https://www.seatacwa.gov/business/rfp-rfq-bid-procurement'),
+    ('Seattle', 'King', 'https://www.seattle.gov/purchasing-and-contracting/purchasing'),
+    ('Seattle Public Schools', 'King', 'https://www.seattleschools.org/departments/finance/procurement/current-solicitations/'),
+    ('Shoreline', 'King', 'https://www.shorelinewa.gov/government/departments/administrative-services/bids-rfps'),
+    ('Port of Seattle', 'King', 'https://www.portseattle.org/business/bid-opportunities'),
+    ('Bellevue School District', 'King', 'https://www.bsd405.org/about-us/departments/finance/open-bids'),
+    # Snohomish County
+    ('Everett', 'Snohomish', 'https://www.everettwa.gov/319/Procurement'),
+    ('Lynnwood', 'Snohomish', 'https://www.lynnwoodwa.gov/Government/City-Clerk/Procurement-Contracts-Division/Current-Contract-Opportunities'),
+    ('Marysville', 'Snohomish', 'https://marysvillewa.gov/Bids.aspx'),
+    ('Monroe', 'Snohomish', 'https://www.monroewa.gov/bids.aspx'),
+    ('Snohomish County', 'Snohomish', 'https://snohomishcountywa.gov/3706/Purchasing-Portal'),
+    # Pierce County
+    ('Lakewood', 'Pierce', 'https://cityoflakewood.us/category/rfp-rfq-bids/'),
+    ('Pierce County', 'Pierce', 'https://www.piercecountywa.gov/5260/Current-Solicitations'),
+    ('Puyallup', 'Pierce', 'https://www.cityofpuyallup.org/Bids.aspx'),
+    ('Tacoma', 'Pierce', 'https://www.cityoftacoma.org/government/city_departments/finance/procurement_and_payables_division/purchasing/contracting_opportunities'),
+    ('Tacoma Public Schools', 'Pierce', 'https://www.tacomaschools.org/departments/purchasing'),
+    ('University Place', 'Pierce', 'https://cityofup.com/Bids.aspx'),
+    # Thurston County
+    ('Lacey', 'Thurston', 'http://www.ci.lacey.wa.us/city-government/city-departments/public-works/solicitations'),
+    ('Olympia', 'Thurston', 'https://www.olympiawa.gov/government/contracts___purchasing/bids.php'),
+    ('Thurston County', 'Thurston', 'https://www.thurstoncountywa.gov/cs/Pages/bids-projects.aspx'),
+    # Kitsap County
+    ('Bremerton', 'Kitsap', 'https://bremertonwa.gov/bids.aspx'),
+    ('Kitsap County', 'Kitsap', 'https://www.kitsapgov.com/das/Pages/Online-Bids.aspx'),
+    # State agencies
+    ('WA Dept of Enterprise Services', 'State', 'https://des.wa.gov/services/contracting-purchasing/doing-business-state/bid-opportunities'),
+    ('University of Washington', 'King', 'https://facilities.uw.edu/projects/business-opportunities/solicitations'),
+    ('Sound Transit', 'Multi', 'https://www.soundtransit.org/doing-business-sound-transit/selling-sound-transit/solicitations'),
+]
 
 
 class Scan2CoreBot:
@@ -79,6 +138,9 @@ class Scan2CoreBot:
             try:
                 with open(FOUND_FILE, 'r') as f:
                     data = json.load(f)
+                if isinstance(data, list):
+                    return {item.get('name', '') + '|' + item.get('source', ''): item
+                            for item in data if isinstance(item, dict)}
                 return {k: v for k, v in data.items() if isinstance(v, dict)}
             except:
                 return {}
@@ -97,6 +159,13 @@ class Scan2CoreBot:
         if t in SKIP_EXACT:
             return True
         if len(t) < 15:
+            return True
+        if any(n in t for n in NOISE_PHRASES):
+            return True
+        if 'http' in t or 'www.' in t:
+            return True
+        non_ascii = sum(1 for c in text if ord(c) > 127)
+        if non_ascii > len(text) * 0.15:
             return True
         return False
 
@@ -131,15 +200,19 @@ class Scan2CoreBot:
             'found_date': datetime.now().isoformat()
         }
         leads.append(lead)
-        self.found[lead_id] = {'name': name, 'found_date': datetime.now().isoformat()}
+        self.found[lead_id] = lead
         logger.info(f"  FOUND [{source}]: {name[:70]}")
 
     def scrape_public_bid_tracker(self) -> List[Dict]:
         leads = []
         logger.info("Scraping publicbidtracker.com (WA state WEBS bids)...")
         try:
+            self.session.get('https://publicbidtracker.com/', timeout=15)
             url = 'https://publicbidtracker.com/washington/open-bids/'
-            resp = self.session.get(url, timeout=20)
+            resp = self.session.get(url, timeout=20, headers={
+                'Referer': 'https://publicbidtracker.com/',
+                'Accept-Encoding': 'gzip, deflate, br',
+            })
             logger.info(f"  publicbidtracker: HTTP {resp.status_code} ({len(resp.content)} bytes)")
             if resp.status_code != 200 or not BeautifulSoup:
                 return leads
@@ -189,9 +262,9 @@ class Scan2CoreBot:
                 tag.decompose()
             for post in soup.find_all(['h1', 'h2', 'h3', 'h4', 'article']):
                 text = post.get_text(separator=' ', strip=True)
-                if not self._is_construction(text) or self._should_skip(text):
+                if self._should_skip(text):
                     continue
-                if not self._is_high_priority(text):
+                if not self._is_construction(text) or not self._is_high_priority(text):
                     continue
                 name = text.split('\n')[0].strip()[:120]
                 link = post.find('a', href=True)
@@ -200,7 +273,7 @@ class Scan2CoreBot:
                                'Seattle Buy Line', link_url, text=text)
             for a in soup.find_all('a', href=True):
                 text = a.get_text(strip=True)
-                if len(text) < 20 or len(text) > 200:
+                if self._should_skip(text):
                     continue
                 if not self._is_construction(text) or not self._is_high_priority(text):
                     continue
@@ -225,9 +298,9 @@ class Scan2CoreBot:
                 tag.decompose()
             for post in soup.find_all(['h1', 'h2', 'h3', 'h4', 'article', 'li']):
                 text = post.get_text(separator=' ', strip=True)
-                if not self._is_construction(text) or self._should_skip(text):
+                if self._should_skip(text):
                     continue
-                if not self._is_high_priority(text):
+                if not self._is_construction(text) or not self._is_high_priority(text):
                     continue
                 name = text.split('\n')[0].strip()[:120]
                 link = post.find('a', href=True)
@@ -239,81 +312,53 @@ class Scan2CoreBot:
         logger.info(f"  Seattle Consultants: {len(leads)} leads found")
         return leads
 
-    def scrape_bxwa_city(self, city_name: str, city_id: str, city: str, county: str) -> List[Dict]:
+    def scrape_city_bid_page(self, city: str, county: str, url: str) -> List[Dict]:
         leads = []
         try:
-            session = requests.Session()
-            session.headers.update(self.session.headers)
-            city_url = f'http://www.bxwa.com/bxwa_toc/pub/{city_id}.html'
-            resp = session.get(city_url, timeout=15)
+            resp = self.session.get(url, timeout=20)
             if resp.status_code != 200 or not BeautifulSoup:
+                logger.debug(f"  {city}: HTTP {resp.status_code}")
                 return leads
             soup = BeautifulSoup(resp.content, 'html.parser')
-            toc_url = None
-            for link in soup.find_all('a', href=True):
-                href = link.get('href', '')
-                if 'toc.html' in href or 'toc.php' in href:
-                    match = re.search(r'd=([^&]+)', href)
-                    if match:
-                        toc_path = match.group(1)
-                        toc_url = f'http://www.bxwa.com{toc_path}'
-                        break
-            if not toc_url:
-                return leads
-            terms_url = f'http://www.bxwa.com/bxwa_toc/terms/public_terms.php?d={toc_url.replace("http://www.bxwa.com", "")}&a={city_name}'
-            session.get(terms_url, timeout=10)
-            toc_resp = session.get(toc_url, timeout=15)
-            if toc_resp.status_code != 200:
-                return leads
-            toc_soup = BeautifulSoup(toc_resp.content, 'html.parser')
-            for tag in toc_soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
+            for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
                 tag.decompose()
-            for a in toc_soup.find_all('a', href=True):
-                text = a.get_text(strip=True)
-                href = a.get('href', '')
-                if len(text) < 15 or len(text) > 300:
+
+            # Pull text from links, headings, list items, and table cells
+            candidates = []
+            for el in soup.find_all(['a', 'h1', 'h2', 'h3', 'h4', 'li', 'td']):
+                text = el.get_text(separator=' ', strip=True)
+                href = el.get('href', '') if el.name == 'a' else ''
+                if not href and el.name in ['h1','h2','h3','h4','li','td']:
+                    link = el.find('a', href=True)
+                    href = link.get('href', '') if link else url
+                candidates.append((text, href))
+
+            for text, href in candidates:
+                if self._should_skip(text):
                     continue
-                if self._should_skip(text) or not self._is_construction(text):
+                if len(text) > 300:
                     continue
-                if not self._is_high_priority(text):
+                # For city pages we broaden the filter slightly —
+                # any construction keyword is enough, high priority not required
+                # since these are already scoped to bid/procurement pages
+                if not self._is_construction(text):
                     continue
-                full_url = href if href.startswith('http') else urljoin(toc_url, href)
+                full_url = href if href.startswith('http') else urljoin(url, href)
                 self._add_lead(leads, text, city, county,
-                               f'BXWA - {city_name}', full_url, text=text)
+                               f'City Bids - {city}', full_url, text=text)
         except Exception as e:
-            logger.debug(f"  BXWA {city_name} error: {e}")
+            logger.debug(f"  {city} error: {e}")
         return leads
 
-    def scrape_bxwa(self) -> List[Dict]:
+    def scrape_all_city_pages(self) -> List[Dict]:
         leads = []
-        logger.info("Scraping BXWA (Builders Exchange WA)...")
-        cities = [
-            ('City of Seattle', '22', 'Seattle', 'King'),
-            ('City of Bellevue', '281', 'Bellevue', 'King'),
-            ('City of Everett', '20', 'Everett', 'Snohomish'),
-            ('City of Kirkland', '312', 'Kirkland', 'King'),
-            ('City of Redmond', '656', 'Redmond', 'King'),
-            ('City of Renton', '438', 'Renton', 'King'),
-            ('City of Lynnwood', '21', 'Lynnwood', 'Snohomish'),
-            ('City of Bothell', '747', 'Bothell', 'King'),
-            ('City of Auburn', '735', 'Auburn', 'King'),
-            ('City of Kent', '547', 'Kent', 'King'),
-            ('City of Federal Way', '622', 'Federal Way', 'King'),
-            ('City of Tacoma', '27', 'Tacoma', 'Pierce'),
-            ('City of Shoreline', '244', 'Shoreline', 'King'),
-            ('King County', '282', 'Multi-City', 'King'),
-            ('Snohomish County', '119', 'Multi-City', 'Snohomish'),
-            ('Port of Seattle', '383', 'Seattle', 'King'),
-            ('Sound Transit', '531', 'Multi-City', 'Multi-County'),
-            ('Seattle Public Schools', '140', 'Seattle', 'King'),
-            ('Bellevue School District', '233', 'Bellevue', 'King'),
-        ]
-        for city_name, city_id, city, county in cities:
-            city_leads = self.scrape_bxwa_city(city_name, city_id, city, county)
-            leads.extend(city_leads)
+        logger.info(f"Scraping {len(WA_CITY_BID_PAGES)} WA city/county bid pages...")
+        for city, county, url in WA_CITY_BID_PAGES:
+            city_leads = self.scrape_city_bid_page(city, county, url)
             if city_leads:
-                logger.info(f"  BXWA {city_name}: {len(city_leads)} leads")
-        logger.info(f"  BXWA total: {len(leads)} leads found")
+                logger.info(f"  {city}: {len(city_leads)} leads")
+            leads.extend(city_leads)
+        logger.info(f"  City pages total: {len(leads)} leads found")
         return leads
 
     def scrape_gc_projects(self) -> List[Dict]:
@@ -341,9 +386,7 @@ class Scan2CoreBot:
                     tag.decompose()
                 for el in soup.find_all(['h1', 'h2', 'h3', 'h4', 'a']):
                     text = el.get_text(strip=True)
-                    if len(text) < 15 or len(text) > 200:
-                        continue
-                    if self._should_skip(text):
+                    if self._should_skip(text) or len(text) > 200:
                         continue
                     if not self._is_high_priority(text):
                         continue
@@ -383,7 +426,7 @@ class Scan2CoreBot:
 
     def run(self):
         logger.info("=" * 60)
-        logger.info("Scan2Core Daily Lead Hunter v6 starting...")
+        logger.info("Scan2Core Daily Lead Hunter v7 starting...")
         logger.info(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
         logger.info("=" * 60)
 
@@ -391,7 +434,7 @@ class Scan2CoreBot:
         all_leads.extend(self.scrape_public_bid_tracker())
         all_leads.extend(self.scrape_seattle_buyline())
         all_leads.extend(self.scrape_seattle_consultants())
-        all_leads.extend(self.scrape_bxwa())
+        all_leads.extend(self.scrape_all_city_pages())
         all_leads.extend(self.scrape_gc_projects())
 
         new_leads = self.save_results(all_leads)
