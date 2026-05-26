@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Scan2Core Daily Lead Hunter v7.3
-- Replaces broken sources with working ones
+Scan2Core Daily Lead Hunter v7.4
+- Removed broken Bonfire scraper (JS-rendered, DNS fails in Actions)
+- Seattle covered by city pages list via OpenGov portal
 - BuyLine/Consultants: skip CLOSED/ARCHIVED/CANCELED, filter by URL year
-- publicbidtracker replaced with Seattle Bonfire portal (actual bids)
-- GC pages removed (JS-rendered, never returned data)
+- GC pages removed (JS-rendered)
 """
 
 import os
@@ -12,7 +12,6 @@ import json
 import requests
 import logging
 import re
-import time
 from datetime import datetime
 from typing import List, Dict
 from urllib.parse import urljoin
@@ -72,10 +71,13 @@ NOISE_PHRASES = [
     'plan set', 'bid drawings', 'contract documents', 'scope of work',
     'exhibit a', 'exhibit b', 'exhibit c', 'attachment a', 'attachment b',
     'sign in sheet', 'pre-bid sign', 'contacts list', 'doing business with',
-    'join the meeting', 'join on your computer', 'microsoft teams',
+    'join the meeting', 'microsoft teams', 'how does the city',
+    'city hall closure', 'employee services', 'future competitive',
+    'certifying your company', 'who should i contact',
+    'finance and administrative', 'general services', 'professional services',
+    'goods and services', 'goods, services',
 ]
 
-# Status prefixes that mean a bid is over — skip these
 CLOSED_PREFIXES = ('closed', 'archived', 'canceled', 'cancelled', 'awarded', 'closed*')
 
 WA_CITY_BID_PAGES = [
@@ -93,7 +95,7 @@ WA_CITY_BID_PAGES = [
     ('Redmond', 'King', 'https://www.redmond.gov/445/Bidding-Contracting'),
     ('Renton', 'King', 'https://www.rentonwa.gov/city_hall/executive_services/city_clerk/CallForBids'),
     ('SeaTac', 'King', 'https://www.seatacwa.gov/business/rfp-rfq-bid-procurement'),
-    ('Seattle', 'King', 'https://www.seattle.gov/purchasing-and-contracting/purchasing'),
+    ('Seattle', 'King', 'https://www.seattle.gov/purchasing-and-contracting/construction-contracting'),
     ('Seattle Public Schools', 'King', 'https://www.seattleschools.org/departments/finance/procurement/current-solicitations/'),
     ('Shoreline', 'King', 'https://www.shorelinewa.gov/government/departments/administrative-services/bids-rfps'),
     ('Port of Seattle', 'King', 'https://www.portseattle.org/business/bid-opportunities'),
@@ -115,7 +117,7 @@ WA_CITY_BID_PAGES = [
     ('Lacey', 'Thurston', 'http://www.ci.lacey.wa.us/city-government/city-departments/public-works/solicitations'),
     ('Olympia', 'Thurston', 'https://www.olympiawa.gov/government/contracts___purchasing/bids.php'),
     ('Thurston County', 'Thurston', 'https://www.thurstoncountywa.gov/cs/Pages/bids-projects.aspx'),
-    # Kitsap County - PW current solicitations only
+    # Kitsap County
     ('Bremerton', 'Kitsap', 'https://bremertonwa.gov/bids.aspx'),
     ('Kitsap County PW', 'Kitsap', 'https://www.kitsap.gov/pw/Pages/Current-Requests-For-Proposals-.aspx'),
     # State/regional
@@ -161,8 +163,7 @@ class Scan2CoreBot:
         return CURRENT_YEAR in years_found
 
     def _is_closed(self, text: str) -> bool:
-        t = text.lower().strip()
-        return any(t.startswith(p) for p in CLOSED_PREFIXES)
+        return any(text.lower().strip().startswith(p) for p in CLOSED_PREFIXES)
 
     def _should_skip(self, text: str) -> bool:
         t = text.lower().strip()
@@ -213,45 +214,7 @@ class Scan2CoreBot:
         self.found[lead_id] = lead
         logger.info(f"  FOUND [{source}]: {name[:70]}")
 
-    def scrape_seattle_bonfire(self) -> List[Dict]:
-        """Seattle's actual bid portal - replaces publicbidtracker which 403s"""
-        leads = []
-        logger.info("Scraping Seattle Bonfire bid portal...")
-        try:
-            url = 'https://cityofseattle.bonfirehub.com/opportunities'
-            resp = self.session.get(url, timeout=20)
-            logger.info(f"  Seattle Bonfire: HTTP {resp.status_code} ({len(resp.content)} bytes)")
-            if resp.status_code != 200 or not BeautifulSoup:
-                return leads
-            soup = BeautifulSoup(resp.content, 'html.parser')
-            for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
-                tag.decompose()
-            seen = set()
-            for el in soup.find_all(['h2', 'h3', 'h4', 'a', 'li', 'td', 'div']):
-                text = el.get_text(separator=' ', strip=True)
-                text = re.sub(r'\s+', ' ', text).strip()
-                if text in seen or len(text) < 15 or len(text) > 250:
-                    continue
-                seen.add(text)
-                if self._should_skip(text) or self._is_closed(text):
-                    continue
-                if not self._is_construction(text):
-                    continue
-                href = el.get('href', '') if el.name == 'a' else ''
-                if not href:
-                    link = el.find('a', href=True)
-                    href = link.get('href', '') if link else url
-                full_url = href if href.startswith('http') else urljoin(url, href)
-                self._add_lead(leads, text, 'Seattle', 'King',
-                               'Seattle Bonfire Portal', full_url, text=text)
-        except Exception as e:
-            logger.warning(f"  Seattle Bonfire error: {e}")
-        logger.info(f"  Seattle Bonfire: {len(leads)} leads found")
-        return leads
-
     def scrape_wordpress_bids(self, source_name: str, url: str, city: str, county: str) -> List[Dict]:
-        """Generic scraper for WordPress bid blogs (BuyLine, Consultants).
-        Uses URL year to filter and skips CLOSED/ARCHIVED/CANCELED posts."""
         leads = []
         try:
             resp = self.session.get(url, timeout=20)
@@ -261,30 +224,19 @@ class Scan2CoreBot:
             soup = BeautifulSoup(resp.content, 'html.parser')
             for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
                 tag.decompose()
-
-            # WordPress posts have links containing /YEAR/MONTH/ in the URL
-            # Find all post title links, check URL year, skip closed posts
             for a in soup.find_all('a', href=True):
                 href = a.get('href', '')
                 text = a.get_text(strip=True)
-
                 if not text or len(text) < 20 or len(text) > 250:
                     continue
-                if self._should_skip(text):
+                if self._should_skip(text) or self._is_closed(text):
                     continue
-                if self._is_closed(text):
-                    continue
-
-                # Check the URL contains current year (WordPress URL structure: /2026/05/)
                 url_years = re.findall(r'/(\d{4})/', href)
                 if url_years and CURRENT_YEAR not in url_years:
                     continue
-
                 if not self._is_construction(text):
                     continue
-
                 self._add_lead(leads, text, city, county, source_name, href, text=text)
-
         except Exception as e:
             logger.warning(f"  {source_name} error: {e}")
         logger.info(f"  {source_name}: {len(leads)} leads found")
@@ -300,16 +252,13 @@ class Scan2CoreBot:
             soup = BeautifulSoup(resp.content, 'html.parser')
             for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
                 tag.decompose()
-
             seen_texts = set()
             for el in soup.find_all(['h2', 'h3', 'h4', 'a', 'li', 'td']):
                 text = el.get_text(separator=' ', strip=True)
                 text = re.sub(r'\s+', ' ', text).strip()
-
                 if text in seen_texts:
                     continue
                 seen_texts.add(text)
-
                 if self._should_skip(text) or self._is_closed(text):
                     continue
                 if len(text) > 250:
@@ -318,18 +267,13 @@ class Scan2CoreBot:
                     continue
                 if not self._is_construction(text):
                     continue
-
-                href = ''
-                if el.name == 'a':
-                    href = el.get('href', '')
-                else:
+                href = el.get('href', '') if el.name == 'a' else ''
+                if not href:
                     link = el.find('a', href=True)
                     href = link.get('href', '') if link else url
-
                 full_url = href if href.startswith('http') else urljoin(url, href)
                 self._add_lead(leads, text, city, county,
                                f'City Bids - {city}', full_url, text=text)
-
         except Exception as e:
             logger.debug(f"  {city} error: {e}")
         return leads
@@ -357,25 +301,21 @@ class Scan2CoreBot:
                     existing = [v for v in data.values() if isinstance(v, dict) and 'name' in v]
             except:
                 existing = []
-
         existing_names = {e.get('name', '') for e in existing}
         new_leads = [l for l in all_leads if l.get('name', '') not in existing_names]
         combined = new_leads + existing
-
         with open(FOUND_FILE, 'w') as f:
             json.dump(combined, f, indent=2)
-
         logger.info(f"Saved {len(new_leads)} new leads ({len(combined)} total in file)")
         return new_leads
 
     def run(self):
         logger.info("=" * 60)
-        logger.info("Scan2Core Daily Lead Hunter v7.3 starting...")
+        logger.info("Scan2Core Daily Lead Hunter v7.4 starting...")
         logger.info(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
         logger.info("=" * 60)
 
         all_leads = []
-        all_leads.extend(self.scrape_seattle_bonfire())
         all_leads.extend(self.scrape_wordpress_bids(
             'Seattle Buy Line',
             'https://thebuyline.seattle.gov/category/bids-and-proposals/',
