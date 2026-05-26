@@ -11,7 +11,7 @@
     "priority": 9,
     "evidence": "Spec 03.3.1: GPR required prior to core drilling",
     "source": "Project Specifications",
-    "found_date": "2026-05-26T19:57:11.695120"
+    "found_date": "2026-05-26T19:59:44.524906"
   },
   "Everett Medical Campus Expansion|Skanska USA": {
     "name": "Everett Medical Campus Expansion",
@@ -25,6 +25,6 @@
     "priority": 10,
     "evidence": "Spec 05.5.2: GPR and utility locating required",
     "source": "Technical Specifications",
-    "found_date": "2026-05-26T19:57:11.695128"
+    "found_date": "2026-05-26T19:59:44.524918"
   }
 }
