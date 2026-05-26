@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Scan2Core Daily Lead Hunter v3
-Rebuilt scrapers for WEBS, Seattle, and Everett
+Scan2Core Daily Lead Hunter v4
+Type-based filtering - finds high-probability projects
 """
 
 import os
@@ -9,10 +9,8 @@ import json
 import requests
 import logging
 import re
-import time
 from datetime import datetime
-from typing import List, Dict, Any
-from urllib.parse import urljoin, quote
+from typing import List, Dict
 
 try:
     from bs4 import BeautifulSoup
@@ -24,6 +22,17 @@ logger = logging.getLogger(__name__)
 
 WORKSPACE = os.getenv('GITHUB_WORKSPACE', '/tmp')
 FOUND_FILE = os.path.join(WORKSPACE, 'found_projects.json')
+
+HIGH_PRIORITY_TYPES = [
+    'hospital', 'medical', 'clinic', 'healthcare',
+    'apartment', 'residential', 'multifamily', 'multi-family',
+    'parking', 'garage',
+    'data center', 'tech campus',
+    'bridge', 'infrastructure', 'highway', 'road',
+    'stadium', 'arena',
+    'high-rise', 'highrise',
+    'retrofit', 'seismic', 'renovation'
+]
 
 class Scan2CoreBot:
     def __init__(self):
@@ -47,31 +56,17 @@ class Scan2CoreBot:
         with open(FOUND_FILE, 'w') as f:
             json.dump(self.found, f, indent=2, default=str)
     
-    def _check_keywords(self, text: str) -> tuple:
-        """Check for BOTH scanning AND core drilling keywords"""
+    def _is_high_priority(self, text: str) -> bool:
+        """Check if project type is high-priority for scanning/drilling"""
         text_lower = text.lower()
-        
-        scanning_kw = ['gpr', 'ground penetrating', 'scanning', 'scan', 'locate', 'locating', 'utility location']
-        drilling_kw = ['core drill', 'drilling', 'drill', 'boring', 'concrete sample', 'specimen']
-        
-        has_scan = any(kw in text_lower for kw in scanning_kw)
-        has_drill = any(kw in text_lower for kw in drilling_kw)
-        
-        if has_scan and has_drill:
-            for line in text.split('\n'):
-                line_lower = line.lower()
-                if any(kw in line_lower for kw in scanning_kw) and any(kw in line_lower for kw in drilling_kw):
-                    return True, line.strip()[:150]
-            return True, "Requires scanning and core drilling"
-        return False, ""
+        return any(ptype in text_lower for ptype in HIGH_PRIORITY_TYPES)
     
     def scrape_webs(self) -> List[Dict]:
-        """Scrape WA DES WEBS for bids"""
+        """Scrape WA DES WEBS for high-priority projects"""
         leads = []
         logger.info("Scraping WEBS...")
         
         try:
-            # Try the main opportunities page
             urls = [
                 "https://webs.des.wa.gov/opportunities",
                 "https://webs.des.wa.gov/",
@@ -80,28 +75,22 @@ class Scan2CoreBot:
             for url in urls:
                 try:
                     response = self.session.get(url, timeout=10)
-                    if response.status_code != 200:
-                        continue
-                    
-                    if not BeautifulSoup:
+                    if response.status_code != 200 or not BeautifulSoup:
                         continue
                     
                     soup = BeautifulSoup(response.content, 'html.parser')
                     
-                    # Look for links containing "construct", "bid", "rfq"
                     for link in soup.find_all('a', href=True):
                         text = link.get_text(strip=True)
-                        href = link.get('href')
-                        
                         if not text or len(text) < 10:
                             continue
                         
-                        # Check if looks like a bid
-                        if not any(kw in text.lower() for kw in ['bid', 'rfq', 'construct', 'project']):
+                        # Check if it's a construction project
+                        if not any(kw in text.lower() for kw in ['bid', 'rfq', 'construct', 'project', 'build']):
                             continue
                         
-                        has_keywords, evidence = self._check_keywords(text)
-                        if not has_keywords:
+                        # Check if high-priority type
+                        if not self._is_high_priority(text):
                             continue
                         
                         lead = {
@@ -110,8 +99,8 @@ class Scan2CoreBot:
                             'county': 'Multi-County',
                             'status': 'Posted',
                             'type': 'Government',
-                            'evidence': evidence,
                             'source': 'WEBS',
+                            'notes': 'Type-based match - review specs manually',
                             'found_date': datetime.now().isoformat()
                         }
                         
@@ -126,7 +115,7 @@ class Scan2CoreBot:
                         break
                 
                 except Exception as e:
-                    logger.debug(f"WEBS URL {url} failed: {e}")
+                    logger.debug(f"WEBS error: {e}")
                     continue
         
         except Exception as e:
@@ -135,12 +124,11 @@ class Scan2CoreBot:
         return leads
     
     def scrape_seattle(self) -> List[Dict]:
-        """Scrape Seattle purchasing/bids"""
+        """Scrape Seattle for high-priority projects"""
         leads = []
         logger.info("Scraping Seattle...")
         
         try:
-            # Try Seattle's bid portal
             urls = [
                 "https://www.seattle.gov/purchasing/bids-and-rfps",
                 "https://seattle.gov/purchasing",
@@ -153,7 +141,7 @@ class Scan2CoreBot:
                     if response.status_code != 200:
                         continue
                     
-                    # Try JSON first
+                    # Try JSON
                     if url.endswith('.json'):
                         try:
                             data = response.json()
@@ -162,8 +150,7 @@ class Scan2CoreBot:
                                     continue
                                 text = ' '.join(str(v) for v in item.values() if v)
                                 
-                                has_keywords, evidence = self._check_keywords(text)
-                                if not has_keywords:
+                                if not self._is_high_priority(text):
                                     continue
                                 
                                 title = str(item.get('title') or item.get('project_name') or text[:80])[:100]
@@ -174,8 +161,8 @@ class Scan2CoreBot:
                                     'county': 'King',
                                     'status': 'Posted',
                                     'type': 'City Project',
-                                    'evidence': evidence,
                                     'source': 'City of Seattle',
+                                    'notes': 'Type-based match - review specs manually',
                                     'found_date': datetime.now().isoformat()
                                 }
                                 
@@ -191,7 +178,7 @@ class Scan2CoreBot:
                         except:
                             pass
                     
-                    # Try HTML parsing
+                    # Try HTML
                     if BeautifulSoup and not leads:
                         soup = BeautifulSoup(response.content, 'html.parser')
                         
@@ -203,8 +190,7 @@ class Scan2CoreBot:
                             if not any(kw in text.lower() for kw in ['bid', 'rfq', 'project', 'construct']):
                                 continue
                             
-                            has_keywords, evidence = self._check_keywords(text)
-                            if not has_keywords:
+                            if not self._is_high_priority(text):
                                 continue
                             
                             lead = {
@@ -213,8 +199,8 @@ class Scan2CoreBot:
                                 'county': 'King',
                                 'status': 'Posted',
                                 'type': 'City Project',
-                                'evidence': evidence,
                                 'source': 'City of Seattle',
+                                'notes': 'Type-based match - review specs manually',
                                 'found_date': datetime.now().isoformat()
                             }
                             
@@ -229,7 +215,7 @@ class Scan2CoreBot:
                             break
                 
                 except Exception as e:
-                    logger.debug(f"Seattle URL {url} failed: {e}")
+                    logger.debug(f"Seattle error: {e}")
                     continue
         
         except Exception as e:
@@ -238,7 +224,7 @@ class Scan2CoreBot:
         return leads
     
     def scrape_everett(self) -> List[Dict]:
-        """Scrape Everett purchasing/bids"""
+        """Scrape Everett for high-priority projects"""
         leads = []
         logger.info("Scraping Everett...")
         
@@ -252,27 +238,20 @@ class Scan2CoreBot:
             for url in urls:
                 try:
                     response = self.session.get(url, timeout=10)
-                    if response.status_code != 200:
-                        continue
-                    
-                    if not BeautifulSoup:
+                    if response.status_code != 200 or not BeautifulSoup:
                         continue
                     
                     soup = BeautifulSoup(response.content, 'html.parser')
                     
-                    # Look for bid/project links
                     for link in soup.find_all('a', href=True):
                         text = link.get_text(strip=True)
-                        href = link.get('href')
-                        
                         if not text or len(text) < 10:
                             continue
                         
                         if not any(kw in text.lower() for kw in ['bid', 'rfq', 'project', 'construct']):
                             continue
                         
-                        has_keywords, evidence = self._check_keywords(text)
-                        if not has_keywords:
+                        if not self._is_high_priority(text):
                             continue
                         
                         lead = {
@@ -281,8 +260,8 @@ class Scan2CoreBot:
                             'county': 'Snohomish',
                             'status': 'Posted',
                             'type': 'City Project',
-                            'evidence': evidence,
                             'source': 'City of Everett',
+                            'notes': 'Type-based match - review specs manually',
                             'found_date': datetime.now().isoformat()
                         }
                         
@@ -297,7 +276,7 @@ class Scan2CoreBot:
                         break
                 
                 except Exception as e:
-                    logger.debug(f"Everett URL {url} failed: {e}")
+                    logger.debug(f"Everett error: {e}")
                     continue
         
         except Exception as e:
@@ -307,16 +286,14 @@ class Scan2CoreBot:
     
     def run(self):
         """Main execution"""
-        logger.info("Starting Scan2Core Daily Lead Hunt v3")
+        logger.info("Starting Scan2Core Daily Lead Hunt v4 - Type-based filtering")
         
         all_leads = []
-        
-        # Scrape real sources
         all_leads.extend(self.scrape_webs())
         all_leads.extend(self.scrape_seattle())
         all_leads.extend(self.scrape_everett())
         
-        # Add verified baseline leads
+        # Baseline verified leads
         baseline_leads = [
             {
                 'name': 'Bellevue Downtown Mixed-Use Development',
@@ -348,7 +325,6 @@ class Scan2CoreBot:
             }
         ]
         
-        # Combine all leads
         leads_by_id = {}
         for lead in all_leads + baseline_leads:
             lead_id = f"{lead['name']}|{lead.get('gc', lead.get('source', 'Unknown'))}"
@@ -356,7 +332,6 @@ class Scan2CoreBot:
             if lead_id not in self.found:
                 self.found[lead_id] = {'name': lead['name'], 'found_date': datetime.now().isoformat()}
         
-        # Save to GitHub
         with open(FOUND_FILE, 'w') as f:
             json.dump(leads_by_id, f, indent=2, default=str)
         
