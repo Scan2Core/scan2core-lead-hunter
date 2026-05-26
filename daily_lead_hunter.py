@@ -1,14 +1,8 @@
 #!/usr/bin/env python3
 """
-Scan2Core Daily Lead Hunter v7
+Scan2Core Daily Lead Hunter v7.1
 Direct scraping of verified WA city/county bid listing pages.
-
-Sources:
-- publicbidtracker.com (WEBS aggregator)
-- thebuyline.seattle.gov (Seattle bids blog)
-- consultants.seattle.gov (Seattle RFQs)
-- 35+ WA city/county/agency direct bid pages
-- GC project pages
+Filters to current year bids only to avoid archived results.
 """
 
 import os
@@ -30,6 +24,8 @@ logger = logging.getLogger(__name__)
 
 WORKSPACE = os.getenv('GITHUB_WORKSPACE', '/tmp')
 FOUND_FILE = os.path.join(WORKSPACE, 'found_projects.json')
+CURRENT_YEAR = str(datetime.now().year)
+PREV_YEAR = str(datetime.now().year - 1)
 
 HIGH_PRIORITY_TYPES = [
     'hospital', 'medical', 'clinic', 'healthcare', 'surgery', 'health',
@@ -50,10 +46,10 @@ HIGH_PRIORITY_TYPES = [
 ]
 
 CONSTRUCTION_KEYWORDS = [
-    'bid', 'rfq', 'rfp', 'construct', 'project', 'build', 'renovation',
+    'bid', 'rfq', 'rfp', 'ifb', 'construct', 'project', 'build', 'renovation',
     'contract', 'install', 'repair', 'upgrade', 'facility', 'phase',
     'structural', 'concrete', 'foundation', 'infrastructure', 'work',
-    'demolish', 'improvement', 'modernization', 'replacement'
+    'demolish', 'improvement', 'modernization', 'replacement', 'solicitation',
 ]
 
 SKIP_EXACT = {
@@ -66,13 +62,15 @@ SKIP_EXACT = {
 
 NOISE_PHRASES = [
     'click here', 'access the', 'please post', 'post the information',
-    'view the', 'read more', 'learn more', 'sign up', 'register',
-    'subscribe', 'follow us', 'contact us', 'get more info',
-    'no bids', 'no current', 'no open', 'there are no',
-    'return to', 'back to', 'go to', 'see all',
+    'view the', 'read more', 'learn more', 'sign up', 'register now',
+    'follow us', 'contact us', 'get more info', 'no bids', 'no current',
+    'no open', 'there are no', 'return to', 'back to', 'go to', 'see all',
+    'legal ad', 'plan holders', 'addendum', 'tabulation', 'notice of intent',
+    'plan set', 'bid drawings', 'contract documents', 'scope of work',
+    'exhibit a', 'exhibit b', 'exhibit c', 'attachment a', 'attachment b',
+    'sign in sheet', 'pre-bid sign', 'contacts list',
 ]
 
-# Verified direct bid listing URLs for WA cities/counties/agencies
 WA_CITY_BID_PAGES = [
     # King County
     ('Auburn', 'King', 'https://www.auburnwa.gov/city_hall/documents/request_for_bids_proposals'),
@@ -81,15 +79,12 @@ WA_CITY_BID_PAGES = [
     ('Burien', 'King', 'https://www.burienwa.gov/city_hall/working_with_us/bids_rfp_rfq'),
     ('Federal Way', 'King', 'https://www.cityoffederalway.com/bids'),
     ('Issaquah', 'King', 'https://issaquahwa.gov/1464/Bids-RFPs'),
-    ('Kenmore', 'King', 'https://www.kenmorewa.gov/government/departments/finance-administration/working-with-the-city/requests-for-proposals'),
     ('Kent', 'King', 'https://www.kentwa.gov/pay-and-apply/bids-procurement-rfps'),
     ('King County', 'King', 'https://kingcounty.gov/depts/finance-business-operations/procurement.aspx'),
     ('Kirkland', 'King', 'https://www.kirklandwa.gov/Government/Departments/Finance-and-Administration/Purchasing-Services/Doing-Business-with-the-City'),
     ('Mercer Island', 'King', 'https://www.mercerisland.gov/rfps'),
-    ('North Bend', 'King', 'https://northbendwa.gov/Bids.aspx'),
     ('Redmond', 'King', 'https://www.redmond.gov/445/Bidding-Contracting'),
     ('Renton', 'King', 'https://www.rentonwa.gov/city_hall/executive_services/city_clerk/CallForBids'),
-    ('Sammamish', 'King', 'https://www.sammamish.us/parks-recreation-facilities/vendor-opportunities/'),
     ('SeaTac', 'King', 'https://www.seatacwa.gov/business/rfp-rfq-bid-procurement'),
     ('Seattle', 'King', 'https://www.seattle.gov/purchasing-and-contracting/purchasing'),
     ('Seattle Public Schools', 'King', 'https://www.seattleschools.org/departments/finance/procurement/current-solicitations/'),
@@ -116,7 +111,7 @@ WA_CITY_BID_PAGES = [
     # Kitsap County
     ('Bremerton', 'Kitsap', 'https://bremertonwa.gov/bids.aspx'),
     ('Kitsap County', 'Kitsap', 'https://www.kitsapgov.com/das/Pages/Online-Bids.aspx'),
-    # State agencies
+    # State/regional
     ('WA Dept of Enterprise Services', 'State', 'https://des.wa.gov/services/contracting-purchasing/doing-business-state/bid-opportunities'),
     ('University of Washington', 'King', 'https://facilities.uw.edu/projects/business-opportunities/solicitations'),
     ('Sound Transit', 'Multi', 'https://www.soundtransit.org/doing-business-sound-transit/selling-sound-transit/solicitations'),
@@ -147,12 +142,17 @@ class Scan2CoreBot:
         return {}
 
     def _is_high_priority(self, text: str) -> bool:
-        t = text.lower()
-        return any(p in t for p in HIGH_PRIORITY_TYPES)
+        return any(p in text.lower() for p in HIGH_PRIORITY_TYPES)
 
     def _is_construction(self, text: str) -> bool:
-        t = text.lower()
-        return any(k in t for k in CONSTRUCTION_KEYWORDS)
+        return any(k in text.lower() for k in CONSTRUCTION_KEYWORDS)
+
+    def _is_current_year(self, text: str) -> bool:
+        """Returns True if text contains current year, prev year, or no year at all."""
+        years_found = re.findall(r'20\d\d', text)
+        if not years_found:
+            return True  # no year = probably fine
+        return any(y in (CURRENT_YEAR, PREV_YEAR) for y in years_found)
 
     def _should_skip(self, text: str) -> bool:
         t = text.lower().strip()
@@ -230,6 +230,8 @@ class Scan2CoreBot:
                 row_text = row.get_text(separator=' ', strip=True)
                 if 'Bid #' in row_text or 'Organization' in row_text:
                     continue
+                if not self._is_current_year(row_text):
+                    continue
                 desc = cells[2].get_text(strip=True) if len(cells) > 2 else row_text
                 if not self._is_high_priority(row_text) and not self._is_high_priority(desc):
                     continue
@@ -260,25 +262,20 @@ class Scan2CoreBot:
             soup = BeautifulSoup(resp.content, 'html.parser')
             for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
                 tag.decompose()
-            for post in soup.find_all(['h1', 'h2', 'h3', 'h4', 'article']):
+            # Grab post titles — h2 is the standard WordPress post title tag
+            for post in soup.find_all(['h2', 'h3', 'article']):
                 text = post.get_text(separator=' ', strip=True)
-                if self._should_skip(text):
+                if self._should_skip(text) or len(text) > 200:
                     continue
-                if not self._is_construction(text) or not self._is_high_priority(text):
+                if not self._is_current_year(text):
+                    continue
+                if not self._is_construction(text):
                     continue
                 name = text.split('\n')[0].strip()[:120]
                 link = post.find('a', href=True)
                 link_url = link.get('href', '') if link else ''
                 self._add_lead(leads, name, 'Seattle', 'King',
                                'Seattle Buy Line', link_url, text=text)
-            for a in soup.find_all('a', href=True):
-                text = a.get_text(strip=True)
-                if self._should_skip(text):
-                    continue
-                if not self._is_construction(text) or not self._is_high_priority(text):
-                    continue
-                self._add_lead(leads, text, 'Seattle', 'King',
-                               'Seattle Buy Line', a.get('href', ''), text=text)
         except Exception as e:
             logger.warning(f"  Seattle BuyLine error: {e}")
         logger.info(f"  Seattle BuyLine: {len(leads)} leads found")
@@ -296,11 +293,13 @@ class Scan2CoreBot:
             soup = BeautifulSoup(resp.content, 'html.parser')
             for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
                 tag.decompose()
-            for post in soup.find_all(['h1', 'h2', 'h3', 'h4', 'article', 'li']):
+            for post in soup.find_all(['h2', 'h3', 'article']):
                 text = post.get_text(separator=' ', strip=True)
-                if self._should_skip(text):
+                if self._should_skip(text) or len(text) > 200:
                     continue
-                if not self._is_construction(text) or not self._is_high_priority(text):
+                if not self._is_current_year(text):
+                    continue
+                if not self._is_construction(text):
                     continue
                 name = text.split('\n')[0].strip()[:120]
                 link = post.find('a', href=True)
@@ -323,29 +322,35 @@ class Scan2CoreBot:
             for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
                 tag.decompose()
 
-            # Pull text from links, headings, list items, and table cells
-            candidates = []
-            for el in soup.find_all(['a', 'h1', 'h2', 'h3', 'h4', 'li', 'td']):
+            seen_texts = set()
+            for el in soup.find_all(['h2', 'h3', 'h4', 'a', 'li', 'td']):
                 text = el.get_text(separator=' ', strip=True)
-                href = el.get('href', '') if el.name == 'a' else ''
-                if not href and el.name in ['h1','h2','h3','h4','li','td']:
-                    link = el.find('a', href=True)
-                    href = link.get('href', '') if link else url
-                candidates.append((text, href))
+                text = re.sub(r'\s+', ' ', text).strip()
 
-            for text, href in candidates:
+                if text in seen_texts:
+                    continue
+                seen_texts.add(text)
+
                 if self._should_skip(text):
                     continue
-                if len(text) > 300:
+                if len(text) > 250:
                     continue
-                # For city pages we broaden the filter slightly —
-                # any construction keyword is enough, high priority not required
-                # since these are already scoped to bid/procurement pages
+                if not self._is_current_year(text):
+                    continue
                 if not self._is_construction(text):
                     continue
+
+                href = ''
+                if el.name == 'a':
+                    href = el.get('href', '')
+                else:
+                    link = el.find('a', href=True)
+                    href = link.get('href', '') if link else url
+
                 full_url = href if href.startswith('http') else urljoin(url, href)
                 self._add_lead(leads, text, city, county,
                                f'City Bids - {city}', full_url, text=text)
+
         except Exception as e:
             logger.debug(f"  {city} error: {e}")
         return leads
@@ -426,7 +431,7 @@ class Scan2CoreBot:
 
     def run(self):
         logger.info("=" * 60)
-        logger.info("Scan2Core Daily Lead Hunter v7 starting...")
+        logger.info("Scan2Core Daily Lead Hunter v7.1 starting...")
         logger.info(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
         logger.info("=" * 60)
 
