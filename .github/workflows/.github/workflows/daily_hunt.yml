@@ -1,43 +1,9 @@
-name: Scan2Core Daily Lead Hunt
-
-on:
-  schedule:
-    - cron: '0 15 * * *'
-  workflow_dispatch:
-
-jobs:
-  hunt:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.11'
-    
-    - name: Install Python dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    - name: Run daily hunt
+- name: Commit found projects
       env:
-        SCAN2CORE_EMAIL: ${{ secrets.SCAN2CORE_EMAIL }}
-        SCAN2CORE_EMAIL_PASSWORD: ${{ secrets.SCAN2CORE_EMAIL_PASSWORD }}
-        SCAN2CORE_EMAIL_TO: ${{ secrets.SCAN2CORE_EMAIL_TO }}
-        GITHUB_WORKSPACE: ${{ github.workspace }}
-      run: python daily_lead_hunter.py
-    
-    - name: Commit found projects
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         git config user.name "Scan2Core Bot"
         git config user.email "scan2core@automation.local"
         git add found_projects.json || true
         git commit -m "Update found projects - $(date +'%Y-%m-%d')" || true
-        git push || true
-      continue-on-error: true
+        git push https://x-access-token:${GITHUB_TOKEN}@github.com/Scan2Core/scan2core-lead-hunter.git main || true
