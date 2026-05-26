@@ -8,11 +8,10 @@
     "owner": "Bellevue Partners LLC",
     "status": "Active",
     "type": "Mixed-Use",
-    "timeline": "Jan 2024 - Dec 2026",
     "priority": 9,
     "evidence": "Spec 03.3.1: GPR required prior to core drilling",
     "source": "Project Specifications",
-    "found_date": "2026-05-26T19:54:47.626244"
+    "found_date": "2026-05-26T19:57:11.695120"
   },
   "Everett Medical Campus Expansion|Skanska USA": {
     "name": "Everett Medical Campus Expansion",
@@ -23,10 +22,9 @@
     "owner": "Puget Sound Regional Hospital",
     "status": "Recently awarded",
     "type": "Hospital",
-    "timeline": "May 2024 - Sept 2027",
     "priority": 10,
     "evidence": "Spec 05.5.2: GPR and utility locating required",
     "source": "Technical Specifications",
-    "found_date": "2026-05-26T19:54:47.626257"
+    "found_date": "2026-05-26T19:57:11.695128"
   }
 }
