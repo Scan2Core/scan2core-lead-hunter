@@ -2,9 +2,10 @@
 """
 Scan2Core Daily Lead Hunter v7.4
 - Removed broken Bonfire scraper (JS-rendered, DNS fails in Actions)
-- Seattle covered by city pages list via OpenGov portal
+- Seattle covered by city pages list
 - BuyLine/Consultants: skip CLOSED/ARCHIVED/CANCELED, filter by URL year
 - GC pages removed (JS-rendered)
+- found_date preserved on re-runs (never overwritten)
 """
 
 import os
@@ -291,6 +292,7 @@ class Scan2CoreBot:
 
     def save_results(self, all_leads: List[Dict]):
         existing = []
+        existing_by_name = {}
         if os.path.exists(FOUND_FILE):
             try:
                 with open(FOUND_FILE, 'r') as f:
@@ -301,11 +303,24 @@ class Scan2CoreBot:
                     existing = [v for v in data.values() if isinstance(v, dict) and 'name' in v]
             except:
                 existing = []
-        existing_names = {e.get('name', '') for e in existing}
-        new_leads = [l for l in all_leads if l.get('name', '') not in existing_names]
+
+        # Index existing entries by name to preserve original found_date
+        for e in existing:
+            existing_by_name[e.get('name', '')] = e
+
+        # Only add leads that don't already exist — never overwrite found_date
+        new_leads = []
+        for lead in all_leads:
+            name = lead.get('name', '')
+            if name in existing_by_name:
+                continue
+            new_leads.append(lead)
+
         combined = new_leads + existing
+
         with open(FOUND_FILE, 'w') as f:
             json.dump(combined, f, indent=2)
+
         logger.info(f"Saved {len(new_leads)} new leads ({len(combined)} total in file)")
         return new_leads
 
