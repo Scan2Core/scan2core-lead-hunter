@@ -30,6 +30,7 @@ jobs:
       - name: Run daily hunt
         env:
           GITHUB_WORKSPACE: ${{ github.workspace }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python daily_lead_hunter.py
 
       - name: Commit found projects
