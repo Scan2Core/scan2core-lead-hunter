@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Scan2Core Daily Lead Hunter v8.0
-- All previous scraping intact
-- NEW: Deep scrape each lead URL for contact info, close date, description
-- NEW: AI enrichment via Claude API + web search for leads where scrape fails
+Scan2Core Daily Lead Hunter v8.1
+- Scrapes 37 WA city/county bid pages daily
+- AI enrichment on NEW leads immediately
+- Also enriches 40 existing unenriched leads per run (backfill)
 - found_date preserved on re-runs
 """
 
@@ -14,7 +14,7 @@ import logging
 import re
 import time
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import List, Dict
 from urllib.parse import urljoin
 
 try:
@@ -33,19 +33,16 @@ ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
 HIGH_PRIORITY_TYPES = [
     'hospital', 'medical', 'clinic', 'healthcare', 'surgery', 'health',
     'apartment', 'residential', 'multifamily', 'multi-family', 'housing', 'mixed-use',
-    'parking', 'garage',
-    'data center', 'server room',
+    'parking', 'garage', 'data center', 'server room',
     'bridge', 'infrastructure', 'highway', 'road', 'transit', 'light rail', 'station',
-    'stadium', 'arena', 'convention',
-    'high-rise', 'highrise', 'tower', 'high rise',
+    'stadium', 'arena', 'convention', 'high-rise', 'highrise', 'tower', 'high rise',
     'retrofit', 'seismic', 'renovation', 'remodel', 'modernization',
     'school', 'university', 'college', 'campus', 'educational',
     'office', 'commercial', 'tenant improvement',
     'industrial', 'warehouse', 'manufacturing', 'plant',
     'utility', 'water', 'sewer', 'wastewater', 'treatment plant',
     'port', 'marine', 'dock', 'terminal',
-    'concrete', 'structural', 'foundation',
-    'facility', 'building', 'construction',
+    'concrete', 'structural', 'foundation', 'facility', 'building', 'construction',
 ]
 
 CONSTRUCTION_KEYWORDS = [
@@ -122,29 +119,22 @@ WA_CITY_BID_PAGES = [
     ('Sound Transit', 'Multi', 'https://www.soundtransit.org/doing-business-sound-transit/selling-sound-transit/solicitations'),
 ]
 
+# How many existing leads to enrich per run (controls API cost)
+BACKFILL_PER_RUN = 40
+
 
 class ContactInfo:
     def __init__(self):
-        self.name = ''
-        self.title = ''
-        self.email = ''
-        self.phone = ''
-        self.department = ''
-        self.close_date = ''
-        self.bid_number = ''
-        self.description = ''
-        self.direct_url = ''
+        self.name = ''; self.title = ''; self.email = ''; self.phone = ''
+        self.department = ''; self.close_date = ''; self.bid_number = ''
+        self.description = ''; self.direct_url = ''
 
     def to_dict(self):
         return {k: v for k, v in {
-            'contact_name': self.name,
-            'contact_title': self.title,
-            'contact_email': self.email,
-            'contact_phone': self.phone,
-            'contact_department': self.department,
-            'close_date': self.close_date,
-            'bid_number': self.bid_number,
-            'description': self.description,
+            'contact_name': self.name, 'contact_title': self.title,
+            'contact_email': self.email, 'contact_phone': self.phone,
+            'contact_department': self.department, 'close_date': self.close_date,
+            'bid_number': self.bid_number, 'description': self.description,
             'direct_url': self.direct_url,
         }.items() if v}
 
@@ -162,7 +152,7 @@ class Scan2CoreBot:
             'Accept-Language': 'en-US,en;q=0.9',
         })
         self.ai_calls = 0
-        self.ai_call_limit = 40  # cap per run to control costs
+        self.ai_call_limit = 50
 
     def _load_found(self) -> Dict:
         if os.path.exists(FOUND_FILE):
@@ -176,9 +166,6 @@ class Scan2CoreBot:
             except:
                 return {}
         return {}
-
-    def _is_high_priority(self, text: str) -> bool:
-        return any(p in text.lower() for p in HIGH_PRIORITY_TYPES)
 
     def _is_construction(self, text: str) -> bool:
         return any(k in text.lower() for k in CONSTRUCTION_KEYWORDS)
@@ -194,17 +181,12 @@ class Scan2CoreBot:
 
     def _should_skip(self, text: str) -> bool:
         t = text.lower().strip()
-        if t in SKIP_EXACT:
-            return True
-        if len(t) < 15:
-            return True
-        if any(n in t for n in NOISE_PHRASES):
-            return True
-        if 'http' in t or 'www.' in t:
-            return True
+        if t in SKIP_EXACT: return True
+        if len(t) < 15: return True
+        if any(n in t for n in NOISE_PHRASES): return True
+        if 'http' in t or 'www.' in t: return True
         non_ascii = sum(1 for c in text if ord(c) > 127)
-        if non_ascii > len(text) * 0.15:
-            return True
+        if non_ascii > len(text) * 0.15: return True
         return False
 
     def _score(self, text: str) -> int:
@@ -216,115 +198,72 @@ class Scan2CoreBot:
         if any(x in t for x in ['office', 'commercial', 'warehouse', 'industrial']): return 7
         return 6
 
-    # ── DEEP SCRAPE ───────────────────────────────────────────
     def _scrape_contact_from_page(self, url: str) -> ContactInfo:
         info = ContactInfo()
-        if not url or len(url) < 10:
-            return info
+        if not url or len(url) < 10: return info
         try:
             resp = self.session.get(url, timeout=15)
-            if resp.status_code != 200 or not BeautifulSoup:
-                return info
+            if resp.status_code != 200 or not BeautifulSoup: return info
             soup = BeautifulSoup(resp.content, 'html.parser')
             text = soup.get_text(separator=' ', strip=True)
 
-            # Email
             emails = re.findall(r'[\w\.-]+@[\w\.-]+\.\w{2,4}', text)
             emails = [e for e in emails if not any(x in e.lower() for x in ['example', 'test', 'noreply', 'no-reply'])]
-            if emails:
-                info.email = emails[0]
+            if emails: info.email = emails[0]
 
-            # Phone
             phones = re.findall(r'(?:\(?\d{3}\)?[\s.\-]?\d{3}[\s.\-]?\d{4})', text)
-            if phones:
-                info.phone = phones[0]
+            if phones: info.phone = phones[0]
 
-            # Close/due date
-            close_patterns = [
-                r'(?:due|close[sd]?|deadline|submit(?:tal)?s?\s+due|bid\s+opening|proposals?\s+due)[:\s]+([A-Z][a-z]+\.?\s+\d{1,2},?\s+\d{4})',
+            for pat in [
+                r'(?:due|close[sd]?|deadline|submit(?:tal)?s?\s+due|bid\s+opening)[:\s]+([A-Z][a-z]+\.?\s+\d{1,2},?\s+\d{4})',
                 r'(?:due|close[sd]?|deadline)[:\s]+(\d{1,2}/\d{1,2}/\d{2,4})',
                 r'(?:due|close[sd]?|deadline)[:\s]+(\w+\s+\d{1,2},?\s+\d{4})',
-            ]
-            for pat in close_patterns:
+            ]:
                 m = re.search(pat, text, re.IGNORECASE)
-                if m:
-                    info.close_date = m.group(1).strip()
-                    break
+                if m: info.close_date = m.group(1).strip(); break
 
-            # Bid number
-            bid_patterns = [
+            for pat in [
                 r'(?:bid|rfp|rfq|itb|ifb|project|contract)\s*(?:no\.?|number|#)[:\s]*([A-Z0-9][\w\-]{2,20})',
                 r'\b(20\d\d-\d{3,4})\b',
                 r'\b([A-Z]{2,4}\d{4,6})\b',
-            ]
-            for pat in bid_patterns:
+            ]:
                 m = re.search(pat, text, re.IGNORECASE)
-                if m:
-                    info.bid_number = m.group(1).strip()
-                    break
+                if m: info.bid_number = m.group(1).strip(); break
 
-            # Contact name + title
-            contact_patterns = [
+            for pat in [
                 r'(?:contact|questions?|inquiries?)[:\s]+([A-Z][a-z]+ [A-Z][a-z]+)',
                 r'([A-Z][a-z]+ [A-Z][a-z]+)[,\s]+(?:Project Manager|Procurement|Purchasing|Contract|Director|Officer|Coordinator)',
-            ]
-            for pat in contact_patterns:
+            ]:
                 m = re.search(pat, text)
-                if m:
-                    info.name = m.group(1).strip()
-                    break
+                if m: info.name = m.group(1).strip(); break
 
-            # Description — first substantial paragraph
             for tag in soup.find_all(['p', 'div'], limit=30):
                 t = tag.get_text(strip=True)
                 if len(t) > 80 and self._is_construction(t) and not self._should_skip(t):
-                    info.description = t[:400]
-                    break
+                    info.description = t[:400]; break
 
             info.direct_url = url
-
         except Exception as e:
-            logger.debug(f"  Scrape contact error for {url}: {e}")
-
+            logger.debug(f"  Scrape error {url}: {e}")
         return info
 
-    # ── AI ENRICHMENT ─────────────────────────────────────────
     def _ai_enrich(self, lead_name: str, city: str, county: str, source: str, url: str) -> ContactInfo:
         info = ContactInfo()
         if not ANTHROPIC_API_KEY or self.ai_calls >= self.ai_call_limit:
             return info
 
         self.ai_calls += 1
-        logger.info(f"  AI enriching: {lead_name[:60]}")
+        logger.info(f"  AI enriching ({self.ai_calls}/{self.ai_call_limit}): {lead_name[:55]}")
 
-        prompt = f"""You are helping a concrete scanning and core drilling company (Scan2Core, based in Washington State) find contact information for a construction bid opportunity.
+        prompt = f"""Find contact info for this WA State construction bid. Scan2Core (GPR scanning + core drilling company) needs to reach the procurement officer or project manager.
 
 Project: {lead_name}
-Agency/City: {city}, {county} County
+Agency: {city}, {county} County
 Source: {source}
 URL: {url}
 
-Search the web and find:
-1. The procurement contact or project manager for this specific bid (name, title, email, phone)
-2. The bid/project close date or deadline
-3. The bid number or project number
-4. A 1-2 sentence description of the project scope
-5. The direct URL to this specific bid (not just the portal homepage)
-
-Return ONLY a JSON object with these exact keys (use empty string if not found):
-{{
-  "contact_name": "",
-  "contact_title": "",
-  "contact_email": "",
-  "contact_phone": "",
-  "contact_department": "",
-  "close_date": "",
-  "bid_number": "",
-  "description": "",
-  "direct_url": ""
-}}
-
-Return only the JSON, no other text."""
+Search the web. Return ONLY this JSON (empty string if not found):
+{{"contact_name":"","contact_title":"","contact_email":"","contact_phone":"","contact_department":"","close_date":"","bid_number":"","description":"","direct_url":""}}"""
 
         try:
             resp = requests.post(
@@ -336,7 +275,7 @@ Return only the JSON, no other text."""
                 },
                 json={
                     'model': 'claude-haiku-4-5-20251001',
-                    'max_tokens': 600,
+                    'max_tokens': 500,
                     'tools': [{'type': 'web_search_20250305', 'name': 'web_search'}],
                     'messages': [{'role': 'user', 'content': prompt}]
                 },
@@ -344,17 +283,12 @@ Return only the JSON, no other text."""
             )
 
             if resp.status_code != 200:
-                logger.warning(f"  AI API error: {resp.status_code}")
+                logger.warning(f"  AI API error: {resp.status_code} — {resp.text[:200]}")
                 return info
 
             data = resp.json()
-            # Extract text from response
-            result_text = ''
-            for block in data.get('content', []):
-                if block.get('type') == 'text':
-                    result_text += block.get('text', '')
+            result_text = ''.join(b.get('text', '') for b in data.get('content', []) if b.get('type') == 'text')
 
-            # Parse JSON from response
             json_match = re.search(r'\{[^{}]+\}', result_text, re.DOTALL)
             if json_match:
                 parsed = json.loads(json_match.group())
@@ -371,58 +305,49 @@ Return only the JSON, no other text."""
         except Exception as e:
             logger.warning(f"  AI enrich error: {e}")
 
-        time.sleep(0.5)  # rate limit buffer
+        time.sleep(0.4)
         return info
 
-    # ── ENRICH A LEAD ─────────────────────────────────────────
     def _enrich_lead(self, lead: Dict) -> Dict:
-        url = lead.get('url', '')
-        name = lead.get('name', '')
-        city = lead.get('city', '')
-        county = lead.get('county', '')
-        source = lead.get('source', '')
-
-        # Skip if already enriched
-        if lead.get('contact_email') or lead.get('contact_name') or lead.get('enriched'):
+        """Try scrape first, then AI. Skip if already has useful data."""
+        # Already has contact info — skip
+        if lead.get('contact_email') or lead.get('contact_name') or lead.get('contact_phone'):
+            return lead
+        # Marked as 'none' previously and it's been tried — skip
+        if lead.get('enriched') in ('scraped', 'ai'):
             return lead
 
-        # Step 1: try scraping the page directly
+        url = lead.get('url', '')
         scraped = self._scrape_contact_from_page(url)
 
         if scraped.has_useful_info():
-            logger.info(f"  Scraped contact for: {name[:50]}")
             lead.update(scraped.to_dict())
             lead['enriched'] = 'scraped'
+            logger.info(f"  ✓ Scraped: {lead.get('name','')[:50]}")
         else:
-            # Step 2: AI enrichment
-            ai_info = self._ai_enrich(name, city, county, source, url)
+            ai_info = self._ai_enrich(
+                lead.get('name', ''), lead.get('city', ''),
+                lead.get('county', ''), lead.get('source', ''), url
+            )
             if ai_info.has_useful_info():
-                logger.info(f"  AI found contact for: {name[:50]}")
                 lead.update(ai_info.to_dict())
                 lead['enriched'] = 'ai'
+                logger.info(f"  ✓ AI found: {lead.get('name','')[:50]}")
             else:
                 lead['enriched'] = 'none'
 
         return lead
 
-    # ── ADD LEAD ──────────────────────────────────────────────
     def _add_lead(self, leads: List, name: str, city: str, county: str,
                   source: str, url: str = '', gc: str = '', notes: str = '', text: str = ''):
         name = name.strip()[:150]
-        if len(name) < 15:
-            return
+        if len(name) < 15: return
         lead_id = f"{name}|{source}"
-        if lead_id in self.found:
-            return
+        if lead_id in self.found: return
         lead = {
-            'name': name,
-            'city': city,
-            'county': county,
-            'status': 'Posted',
-            'type': 'GC Project' if gc else 'Public Bid',
-            'gc': gc,
-            'source': source,
-            'url': url,
+            'name': name, 'city': city, 'county': county,
+            'status': 'Posted', 'type': 'GC Project' if gc else 'Public Bid',
+            'gc': gc, 'source': source, 'url': url,
             'notes': notes or 'Review specs to confirm scanning + core drilling needed',
             'priority': self._score(text or name),
             'found_date': datetime.now().isoformat(),
@@ -432,29 +357,21 @@ Return only the JSON, no other text."""
         self.found[lead_id] = lead
         logger.info(f"  FOUND [{source}]: {name[:70]}")
 
-    # ── SCRAPERS ──────────────────────────────────────────────
     def scrape_wordpress_bids(self, source_name: str, url: str, city: str, county: str) -> List[Dict]:
         leads = []
         try:
             resp = self.session.get(url, timeout=20)
-            logger.info(f"  {source_name}: HTTP {resp.status_code} ({len(resp.content)} bytes)")
-            if resp.status_code != 200 or not BeautifulSoup:
-                return leads
+            logger.info(f"  {source_name}: HTTP {resp.status_code}")
+            if resp.status_code != 200 or not BeautifulSoup: return leads
             soup = BeautifulSoup(resp.content, 'html.parser')
-            for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
-                tag.decompose()
+            for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']): tag.decompose()
             for a in soup.find_all('a', href=True):
-                href = a.get('href', '')
-                text = a.get_text(strip=True)
-                if not text or len(text) < 20 or len(text) > 250:
-                    continue
-                if self._should_skip(text) or self._is_closed(text):
-                    continue
+                href = a.get('href', ''); text = a.get_text(strip=True)
+                if not text or len(text) < 20 or len(text) > 250: continue
+                if self._should_skip(text) or self._is_closed(text): continue
                 url_years = re.findall(r'/(\d{4})/', href)
-                if url_years and CURRENT_YEAR not in url_years:
-                    continue
-                if not self._is_construction(text):
-                    continue
+                if url_years and CURRENT_YEAR not in url_years: continue
+                if not self._is_construction(text): continue
                 self._add_lead(leads, text, city, county, source_name, href, text=text)
         except Exception as e:
             logger.warning(f"  {source_name} error: {e}")
@@ -465,34 +382,24 @@ Return only the JSON, no other text."""
         leads = []
         try:
             resp = self.session.get(url, timeout=20)
-            if resp.status_code != 200 or not BeautifulSoup:
-                logger.debug(f"  {city}: HTTP {resp.status_code}")
-                return leads
+            if resp.status_code != 200 or not BeautifulSoup: return leads
             soup = BeautifulSoup(resp.content, 'html.parser')
-            for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']):
-                tag.decompose()
+            for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']): tag.decompose()
             seen_texts = set()
             for el in soup.find_all(['h2', 'h3', 'h4', 'a', 'li', 'td']):
-                text = el.get_text(separator=' ', strip=True)
-                text = re.sub(r'\s+', ' ', text).strip()
-                if text in seen_texts:
-                    continue
+                text = re.sub(r'\s+', ' ', el.get_text(separator=' ', strip=True)).strip()
+                if text in seen_texts: continue
                 seen_texts.add(text)
-                if self._should_skip(text) or self._is_closed(text):
-                    continue
-                if len(text) > 250:
-                    continue
-                if not self._is_current_year(text):
-                    continue
-                if not self._is_construction(text):
-                    continue
+                if self._should_skip(text) or self._is_closed(text): continue
+                if len(text) > 250: continue
+                if not self._is_current_year(text): continue
+                if not self._is_construction(text): continue
                 href = el.get('href', '') if el.name == 'a' else ''
                 if not href:
                     link = el.find('a', href=True)
                     href = link.get('href', '') if link else url
                 full_url = href if href.startswith('http') else urljoin(url, href)
-                self._add_lead(leads, text, city, county,
-                               f'City Bids - {city}', full_url, text=text)
+                self._add_lead(leads, text, city, county, f'City Bids - {city}', full_url, text=text)
         except Exception as e:
             logger.debug(f"  {city} error: {e}")
         return leads
@@ -502,102 +409,97 @@ Return only the JSON, no other text."""
         logger.info(f"Scraping {len(WA_CITY_BID_PAGES)} WA city/county bid pages...")
         for city, county, url in WA_CITY_BID_PAGES:
             city_leads = self.scrape_city_bid_page(city, county, url)
-            if city_leads:
-                logger.info(f"  {city}: {len(city_leads)} leads")
+            if city_leads: logger.info(f"  {city}: {len(city_leads)} leads")
             leads.extend(city_leads)
         logger.info(f"  City pages total: {len(leads)} leads found")
         return leads
 
-    # ── SAVE ──────────────────────────────────────────────────
-    def save_results(self, all_leads: List[Dict]):
-        existing = []
-        existing_by_name = {}
+    def load_all_leads(self) -> List[Dict]:
         if os.path.exists(FOUND_FILE):
             try:
                 with open(FOUND_FILE, 'r') as f:
                     data = json.load(f)
-                if isinstance(data, list):
-                    existing = data
-                elif isinstance(data, dict):
-                    existing = [v for v in data.values() if isinstance(v, dict) and 'name' in v]
+                return data if isinstance(data, list) else []
             except:
-                existing = []
+                return []
+        return []
 
-        for e in existing:
-            existing_by_name[e.get('name', '')] = e
-
-        new_leads = []
-        for lead in all_leads:
-            if lead.get('name', '') not in existing_by_name:
-                new_leads.append(lead)
-
-        combined = new_leads + existing
+    def save_all_leads(self, leads: List[Dict]):
         with open(FOUND_FILE, 'w') as f:
-            json.dump(combined, f, indent=2)
+            json.dump(leads, f, indent=2)
 
-        logger.info(f"Saved {len(new_leads)} new leads ({len(combined)} total in file)")
-        return new_leads
-
-    # ── RUN ───────────────────────────────────────────────────
     def run(self):
         logger.info("=" * 60)
-        logger.info("Scan2Core Daily Lead Hunter v8.0 starting...")
+        logger.info("Scan2Core Daily Lead Hunter v8.1 starting...")
         logger.info(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-        logger.info(f"AI enrichment: {'enabled' if ANTHROPIC_API_KEY else 'disabled (no API key)'}")
+        logger.info(f"AI enrichment: {'ENABLED' if ANTHROPIC_API_KEY else 'DISABLED (no API key)'}")
         logger.info("=" * 60)
 
-        # Step 1: scrape all sources
-        all_leads = []
-        all_leads.extend(self.scrape_wordpress_bids(
-            'Seattle Buy Line',
-            'https://thebuyline.seattle.gov/category/bids-and-proposals/',
-            'Seattle', 'King'))
-        all_leads.extend(self.scrape_wordpress_bids(
-            'Seattle Consultant Connection',
-            'https://consultants.seattle.gov/category/bids-proposals/',
-            'Seattle', 'King'))
-        all_leads.extend(self.scrape_all_city_pages())
+        # ── STEP 1: Scrape for new leads ──────────────────────
+        all_scraped = []
+        all_scraped.extend(self.scrape_wordpress_bids(
+            'Seattle Buy Line', 'https://thebuyline.seattle.gov/category/bids-and-proposals/', 'Seattle', 'King'))
+        all_scraped.extend(self.scrape_wordpress_bids(
+            'Seattle Consultant Connection', 'https://consultants.seattle.gov/category/bids-proposals/', 'Seattle', 'King'))
+        all_scraped.extend(self.scrape_all_city_pages())
 
-        # Step 2: enrich only new leads
-        new_leads = self.save_results(all_leads)
+        # ── STEP 2: Load existing, find what's new ────────────
+        existing = self.load_all_leads()
+        existing_names = {l.get('name', '') for l in existing}
+        new_leads = [l for l in all_scraped if l.get('name', '') not in existing_names]
+        logger.info(f"New leads found today: {len(new_leads)}")
 
-        if new_leads:
+        # ── STEP 3: Enrich new leads immediately ──────────────
+        if new_leads and ANTHROPIC_API_KEY:
             logger.info(f"Enriching {len(new_leads)} new leads...")
-            enriched_leads = []
-            for lead in new_leads:
-                enriched = self._enrich_lead(lead)
-                enriched_leads.append(enriched)
+            new_leads = [self._enrich_lead(l) for l in new_leads]
 
-            # Re-save with enrichment data
-            existing = []
-            if os.path.exists(FOUND_FILE):
-                try:
-                    with open(FOUND_FILE, 'r') as f:
-                        existing = json.load(f)
-                    if not isinstance(existing, list):
-                        existing = []
-                except:
-                    existing = []
+        # ── STEP 4: Backfill existing unenriched leads ────────
+        # Pick up leads that have never been enriched (enriched=None or enriched='none')
+        # sorted by priority so highest-value leads get contact info first
+        if ANTHROPIC_API_KEY and self.ai_calls < self.ai_call_limit:
+            unenriched = [
+                l for l in existing
+                if not l.get('contact_email')
+                and not l.get('contact_name')
+                and not l.get('contact_phone')
+                and l.get('enriched') not in ('scraped', 'ai')
+            ]
+            # Sort by priority desc so we do best leads first
+            unenriched.sort(key=lambda x: x.get('priority', 0), reverse=True)
+            backfill_batch = unenriched[:BACKFILL_PER_RUN]
 
-            # Replace the new leads at the front with enriched versions
-            enriched_names = {l.get('name', '') for l in enriched_leads}
-            old_leads = [l for l in existing if l.get('name', '') not in enriched_names]
-            combined = enriched_leads + old_leads
+            if backfill_batch:
+                logger.info(f"Backfill: enriching {len(backfill_batch)} existing leads (priority 9+ first)...")
+                backfill_names = {l.get('name', '') for l in backfill_batch}
+                for lead in backfill_batch:
+                    self._enrich_lead(lead)
+                    if self.ai_calls >= self.ai_call_limit:
+                        break
+                logger.info(f"Backfill complete. {len([l for l in backfill_batch if l.get('contact_email') or l.get('contact_name')])} contacts found.")
+            else:
+                logger.info("Backfill: all existing leads already processed.")
 
-            with open(FOUND_FILE, 'w') as f:
-                json.dump(combined, f, indent=2)
+        # ── STEP 5: Save everything ───────────────────────────
+        # New leads go to front, existing (now potentially updated) behind
+        combined = new_leads + existing
+        self.save_all_leads(combined)
 
-            logger.info(f"AI calls used: {self.ai_calls}/{self.ai_call_limit}")
+        total_with_contacts = sum(1 for l in combined if l.get('contact_email') or l.get('contact_name') or l.get('contact_phone'))
+        remaining_unenriched = sum(1 for l in combined if not l.get('contact_email') and not l.get('contact_name') and l.get('enriched') not in ('scraped', 'ai'))
 
         logger.info("=" * 60)
-        logger.info(f"DONE. New leads today: {len(new_leads)}")
+        logger.info(f"DONE.")
+        logger.info(f"  New leads today: {len(new_leads)}")
+        logger.info(f"  Total leads: {len(combined)}")
+        logger.info(f"  With contacts: {total_with_contacts}")
+        logger.info(f"  Still unenriched: {remaining_unenriched} (clears in ~{remaining_unenriched // BACKFILL_PER_RUN + 1} more runs)")
+        logger.info(f"  AI calls used: {self.ai_calls}/{self.ai_call_limit}")
         if new_leads:
             logger.info("NEW LEADS:")
             for l in sorted(new_leads, key=lambda x: x.get('priority', 0), reverse=True):
-                contact = l.get('contact_email') or l.get('contact_name') or 'no contact yet'
+                contact = l.get('contact_email') or l.get('contact_name') or 'pending enrichment'
                 logger.info(f"  [{l['priority']}] {l['name'][:55]} | {contact}")
-        else:
-            logger.info("No new leads found today.")
         logger.info("=" * 60)
 
 
