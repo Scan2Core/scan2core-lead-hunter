@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-Scan2Core Daily Lead Hunter v8.4
+Scan2Core Daily Lead Hunter v8.5
 - Scrapes 37 WA city/county bid pages daily
 - AI enrichment on NEW leads immediately
-- Backfill: 15 leads per run at 5s spacing (prevents rate limits)
-- On 429: skip lead rather than waiting — retried tomorrow
+- Backfill: 15 leads per run, no web_search tool (prevents rate limits)
+- Claude uses training knowledge of WA agencies for contact info
 """
 
 import os
@@ -119,9 +119,8 @@ WA_CITY_BID_PAGES = [
     ('Sound Transit', 'Multi', 'https://www.soundtransit.org/doing-business-sound-transit/selling-sound-transit/solicitations'),
 ]
 
-# Small batch + 5s sleep = ~2 minutes max, no rate limit issues
 BACKFILL_PER_RUN = 15
-AI_SLEEP_SECONDS = 5
+AI_SLEEP_SECONDS = 2
 
 
 class ContactInfo:
@@ -140,9 +139,11 @@ class ContactInfo:
         }.items() if v}
 
     def has_contact_info(self):
+        """True only if we found actual contact fields — description alone does not count."""
         return any([self.email, self.phone, self.name])
 
     def has_any_info(self):
+        """True if we found anything useful at all."""
         return any([self.email, self.phone, self.name, self.close_date, self.description, self.bid_number])
 
 
@@ -156,7 +157,7 @@ class Scan2CoreBot:
             'Accept-Language': 'en-US,en;q=0.9',
         })
         self.ai_calls = 0
-        self.ai_call_limit = 20  # lowered — 20 calls × 5s = ~2.5 min max
+        self.ai_call_limit = 20
 
     def _load_found(self) -> Dict:
         if os.path.exists(FOUND_FILE):
@@ -202,6 +203,7 @@ class Scan2CoreBot:
         if any(x in t for x in ['office', 'commercial', 'warehouse', 'industrial']): return 7
         return 6
 
+    # ── DEEP SCRAPE ───────────────────────────────────────────
     def _scrape_contact_from_page(self, url: str) -> ContactInfo:
         info = ContactInfo()
         if not url or len(url) < 10: return info
@@ -251,6 +253,7 @@ class Scan2CoreBot:
             logger.debug(f"  Scrape error {url}: {e}")
         return info
 
+    # ── AI ENRICHMENT (no web_search — uses training knowledge) ──
     def _ai_enrich(self, lead_name: str, city: str, county: str, source: str, url: str) -> ContactInfo:
         info = ContactInfo()
         if not ANTHROPIC_API_KEY or self.ai_calls >= self.ai_call_limit:
@@ -259,14 +262,18 @@ class Scan2CoreBot:
         self.ai_calls += 1
         logger.info(f"  AI enriching ({self.ai_calls}/{self.ai_call_limit}): {lead_name[:55]}")
 
-        prompt = f"""Find contact info for this WA State construction bid. Scan2Core (GPR scanning + core drilling) needs the procurement officer or project manager.
+        prompt = f"""You are helping Scan2Core (WA State GPR scanning and core drilling company) find contact information for a construction bid opportunity.
 
 Project: {lead_name}
 Agency: {city}, {county} County
 Source: {source}
 URL: {url}
 
-Search the web. Return ONLY this JSON (empty string if not found):
+Using your knowledge of Washington State government agencies, municipalities, school districts, and public institutions — provide the procurement department contact for this agency. For WA city/county agencies, procurement and purchasing contacts are publicly listed. Provide the department email, general purchasing phone number, and the name of the purchasing/procurement manager or director if known.
+
+Also provide a brief description of what this project likely involves based on the name, and the direct URL to this bid if you can infer it from the agency and source.
+
+Return ONLY this JSON (use empty string if genuinely unknown — do not fabricate):
 {{"contact_name":"","contact_title":"","contact_email":"","contact_phone":"","contact_department":"","close_date":"","bid_number":"","description":"","direct_url":""}}"""
 
         try:
@@ -279,17 +286,15 @@ Search the web. Return ONLY this JSON (empty string if not found):
                 },
                 json={
                     'model': 'claude-haiku-4-5-20251001',
-                    'max_tokens': 500,
-                    'tools': [{'type': 'web_search_20250305', 'name': 'web_search'}],
+                    'max_tokens': 400,
                     'messages': [{'role': 'user', 'content': prompt}]
                 },
-                timeout=30
+                timeout=20
             )
 
             if resp.status_code == 429:
-                # Rate limited — skip this lead, will retry tomorrow
                 logger.warning(f"  Rate limited — skipping (will retry tomorrow)")
-                self.ai_calls -= 1  # don't count skipped call against limit
+                self.ai_calls -= 1
                 time.sleep(AI_SLEEP_SECONDS)
                 return info
 
@@ -317,14 +322,18 @@ Search the web. Return ONLY this JSON (empty string if not found):
         except Exception as e:
             logger.warning(f"  AI enrich error: {e}")
 
-        time.sleep(AI_SLEEP_SECONDS)  # 5s between every call
+        time.sleep(AI_SLEEP_SECONDS)
         return info
 
+    # ── ENRICH LEAD ───────────────────────────────────────────
     def _enrich_lead(self, lead: Dict) -> Dict:
+        """Scrape page first. If no contact found, ask AI using training knowledge."""
         if lead.get('contact_email') or lead.get('contact_name') or lead.get('contact_phone'):
             return lead
 
         url = lead.get('url', '')
+
+        # Step 1: direct page scrape
         scraped = self._scrape_contact_from_page(url)
 
         if scraped.has_contact_info():
@@ -332,12 +341,14 @@ Search the web. Return ONLY this JSON (empty string if not found):
             lead['enriched'] = 'scraped'
             logger.info(f"  ✓ Scraped contact: {lead.get('name', '')[:50]}")
         else:
+            # Save partial scrape data (description/dates) even without contact
             if scraped.has_any_info():
                 partial = scraped.to_dict()
                 for field in ('description', 'close_date', 'bid_number', 'direct_url'):
                     if partial.get(field) and not lead.get(field):
                         lead[field] = partial[field]
 
+            # Step 2: AI with training knowledge (no web search = no rate limits)
             ai_info = self._ai_enrich(
                 lead.get('name', ''), lead.get('city', ''),
                 lead.get('county', ''), lead.get('source', ''), url
@@ -349,11 +360,13 @@ Search the web. Return ONLY this JSON (empty string if not found):
             elif ai_info.has_any_info():
                 lead.update(ai_info.to_dict())
                 lead['enriched'] = 'ai_partial'
+                logger.info(f"  ~ AI partial: {lead.get('name', '')[:50]}")
             else:
                 lead['enriched'] = 'none'
 
         return lead
 
+    # ── ADD LEAD ──────────────────────────────────────────────
     def _add_lead(self, leads: List, name: str, city: str, county: str,
                   source: str, url: str = '', gc: str = '', notes: str = '', text: str = ''):
         name = name.strip()[:150]
@@ -373,6 +386,7 @@ Search the web. Return ONLY this JSON (empty string if not found):
         self.found[lead_id] = lead
         logger.info(f"  FOUND [{source}]: {name[:70]}")
 
+    # ── SCRAPERS ──────────────────────────────────────────────
     def scrape_wordpress_bids(self, source_name: str, url: str, city: str, county: str) -> List[Dict]:
         leads = []
         try:
@@ -430,6 +444,7 @@ Search the web. Return ONLY this JSON (empty string if not found):
         logger.info(f"  City pages total: {len(leads)} leads found")
         return leads
 
+    # ── LOAD / SAVE ───────────────────────────────────────────
     def load_all_leads(self) -> List[Dict]:
         if os.path.exists(FOUND_FILE):
             try:
@@ -444,33 +459,38 @@ Search the web. Return ONLY this JSON (empty string if not found):
         with open(FOUND_FILE, 'w') as f:
             json.dump(leads, f, indent=2)
 
+    # ── MAIN RUN ──────────────────────────────────────────────
     def run(self):
         logger.info("=" * 60)
-        logger.info("Scan2Core Daily Lead Hunter v8.4 starting...")
+        logger.info("Scan2Core Daily Lead Hunter v8.5 starting...")
         logger.info(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
         logger.info(f"AI enrichment: {'ENABLED' if ANTHROPIC_API_KEY else 'DISABLED (no API key)'}")
         logger.info("=" * 60)
 
-        # ── STEP 1: Scrape ────────────────────────────────────
+        # ── STEP 1: Scrape all sources ────────────────────────
         all_scraped = []
         all_scraped.extend(self.scrape_wordpress_bids(
-            'Seattle Buy Line', 'https://thebuyline.seattle.gov/category/bids-and-proposals/', 'Seattle', 'King'))
+            'Seattle Buy Line',
+            'https://thebuyline.seattle.gov/category/bids-and-proposals/',
+            'Seattle', 'King'))
         all_scraped.extend(self.scrape_wordpress_bids(
-            'Seattle Consultant Connection', 'https://consultants.seattle.gov/category/bids-proposals/', 'Seattle', 'King'))
+            'Seattle Consultant Connection',
+            'https://consultants.seattle.gov/category/bids-proposals/',
+            'Seattle', 'King'))
         all_scraped.extend(self.scrape_all_city_pages())
 
-        # ── STEP 2: Find new leads ────────────────────────────
+        # ── STEP 2: Identify new leads ────────────────────────
         existing = self.load_all_leads()
         existing_names = {l.get('name', '') for l in existing}
         new_leads = [l for l in all_scraped if l.get('name', '') not in existing_names]
         logger.info(f"New leads found today: {len(new_leads)}")
 
-        # ── STEP 3: Enrich new leads ──────────────────────────
+        # ── STEP 3: Enrich new leads immediately ──────────────
         if new_leads and ANTHROPIC_API_KEY:
             logger.info(f"Enriching {len(new_leads)} new leads...")
             new_leads = [self._enrich_lead(l) for l in new_leads]
 
-        # ── STEP 4: Backfill 15 existing leads ───────────────
+        # ── STEP 4: Backfill unenriched existing leads ────────
         if ANTHROPIC_API_KEY and self.ai_calls < self.ai_call_limit:
             unenriched = [
                 l for l in existing
@@ -479,6 +499,7 @@ Search the web. Return ONLY this JSON (empty string if not found):
                 and not l.get('contact_phone')
                 and l.get('enriched') not in ('ai', 'scraped')
             ]
+            # Priority-sorted so highest-value leads get contacts first
             unenriched.sort(key=lambda x: x.get('priority', 0), reverse=True)
             backfill_batch = unenriched[:BACKFILL_PER_RUN]
 
@@ -494,7 +515,7 @@ Search the web. Return ONLY this JSON (empty string if not found):
             else:
                 logger.info("Backfill: all leads already processed.")
 
-        # ── STEP 5: Save ──────────────────────────────────────
+        # ── STEP 5: Save everything ───────────────────────────
         combined = new_leads + existing
         self.save_all_leads(combined)
 
