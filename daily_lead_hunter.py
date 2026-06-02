@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 """
-Scan2Core Daily Lead Hunter v8.3
+Scan2Core Daily Lead Hunter v8.4
 - Scrapes 37 WA city/county bid pages daily
 - AI enrichment on NEW leads immediately
-- Backfill: enriches 40 existing leads per run (priority 9+ first)
-- FIX: retry with backoff on 429 rate limit errors
-- FIX: 2s base delay between AI calls to stay under token rate limit
+- Backfill: 15 leads per run at 5s spacing (prevents rate limits)
+- On 429: skip lead rather than waiting — retried tomorrow
 """
 
 import os
@@ -120,7 +119,9 @@ WA_CITY_BID_PAGES = [
     ('Sound Transit', 'Multi', 'https://www.soundtransit.org/doing-business-sound-transit/selling-sound-transit/solicitations'),
 ]
 
-BACKFILL_PER_RUN = 40
+# Small batch + 5s sleep = ~2 minutes max, no rate limit issues
+BACKFILL_PER_RUN = 15
+AI_SLEEP_SECONDS = 5
 
 
 class ContactInfo:
@@ -139,11 +140,9 @@ class ContactInfo:
         }.items() if v}
 
     def has_contact_info(self):
-        """True only if we found actual contact fields — description alone doesn't count."""
         return any([self.email, self.phone, self.name])
 
     def has_any_info(self):
-        """True if we found anything at all (including description/dates)."""
         return any([self.email, self.phone, self.name, self.close_date, self.description, self.bid_number])
 
 
@@ -157,7 +156,7 @@ class Scan2CoreBot:
             'Accept-Language': 'en-US,en;q=0.9',
         })
         self.ai_calls = 0
-        self.ai_call_limit = 50
+        self.ai_call_limit = 20  # lowered — 20 calls × 5s = ~2.5 min max
 
     def _load_found(self) -> Dict:
         if os.path.exists(FOUND_FILE):
@@ -260,83 +259,72 @@ class Scan2CoreBot:
         self.ai_calls += 1
         logger.info(f"  AI enriching ({self.ai_calls}/{self.ai_call_limit}): {lead_name[:55]}")
 
-        prompt = f"""Find contact info for this WA State construction bid. Scan2Core (GPR scanning + core drilling company) needs the procurement officer or project manager to reach out.
+        prompt = f"""Find contact info for this WA State construction bid. Scan2Core (GPR scanning + core drilling) needs the procurement officer or project manager.
 
 Project: {lead_name}
 Agency: {city}, {county} County
 Source: {source}
 URL: {url}
 
-Search the web. Find the specific person to contact about this bid — name, title, email, phone number. Also find the close/due date, bid number, and a brief description.
-
-Return ONLY this JSON (empty string if not found):
+Search the web. Return ONLY this JSON (empty string if not found):
 {{"contact_name":"","contact_title":"","contact_email":"","contact_phone":"","contact_department":"","close_date":"","bid_number":"","description":"","direct_url":""}}"""
 
-        for attempt in range(3):  # retry up to 3 times on rate limit
-            try:
-                resp = requests.post(
-                    'https://api.anthropic.com/v1/messages',
-                    headers={
-                        'x-api-key': ANTHROPIC_API_KEY,
-                        'anthropic-version': '2023-06-01',
-                        'content-type': 'application/json',
-                    },
-                    json={
-                        'model': 'claude-haiku-4-5-20251001',
-                        'max_tokens': 500,
-                        'tools': [{'type': 'web_search_20250305', 'name': 'web_search'}],
-                        'messages': [{'role': 'user', 'content': prompt}]
-                    },
-                    timeout=30
-                )
+        try:
+            resp = requests.post(
+                'https://api.anthropic.com/v1/messages',
+                headers={
+                    'x-api-key': ANTHROPIC_API_KEY,
+                    'anthropic-version': '2023-06-01',
+                    'content-type': 'application/json',
+                },
+                json={
+                    'model': 'claude-haiku-4-5-20251001',
+                    'max_tokens': 500,
+                    'tools': [{'type': 'web_search_20250305', 'name': 'web_search'}],
+                    'messages': [{'role': 'user', 'content': prompt}]
+                },
+                timeout=30
+            )
 
-                if resp.status_code == 429:
-                    wait = 15 * (attempt + 1)  # 15s, 30s, 45s
-                    logger.info(f"  Rate limited — waiting {wait}s (attempt {attempt + 1}/3)...")
-                    time.sleep(wait)
-                    continue
+            if resp.status_code == 429:
+                # Rate limited — skip this lead, will retry tomorrow
+                logger.warning(f"  Rate limited — skipping (will retry tomorrow)")
+                self.ai_calls -= 1  # don't count skipped call against limit
+                time.sleep(AI_SLEEP_SECONDS)
+                return info
 
-                if resp.status_code != 200:
-                    logger.warning(f"  AI API error: {resp.status_code}")
-                    break
+            if resp.status_code != 200:
+                logger.warning(f"  AI API error: {resp.status_code}")
+                time.sleep(AI_SLEEP_SECONDS)
+                return info
 
-                data = resp.json()
-                result_text = ''.join(b.get('text', '') for b in data.get('content', []) if b.get('type') == 'text')
+            data = resp.json()
+            result_text = ''.join(b.get('text', '') for b in data.get('content', []) if b.get('type') == 'text')
 
-                json_match = re.search(r'\{[^{}]+\}', result_text, re.DOTALL)
-                if json_match:
-                    parsed = json.loads(json_match.group())
-                    info.name = parsed.get('contact_name', '')
-                    info.title = parsed.get('contact_title', '')
-                    info.email = parsed.get('contact_email', '')
-                    info.phone = parsed.get('contact_phone', '')
-                    info.department = parsed.get('contact_department', '')
-                    info.close_date = parsed.get('close_date', '')
-                    info.bid_number = parsed.get('bid_number', '')
-                    info.description = parsed.get('description', '')
-                    info.direct_url = parsed.get('direct_url', '') or url
-                break  # success — exit retry loop
+            json_match = re.search(r'\{[^{}]+\}', result_text, re.DOTALL)
+            if json_match:
+                parsed = json.loads(json_match.group())
+                info.name = parsed.get('contact_name', '')
+                info.title = parsed.get('contact_title', '')
+                info.email = parsed.get('contact_email', '')
+                info.phone = parsed.get('contact_phone', '')
+                info.department = parsed.get('contact_department', '')
+                info.close_date = parsed.get('close_date', '')
+                info.bid_number = parsed.get('bid_number', '')
+                info.description = parsed.get('description', '')
+                info.direct_url = parsed.get('direct_url', '') or url
 
-            except Exception as e:
-                logger.warning(f"  AI enrich error: {e}")
-                break
+        except Exception as e:
+            logger.warning(f"  AI enrich error: {e}")
 
-        time.sleep(2)  # 2s between calls to stay under token rate limit
+        time.sleep(AI_SLEEP_SECONDS)  # 5s between every call
         return info
 
     def _enrich_lead(self, lead: Dict) -> Dict:
-        """
-        Scrape the bid page for contact info first.
-        If scrape doesn't find email/phone/name, call AI.
-        Only skip if we already have actual contact info stored.
-        """
-        # Skip only if we already have real contact data
         if lead.get('contact_email') or lead.get('contact_name') or lead.get('contact_phone'):
             return lead
 
         url = lead.get('url', '')
-
-        # Step 1: direct page scrape
         scraped = self._scrape_contact_from_page(url)
 
         if scraped.has_contact_info():
@@ -344,14 +332,12 @@ Return ONLY this JSON (empty string if not found):
             lead['enriched'] = 'scraped'
             logger.info(f"  ✓ Scraped contact: {lead.get('name', '')[:50]}")
         else:
-            # Save any partial info from scrape (description/dates) even without contact
             if scraped.has_any_info():
                 partial = scraped.to_dict()
                 for field in ('description', 'close_date', 'bid_number', 'direct_url'):
                     if partial.get(field) and not lead.get(field):
                         lead[field] = partial[field]
 
-            # Step 2: AI enrichment
             ai_info = self._ai_enrich(
                 lead.get('name', ''), lead.get('city', ''),
                 lead.get('county', ''), lead.get('source', ''), url
@@ -363,7 +349,6 @@ Return ONLY this JSON (empty string if not found):
             elif ai_info.has_any_info():
                 lead.update(ai_info.to_dict())
                 lead['enriched'] = 'ai_partial'
-                logger.info(f"  ~ AI partial (no contact): {lead.get('name', '')[:50]}")
             else:
                 lead['enriched'] = 'none'
 
@@ -461,12 +446,12 @@ Return ONLY this JSON (empty string if not found):
 
     def run(self):
         logger.info("=" * 60)
-        logger.info("Scan2Core Daily Lead Hunter v8.3 starting...")
+        logger.info("Scan2Core Daily Lead Hunter v8.4 starting...")
         logger.info(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
         logger.info(f"AI enrichment: {'ENABLED' if ANTHROPIC_API_KEY else 'DISABLED (no API key)'}")
         logger.info("=" * 60)
 
-        # ── STEP 1: Scrape for new leads ──────────────────────
+        # ── STEP 1: Scrape ────────────────────────────────────
         all_scraped = []
         all_scraped.extend(self.scrape_wordpress_bids(
             'Seattle Buy Line', 'https://thebuyline.seattle.gov/category/bids-and-proposals/', 'Seattle', 'King'))
@@ -474,18 +459,18 @@ Return ONLY this JSON (empty string if not found):
             'Seattle Consultant Connection', 'https://consultants.seattle.gov/category/bids-proposals/', 'Seattle', 'King'))
         all_scraped.extend(self.scrape_all_city_pages())
 
-        # ── STEP 2: Load existing, identify new ───────────────
+        # ── STEP 2: Find new leads ────────────────────────────
         existing = self.load_all_leads()
         existing_names = {l.get('name', '') for l in existing}
         new_leads = [l for l in all_scraped if l.get('name', '') not in existing_names]
         logger.info(f"New leads found today: {len(new_leads)}")
 
-        # ── STEP 3: Enrich new leads immediately ──────────────
+        # ── STEP 3: Enrich new leads ──────────────────────────
         if new_leads and ANTHROPIC_API_KEY:
             logger.info(f"Enriching {len(new_leads)} new leads...")
             new_leads = [self._enrich_lead(l) for l in new_leads]
 
-        # ── STEP 4: Backfill existing unenriched leads ────────
+        # ── STEP 4: Backfill 15 existing leads ───────────────
         if ANTHROPIC_API_KEY and self.ai_calls < self.ai_call_limit:
             unenriched = [
                 l for l in existing
@@ -498,24 +483,23 @@ Return ONLY this JSON (empty string if not found):
             backfill_batch = unenriched[:BACKFILL_PER_RUN]
 
             if backfill_batch:
-                logger.info(f"Backfill: enriching {len(backfill_batch)} existing leads (priority 9+ first)...")
+                logger.info(f"Backfill: {len(backfill_batch)} leads @ {AI_SLEEP_SECONDS}s spacing...")
                 for lead in backfill_batch:
                     self._enrich_lead(lead)
                     if self.ai_calls >= self.ai_call_limit:
-                        logger.info(f"  AI call limit reached ({self.ai_call_limit}), stopping backfill.")
                         break
                 contacts_found = sum(1 for l in backfill_batch
                                      if l.get('contact_email') or l.get('contact_name') or l.get('contact_phone'))
                 logger.info(f"Backfill complete. {contacts_found}/{len(backfill_batch)} contacts found.")
             else:
-                logger.info("Backfill: all existing leads already processed.")
+                logger.info("Backfill: all leads already processed.")
 
-        # ── STEP 5: Save everything ───────────────────────────
+        # ── STEP 5: Save ──────────────────────────────────────
         combined = new_leads + existing
         self.save_all_leads(combined)
 
-        total_with_contacts = sum(1 for l in combined
-                                  if l.get('contact_email') or l.get('contact_name') or l.get('contact_phone'))
+        total_contacts = sum(1 for l in combined
+                             if l.get('contact_email') or l.get('contact_name') or l.get('contact_phone'))
         remaining = sum(1 for l in combined
                         if not l.get('contact_email') and not l.get('contact_name')
                         and not l.get('contact_phone')
@@ -525,8 +509,8 @@ Return ONLY this JSON (empty string if not found):
         logger.info(f"DONE.")
         logger.info(f"  New leads today:   {len(new_leads)}")
         logger.info(f"  Total leads:       {len(combined)}")
-        logger.info(f"  With contacts:     {total_with_contacts}")
-        logger.info(f"  Still unenriched:  {remaining} (~{remaining // BACKFILL_PER_RUN + 1} more runs to clear)")
+        logger.info(f"  With contacts:     {total_contacts}")
+        logger.info(f"  Still unenriched:  {remaining} (~{remaining // BACKFILL_PER_RUN + 1} more runs)")
         logger.info(f"  AI calls used:     {self.ai_calls}/{self.ai_call_limit}")
         if new_leads:
             logger.info("NEW LEADS:")
