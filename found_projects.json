@@ -13071,7 +13071,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.675372",
-    "description": "Construction project involving an ambulatory surgery center (outpatient surgical facility) and associated parking structure in Seattle, King County area. GPR scanning and core drilling services would be needed for utility locating and structural assessment during construction.",
+    "description": "Construction project for a new ambulatory surgery center (outpatient surgical facility) with associated parking structure in Seattle, King County area",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -13309,7 +13309,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.677105",
-    "description": "OR (Operating Room) Suite buildout/renovation at Capital Medical Center in Seattle, WA. Likely involves construction services for medical facility infrastructure, potentially including GPR scanning and core drilling for utility routing, structural assessment, or MEP (mechanical, electrical, plumbing) installation.",
+    "description": "Operating room suite build-out or renovation at Capital Medical Center, likely involving MEP systems, specialized medical gas lines, surgical lighting, HVAC controls, and core drilling/GPR scanning for utility locating and structural assessment",
     "direct_url": "https://www.bnbuilders.com/projects/capital-medical-center-or-suite",
     "enriched": "ai_partial"
   },
@@ -13325,7 +13325,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.677189",
-    "description": "OR (Operating Room) Suite renovation/construction project at Capital Medical Center, a hospital facility in the Seattle/King County area. Likely involves specialized medical facility construction work including potential GPR scanning and core drilling for infrastructure assessment or installation.",
+    "description": "Operating room suite renovation/construction at Capital Medical Center in Seattle, WA. Likely involves GPR scanning for utility/hazard detection and core drilling for MEP (mechanical, electrical, plumbing) installations or modifications.",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -13342,7 +13342,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.677273",
-    "description": "Capital Medical Center project likely involves medical facility construction, renovation, or infrastructure work including potential GPR scanning for utility location and core drilling services",
+    "description": "Capital Medical Center project likely involves medical facility construction, renovation, or infrastructure work including potential GPR scanning for subsurface utility detection and core drilling services",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -13385,7 +13385,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.677550",
-    "description": "Perioperative (Periop) expansion project at Central Washington Hospital, likely involving construction of additional surgical preparation, recovery, and operating room facilities",
+    "description": "Perioperative (Periop) expansion project at Central Washington Hospital involving construction of additional operating rooms, recovery areas, and supporting medical facilities",
     "direct_url": "https://www.bnbuilders.com/projects/central-washington-hospital-periop-expansion",
     "enriched": "ai_partial"
   },
@@ -13401,7 +13401,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.677633",
-    "description": "Perioperative (surgical preparation/recovery) expansion project at Central Washington Hospital, likely involving construction management, structural work, and MEP systems for expanded surgical facilities",
+    "description": "Perioperative (surgical prep and recovery) expansion project at Central Washington Hospital, likely involving construction management services and subcontractor coordination for medical facility expansion",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -13782,7 +13782,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.680132",
-    "description": "Hospital construction or renovation project at Fairfax Everett Hospital, likely involving GPR scanning and core drilling services for structural assessment, utility location, or building modifications",
+    "description": "Hospital construction or renovation project at Fairfax Everett Hospital involving Universal Health Services, likely requiring GPR scanning and core drilling services for utility location and structural assessment",
     "direct_url": "https://www.bnbuilders.com/projects/fairfax-everett-hospital",
     "enriched": "ai_partial"
   },
@@ -13798,7 +13798,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.680216",
-    "description": "Hospital construction or renovation project at Fairfax Everett Hospital location",
+    "description": "Hospital construction or renovation project at Fairfax Everett Hospital involving structural assessment and core drilling services",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -13828,7 +13828,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.680368",
-    "description": "Hospital construction or renovation project at Fairfax Kirkland Hospital, a Universal Health Services facility located in Kirkland, WA. Project likely involves general contracting services for hospital construction, renovation, or infrastructure work.",
+    "description": "Hospital construction or renovation project at Fairfax Kirkland Hospital (Universal Health Services facility in Kirkland, WA)",
     "direct_url": "https://www.bnbuilders.com/projects/fairfax-kirkland-hospital",
     "enriched": "ai_partial"
   },
@@ -13844,7 +13844,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.680456",
-    "description": "Hospital facility construction or renovation project at Fairfax Kirkland Hospital location",
+    "description": "Hospital renovation, expansion, or construction project at Fairfax Kirkland Hospital location in the Seattle/King County area",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -14576,10 +14576,10 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.686665",
-    "description": "Operating room expansion project at University of Washington Medical Center's Montlake Surgery Pavilion, likely involving structural modifications, MEP upgrades, and specialized medical facility construction.",
+    "description": "OR (Operating Room) expansion project at University of Washington Medical Center's Montlake Surgery Pavilion involving construction and likely requiring GPR scanning and core drilling services for structural assessment and utility location.",
     "direct_url": "https://www.bnbuilders.com/projects/montlake-surgery-pavilion-or-expansion",
     "enriched": "ai_partial",
-    "contact_department": "University of Washington Procurement"
+    "contact_department": "University of Washington Purchasing and Business Services"
   },
   {
     "name": "Montlake Surgery Pavilion OR Expansion",
@@ -14593,7 +14593,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.686769",
-    "description": "OR expansion project for Montlake Surgery Pavilion, likely involving operating room expansion or renovation at a Seattle healthcare facility",
+    "description": "Montlake Surgery Pavilion OR (Operating Room) Expansion - expansion of surgical facilities at a Seattle healthcare institution",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -14610,7 +14610,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.686882",
-    "description": "Medical center renovation, expansion, or infrastructure project at University of Washington Medical Center in Seattle",
+    "description": "Medical facility construction or renovation project at University of Washington Medical Center involving structural assessment work",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -14887,7 +14887,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.689350",
-    "description": "Medical office building construction project for SAC Health in Seattle, King County. Likely involves general contracting services for a healthcare facility.",
+    "description": "Medical office building construction project for SAC Health in Seattle, King County area. Likely involves general contracting, structural work, MEP systems, and specialized medical facility requirements.",
     "direct_url": "https://www.bnbuilders.com/projects/sac-health-medical-office-building",
     "enriched": "ai_partial"
   },
@@ -14903,7 +14903,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.689435",
-    "description": "Medical office building construction project for SAC Health (Seattle-area healthcare provider), likely involving site preparation, structural work, MEP installation, and core drilling/GPR scanning services for subsurface utility location and structural assessment",
+    "description": "Medical office building construction project for SAC Health (Seattle-area healthcare provider), likely requiring GPR scanning for subsurface utilities and core drilling for structural assessment or MEP coordination",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
