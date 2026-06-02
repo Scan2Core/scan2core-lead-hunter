@@ -517,7 +517,11 @@
     "url": "https://www.kitsap.gov/pw/Documents/2022-123%20RFP%20ADA.pdf",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:17:16.146138"
+    "found_date": "2026-05-26T21:17:16.146138",
+    "contact_phone": "833 778 1000",
+    "bid_number": "BB892987",
+    "direct_url": "https://www.kitsap.gov/pw/Documents/2022-123%20RFP%20ADA.pdf",
+    "enriched": "scraped"
   },
   {
     "name": "Posts for 'Bids & Proposals'",
@@ -1609,7 +1613,14 @@
     "url": "https://www.kitsapgov.com/das/Pages/Online-Bids.aspx",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:11:14.114369"
+    "found_date": "2026-05-26T21:11:14.114369",
+    "contact_name": "Records Request",
+    "contact_email": "gsmcneill@kitsap.gov",
+    "contact_phone": "360-337-4789",
+    "close_date": "06/16/2026",
+    "bid_number": "2026-024",
+    "direct_url": "https://www.kitsapgov.com/das/Pages/Online-Bids.aspx",
+    "enriched": "scraped"
   },
   {
     "name": "2025-020 RFP Kitsap County Housing and Essential Needs",
@@ -1622,7 +1633,8 @@
     "url": "https://www.kitsapgov.com/das/Documents/2026-27%20RFP%20HEN.pdf",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:11:14.114488"
+    "found_date": "2026-05-26T21:11:14.114488",
+    "enriched": "none"
   },
   {
     "name": "2025-019 RFP Kitsap County Rapid Rehousing Closes 06/06/2025 @3:00 PM",
@@ -1635,7 +1647,14 @@
     "url": "https://www.kitsapgov.com/das/Pages/Online-Bids.aspx",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:11:14.114646"
+    "found_date": "2026-05-26T21:11:14.114646",
+    "contact_name": "Records Request",
+    "contact_email": "gsmcneill@kitsap.gov",
+    "contact_phone": "360-337-4789",
+    "close_date": "06/16/2026",
+    "bid_number": "2026-024",
+    "direct_url": "https://www.kitsapgov.com/das/Pages/Online-Bids.aspx",
+    "enriched": "scraped"
   },
   {
     "name": "2025-018 RFP Kitsap County CHG Eviction Program Prevention Closes 06/06/2025 @3:00 PM",
@@ -3156,7 +3175,12 @@
     "url": "https://www.cityofpuyallup.org/bids.aspx?bidID=357",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:27.688472"
+    "found_date": "2026-05-26T21:05:27.688472",
+    "contact_name": "Open Until",
+    "contact_phone": "253-841-4321",
+    "bid_number": "20-011",
+    "direct_url": "https://www.cityofpuyallup.org/bids.aspx?bidID=357",
+    "enriched": "scraped"
   },
   {
     "name": "Final Bid Tab Results - Ramp Litter Clean Up",
@@ -3195,7 +3219,12 @@
     "url": "https://www.cityofpuyallup.org/bids.aspx?bidID=395",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:27.688658"
+    "found_date": "2026-05-26T21:05:27.688658",
+    "contact_email": "LHollingsworth@PuyallupWA.gov",
+    "contact_phone": "(253) 770-3337",
+    "bid_number": "21-035",
+    "direct_url": "https://www.cityofpuyallup.org/bids.aspx?bidID=395",
+    "enriched": "scraped"
   },
   {
     "name": "Preliminary Bid Tab",
@@ -3702,7 +3731,13 @@
     "url": "https://www.tacomaschools.org/departments/purchasing",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:31.885251"
+    "found_date": "2026-05-26T21:05:31.885251",
+    "contact_name": "Safety Department",
+    "contact_phone": "253-571-1000",
+    "bid_number": "Project",
+    "description": "District InformationDistrict Information HomeHistoryWho to ContactDistrict CalendarNewsroomCareersBudgetBusiness & FinanceCalendarCommitment to Student SafetyDepartment DirectoryDistrict HandbookNewsGraduationGraduation HomeGraduation LivestreamGraduation PhotosTacoma Dome InformationPast CeremoniesSpotlightWhole Child ChampionsDistrict NewslettersAppreciationCommunity FlyersShare Feedback on Fami",
+    "direct_url": "https://www.tacomaschools.org/departments/purchasing",
+    "enriched": "scraped"
   },
   {
     "name": "Titan Earthwork",
@@ -6705,7 +6740,8 @@
     "url": "https://www.kitsapgov.com/das/Documents/2026-27%20RFP%20HEN.pdf",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:35.117016"
+    "found_date": "2026-05-26T21:05:35.117016",
+    "enriched": "none"
   },
   {
     "name": "2025-019 RFP Kitsap County Rapid Rehousing",
@@ -6718,7 +6754,10 @@
     "url": "https://www.kitsapgov.com/das/Documents/2026-2027%20RFP%20Rapid%20Rehousing.pdf",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:35.117107"
+    "found_date": "2026-05-26T21:05:35.117107",
+    "contact_phone": "5755419877",
+    "direct_url": "https://www.kitsapgov.com/das/Documents/2026-2027%20RFP%20Rapid%20Rehousing.pdf",
+    "enriched": "scraped"
   },
   {
     "name": "2025-016 RFP Kitsap County-Survey of Noxious Weeds on Public Lands",
@@ -7849,7 +7888,14 @@
     "url": "https://facilities.uw.edu/solicitation/5068/details",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:36.197087"
+    "found_date": "2026-05-26T21:05:36.197087",
+    "contact_name": "Pasqual Contreras",
+    "contact_email": "pasqualc@uw.edu",
+    "contact_phone": "503-734-7488",
+    "bid_number": "208857",
+    "description": "MyUWCalendarDirectoriesLibrariesUW MedicineMapsUW NewsHelpful LinksInformation TechnologyWorkday HCMHusky CardUW BothellUW TacomaUW FacebookUW Twitter",
+    "direct_url": "https://facilities.uw.edu/solicitation/5068/details",
+    "enriched": "scraped"
   },
   {
     "name": "208600 Chemistry Building Replace Process Chillers - Request for Bids",
@@ -7875,7 +7921,13 @@
     "url": "https://facilities.uw.edu/solicitation/5076/details",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:36.197398"
+    "found_date": "2026-05-26T21:05:36.197398",
+    "contact_name": "Holly Simon",
+    "contact_email": "hbsimon@uw.edu",
+    "bid_number": "208055",
+    "description": "MyUWCalendarDirectoriesLibrariesUW MedicineMapsUW NewsHelpful LinksInformation TechnologyWorkday HCMHusky CardUW BothellUW TacomaUW FacebookUW Twitter",
+    "direct_url": "https://facilities.uw.edu/solicitation/5076/details",
+    "enriched": "scraped"
   },
   {
     "name": "208702 UW Sandpoint Building 5A Power Upgrade",
@@ -7927,7 +7979,13 @@
     "url": "https://facilities.uw.edu/solicitation/5059/details",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:36.197888"
+    "found_date": "2026-05-26T21:05:36.197888",
+    "contact_name": "Holly Simon",
+    "contact_email": "hbsimon@uw.edu",
+    "bid_number": "208683",
+    "description": "MyUWCalendarDirectoriesLibrariesUW MedicineMapsUW NewsHelpful LinksInformation TechnologyWorkday HCMHusky CardUW BothellUW TacomaUW FacebookUW Twitter",
+    "direct_url": "https://facilities.uw.edu/solicitation/5059/details",
+    "enriched": "scraped"
   },
   {
     "name": "208795 UW Bothell LB2 Reuse - Request for Bids",
@@ -8122,7 +8180,10 @@
     "url": "https://www.exxelpacific.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:46.694549"
+    "found_date": "2026-05-26T21:05:46.694549",
+    "description": "HOMEABOUT USEXPERTISEPROJECTSAWARDSMEDIACAREERSPLAN ROOMCONTACTPROJECTSBrian Seales2025-05-16T10:41:22-07:00AllIn ProgressCommercialMixed UseSenior/Multi-FamilyStudent HousingHospitalityMedicalInstitutionalHigh-RiseHistoric RenoHavenridge ApartmentsMerrissa Westerman2026-05-15T09:04:15-07:00Havenridge ApartmentsHavenridge ApartmentsLeewayMerrissa Westerman2026-02-19T09:34:09-08:00LeewayLeewayThe M",
+    "direct_url": "https://www.exxelpacific.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "Havenridge Apartments",
@@ -8135,7 +8196,10 @@
     "url": "https://www.exxelpacific.com/portfolio-items/havenridge-apartments/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:46.694631"
+    "found_date": "2026-05-26T21:05:46.694631",
+    "description": "HOMEABOUT USEXPERTISEPROJECTSAWARDSMEDIACAREERSPLAN ROOMCONTACTHavenridge ApartmentsMerrissa Westerman2026-05-15T09:04:15-07:00Project DescriptionHavenridge ApartmentsLocation:Kennewick, WAOwner:Evergreen HousingArchitect:MilbrandtHavenridge Apartments is a new 12.5-acre, 195-unit apartment complex. The complex will feature five three-story buildings, totaling 55,650 square feet, with a mix of one",
+    "direct_url": "https://www.exxelpacific.com/portfolio-items/havenridge-apartments/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
+    "enriched": "none"
   },
   {
     "name": "City Gate Apartments",
@@ -8148,7 +8212,10 @@
     "url": "https://www.exxelpacific.com/portfolio-items/city-gate-apartments/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:46.694997"
+    "found_date": "2026-05-26T21:05:46.694997",
+    "description": "HOMEABOUT USEXPERTISEPROJECTSAWARDSMEDIACAREERSPLAN ROOMCONTACTCity Gate ApartmentsMerrissa Westerman2025-06-11T14:18:58-07:00Project DescriptionCity Gate ApartmentsLocation:Lynden, WAArchitect:King ArchitectureCity Gate is a 51-unit apartment complex situated in the heart of downtown Lynden on Front Street, offering a blend of modern living and convenient urban access. City Gate stands out not on",
+    "direct_url": "https://www.exxelpacific.com/portfolio-items/city-gate-apartments/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
+    "enriched": "none"
   },
   {
     "name": "Green Hill Apartments Phase II",
@@ -8161,7 +8228,10 @@
     "url": "https://www.exxelpacific.com/portfolio-items/green-hill-apartments-phase-ii/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:46.695142"
+    "found_date": "2026-05-26T21:05:46.695142",
+    "description": "HOMEABOUT USEXPERTISEPROJECTSAWARDSMEDIACAREERSPLAN ROOMCONTACTGreen Hill Apartments Phase IIMerrissa Westerman2026-01-19T10:36:00-08:00Project DescriptionGreen Hill Apartments Phase IILocation:Lynnwood, WAOwner:Green Hill Three LLCArchitect:Wattenbarger ArchitectureGreen Hill Apartments Phase II is a 6-story, 64,500 square foot apartment building. The building is four stories of Type V-A wood fra",
+    "direct_url": "https://www.exxelpacific.com/portfolio-items/green-hill-apartments-phase-ii/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
+    "enriched": "none"
   },
   {
     "name": "PeaceHealth North County Clinic",
@@ -8187,7 +8257,10 @@
     "url": "https://www.exxelpacific.com/portfolio-items/c-d-apartments/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:46.695483"
+    "found_date": "2026-05-26T21:05:46.695483",
+    "description": "HOMEABOUT USEXPERTISEPROJECTSAWARDSMEDIACAREERSPLAN ROOMCONTACTMaritime Heritage Apartmentstansy2024-09-06T10:42:20-07:00Project DescriptionMaritime Heritage ApartmentsLocation:Bellingham, WAOwner:Maritime Heritage Apartments, LLCArchitect:TRC Architecture, LLC4-story apartment building, consisting of 3 levels wood frame over 1 level concrete podium.\u00a0 128 residential units and 64 stalls of parking",
+    "direct_url": "https://www.exxelpacific.com/portfolio-items/c-d-apartments/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
+    "enriched": "none"
   },
   {
     "name": "Mill Creek Apartments",
@@ -8200,7 +8273,10 @@
     "url": "https://www.exxelpacific.com/portfolio-items/mill-creek-apartments/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:46.695591"
+    "found_date": "2026-05-26T21:05:46.695591",
+    "description": "HOMEABOUT USEXPERTISEPROJECTSAWARDSMEDIACAREERSPLAN ROOMCONTACTMill Creek Apartmentstansy2022-11-21T08:27:56-08:00Project DescriptionMill Creek ApartmentsLocation:Walla Walla, WAOwner:Mill Creek VenturesArchitect:ZBA ArchitectureThe Mill Creek Apartments consist of four, 3-story, wood framed buildings and a clubhouse totaling 93,456 sf. on 3.82 acres. There will be 96 residential units and 139 par",
+    "direct_url": "https://www.exxelpacific.com/portfolio-items/mill-creek-apartments/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
+    "enriched": "none"
   },
   {
     "name": "North Street Station",
@@ -8226,7 +8302,10 @@
     "url": "https://www.exxelpacific.com/portfolio-items/lombard-apartments/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 9,
-    "found_date": "2026-05-26T21:05:46.696006"
+    "found_date": "2026-05-26T21:05:46.696006",
+    "description": "HOMEABOUT USEXPERTISEPROJECTSAWARDSMEDIACAREERSPLAN ROOMCONTACTVelo Apartmentstansy2022-07-20T14:03:32-07:00Project DescriptionVelo Apartments(formerly Lombard)Location:Eugene, OROwner:Evergreen HousingArchitect:Milbrandt ArchitectsTwo 3-story buildings, two 2-story buildings, one single story leasing building, one bicycle maintenance building and one bicycle storage building. There is a total of ",
+    "direct_url": "https://www.exxelpacific.com/portfolio-items/lombard-apartments/?portfolioCats=6%2C3%2C8%2C4%2C19%2C5%2C7%2C9%2C14%2C15",
+    "enriched": "none"
   },
   {
     "name": "The Hub Apartments",
@@ -12991,7 +13070,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.675372"
+    "found_date": "2026-05-26T20:49:02.675372",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "John Muir Health",
@@ -13225,7 +13308,10 @@
     "url": "https://www.bnbuilders.com/projects/capital-medical-center-or-suite",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.677105"
+    "found_date": "2026-05-26T20:49:02.677105",
+    "description": "BNBuilders Capital Medical Center OR SuiteExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusi",
+    "direct_url": "https://www.bnbuilders.com/projects/capital-medical-center-or-suite",
+    "enriched": "none"
   },
   {
     "name": "Capital Medical Center OR Suite",
@@ -13238,7 +13324,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.677189"
+    "found_date": "2026-05-26T20:49:02.677189",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "Capital Medical Center",
@@ -13251,7 +13341,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.677273"
+    "found_date": "2026-05-26T20:49:02.677273",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "CDLC Assisted Living Center RenovationCasa de las CompanasSee Project",
@@ -13290,7 +13384,10 @@
     "url": "https://www.bnbuilders.com/projects/central-washington-hospital-periop-expansion",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.677550"
+    "found_date": "2026-05-26T20:49:02.677550",
+    "description": "BNBuilders Central Washington Hospital Periop ExpansionExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur ",
+    "direct_url": "https://www.bnbuilders.com/projects/central-washington-hospital-periop-expansion",
+    "enriched": "none"
   },
   {
     "name": "Central Washington Hospital Periop Expansion",
@@ -13303,7 +13400,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.677633"
+    "found_date": "2026-05-26T20:49:02.677633",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "Confluence Health",
@@ -13680,7 +13781,10 @@
     "url": "https://www.bnbuilders.com/projects/fairfax-everett-hospital",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.680132"
+    "found_date": "2026-05-26T20:49:02.680132",
+    "description": "BNBuilders Fairfax Everett HospitalExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommu",
+    "direct_url": "https://www.bnbuilders.com/projects/fairfax-everett-hospital",
+    "enriched": "none"
   },
   {
     "name": "Fairfax Everett Hospital",
@@ -13693,7 +13797,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.680216"
+    "found_date": "2026-05-26T20:49:02.680216",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "Universal Health Services",
@@ -13719,7 +13827,10 @@
     "url": "https://www.bnbuilders.com/projects/fairfax-kirkland-hospital",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.680368"
+    "found_date": "2026-05-26T20:49:02.680368",
+    "description": "ExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & SafetySustainabilityBN",
+    "direct_url": "https://www.bnbuilders.com/projects/fairfax-kirkland-hospital",
+    "enriched": "none"
   },
   {
     "name": "Fairfax Kirkland Hospital",
@@ -13732,7 +13843,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.680456"
+    "found_date": "2026-05-26T20:49:02.680456",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "Fire Stations 42 and 45City of BothellSee Project",
@@ -14460,7 +14575,10 @@
     "url": "https://www.bnbuilders.com/projects/montlake-surgery-pavilion-or-expansion",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.686665"
+    "found_date": "2026-05-26T20:49:02.686665",
+    "description": "BNBuilders Montlake Surgery Pavilion OR ExpansionExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur People",
+    "direct_url": "https://www.bnbuilders.com/projects/montlake-surgery-pavilion-or-expansion",
+    "enriched": "none"
   },
   {
     "name": "Montlake Surgery Pavilion OR Expansion",
@@ -14473,7 +14591,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.686769"
+    "found_date": "2026-05-26T20:49:02.686769",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "University of Washington Medical Center",
@@ -14486,7 +14608,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.686882"
+    "found_date": "2026-05-26T20:49:02.686882",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "Mountlake Terrace Elementary SchoolEdmonds School DistrictSee Project",
@@ -14759,7 +14885,10 @@
     "url": "https://www.bnbuilders.com/projects/sac-health-medical-office-building",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.689350"
+    "found_date": "2026-05-26T20:49:02.689350",
+    "description": "BNBuilders SAC Health Medical Office BuildingExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleIncl",
+    "direct_url": "https://www.bnbuilders.com/projects/sac-health-medical-office-building",
+    "enriched": "none"
   },
   {
     "name": "SAC Health Medical Office Building",
@@ -14772,7 +14901,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.689435"
+    "found_date": "2026-05-26T20:49:02.689435",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "San17 Tenant ImprovementConfidential Technology ClientSee Project",
@@ -14837,7 +14970,10 @@
     "url": "https://www.bnbuilders.com/projects/skagit-outpatient-surgery-center",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.690036"
+    "found_date": "2026-05-26T20:49:02.690036",
+    "description": "BNBuilders Skagit Outpatient Surgery CenterExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclus",
+    "direct_url": "https://www.bnbuilders.com/projects/skagit-outpatient-surgery-center",
+    "enriched": "none"
   },
   {
     "name": "Skagit Outpatient Surgery Center",
@@ -14850,7 +14986,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.690136"
+    "found_date": "2026-05-26T20:49:02.690136",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "Southwest Village ApartmentsSouthwest Village Housing PartnersSee Project",
@@ -15318,7 +15458,10 @@
     "url": "https://www.bnbuilders.com/projects/uwmc-behavioral-health",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.694106"
+    "found_date": "2026-05-26T20:49:02.694106",
+    "description": "BNBuilders UWMC Northwest Behavioral HealthExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclus",
+    "direct_url": "https://www.bnbuilders.com/projects/uwmc-behavioral-health",
+    "enriched": "none"
   },
   {
     "name": "UWMC Northwest Behavioral Health",
@@ -15474,7 +15617,10 @@
     "url": "https://www.bnbuilders.com/projects/wellfound-behavioral-health-hospital",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.695317"
+    "found_date": "2026-05-26T20:49:02.695317",
+    "description": "BNBuilders Wellfound Behavioral Health HospitalExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleIn",
+    "direct_url": "https://www.bnbuilders.com/projects/wellfound-behavioral-health-hospital",
+    "enriched": "none"
   },
   {
     "name": "Wellfound Behavioral Health Hospital",
@@ -15487,7 +15633,11 @@
     "url": "https://www.bnbuilders.com/projects/",
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
-    "found_date": "2026-05-26T20:49:02.695419"
+    "found_date": "2026-05-26T20:49:02.695419",
+    "description": "BNBuilders ProjectsExpertiseOur Approach & ServicesPreconstructionSelf-Perform WorkSpecial Projects GroupSustainable ConstructionVendor EngagementVirtual Design & ConstructionProjectsAll ProjectsCivic & CommunityEntertainment & HospitalityHealthcareHigher EdK-12Life Science & PharmaceuticalMulti-Family ResidentialOfficeTechnology and R&DOfficesAboutAbout BNBOur PeopleInclusionCommunityHealth & Saf",
+    "bid_number": "rth",
+    "direct_url": "https://www.bnbuilders.com/projects/",
+    "enriched": "none"
   },
   {
     "name": "West LA College Sound Studio BuildingLos Angeles Community College DistrictSee Project",
@@ -15658,6 +15808,7 @@
     "priority": 10,
     "evidence": "Spec 05.5.2: GPR and utility locating required",
     "source": "Technical Specifications",
-    "found_date": "2026-05-26T19:59:44.524918"
+    "found_date": "2026-05-26T19:59:44.524918",
+    "enriched": "none"
   }
 ]
