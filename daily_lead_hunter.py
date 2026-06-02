@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Scan2Core Daily Lead Hunter v8.1
+Scan2Core Daily Lead Hunter v8.2
 - Scrapes 37 WA city/county bid pages daily
 - AI enrichment on NEW leads immediately
-- Also enriches 40 existing unenriched leads per run (backfill)
-- found_date preserved on re-runs
+- Backfill: enriches 40 existing leads per run (priority 9+ first)
+- FIX: description alone no longer blocks AI enrichment
+- FIX: leads marked 'scraped' without contact info get re-tried by AI
 """
 
 import os
@@ -119,7 +120,6 @@ WA_CITY_BID_PAGES = [
     ('Sound Transit', 'Multi', 'https://www.soundtransit.org/doing-business-sound-transit/selling-sound-transit/solicitations'),
 ]
 
-# How many existing leads to enrich per run (controls API cost)
 BACKFILL_PER_RUN = 40
 
 
@@ -138,8 +138,13 @@ class ContactInfo:
             'direct_url': self.direct_url,
         }.items() if v}
 
-    def has_useful_info(self):
-        return any([self.email, self.phone, self.name, self.close_date, self.description])
+    def has_contact_info(self):
+        """True only if we found actual contact fields — description alone doesn't count."""
+        return any([self.email, self.phone, self.name])
+
+    def has_any_info(self):
+        """True if we found anything at all (including description/dates)."""
+        return any([self.email, self.phone, self.name, self.close_date, self.description, self.bid_number])
 
 
 class Scan2CoreBot:
@@ -255,14 +260,16 @@ class Scan2CoreBot:
         self.ai_calls += 1
         logger.info(f"  AI enriching ({self.ai_calls}/{self.ai_call_limit}): {lead_name[:55]}")
 
-        prompt = f"""Find contact info for this WA State construction bid. Scan2Core (GPR scanning + core drilling company) needs to reach the procurement officer or project manager.
+        prompt = f"""Find contact info for this WA State construction bid. Scan2Core (GPR scanning + core drilling company) needs the procurement officer or project manager to reach out.
 
 Project: {lead_name}
 Agency: {city}, {county} County
 Source: {source}
 URL: {url}
 
-Search the web. Return ONLY this JSON (empty string if not found):
+Search the web. Find the specific person to contact about this bid — name, title, email, phone number. Also find the close/due date, bid number, and a brief description.
+
+Return ONLY this JSON (empty string if not found):
 {{"contact_name":"","contact_title":"","contact_email":"","contact_phone":"","contact_department":"","close_date":"","bid_number":"","description":"","direct_url":""}}"""
 
         try:
@@ -309,30 +316,48 @@ Search the web. Return ONLY this JSON (empty string if not found):
         return info
 
     def _enrich_lead(self, lead: Dict) -> Dict:
-        """Try scrape first, then AI. Skip if already has useful data."""
-        # Already has contact info — skip
+        """
+        Scrape the bid page for contact info first.
+        If scrape doesn't find email/phone/name, call AI.
+        Only skip if we already have actual contact info stored.
+        """
+        # Skip only if we already have real contact data
         if lead.get('contact_email') or lead.get('contact_name') or lead.get('contact_phone'):
-            return lead
-        # Marked as 'none' previously and it's been tried — skip
-        if lead.get('enriched') in ('scraped', 'ai'):
             return lead
 
         url = lead.get('url', '')
+
+        # Step 1: direct page scrape
         scraped = self._scrape_contact_from_page(url)
 
-        if scraped.has_useful_info():
+        if scraped.has_contact_info():
+            # Found email/phone/name from the page itself
             lead.update(scraped.to_dict())
             lead['enriched'] = 'scraped'
-            logger.info(f"  ✓ Scraped: {lead.get('name','')[:50]}")
+            logger.info(f"  ✓ Scraped contact: {lead.get('name','')[:50]}")
         else:
+            # Scrape got nothing useful for contact — call AI
+            # Still save any description/dates we scraped even if no contact
+            if scraped.has_any_info():
+                partial = scraped.to_dict()
+                # Only update non-contact fields from scrape
+                for field in ('description', 'close_date', 'bid_number', 'direct_url'):
+                    if partial.get(field) and not lead.get(field):
+                        lead[field] = partial[field]
+
             ai_info = self._ai_enrich(
                 lead.get('name', ''), lead.get('city', ''),
                 lead.get('county', ''), lead.get('source', ''), url
             )
-            if ai_info.has_useful_info():
+            if ai_info.has_contact_info():
                 lead.update(ai_info.to_dict())
                 lead['enriched'] = 'ai'
-                logger.info(f"  ✓ AI found: {lead.get('name','')[:50]}")
+                logger.info(f"  ✓ AI found contact: {lead.get('name','')[:50]}")
+            elif ai_info.has_any_info():
+                # AI found dates/description but no contact
+                lead.update(ai_info.to_dict())
+                lead['enriched'] = 'ai_partial'
+                logger.info(f"  ~ AI partial (no contact): {lead.get('name','')[:50]}")
             else:
                 lead['enriched'] = 'none'
 
@@ -430,7 +455,7 @@ Search the web. Return ONLY this JSON (empty string if not found):
 
     def run(self):
         logger.info("=" * 60)
-        logger.info("Scan2Core Daily Lead Hunter v8.1 starting...")
+        logger.info("Scan2Core Daily Lead Hunter v8.2 starting...")
         logger.info(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
         logger.info(f"AI enrichment: {'ENABLED' if ANTHROPIC_API_KEY else 'DISABLED (no API key)'}")
         logger.info("=" * 60)
@@ -443,7 +468,7 @@ Search the web. Return ONLY this JSON (empty string if not found):
             'Seattle Consultant Connection', 'https://consultants.seattle.gov/category/bids-proposals/', 'Seattle', 'King'))
         all_scraped.extend(self.scrape_all_city_pages())
 
-        # ── STEP 2: Load existing, find what's new ────────────
+        # ── STEP 2: Load existing, identify new ───────────────
         existing = self.load_all_leads()
         existing_names = {l.get('name', '') for l in existing}
         new_leads = [l for l in all_scraped if l.get('name', '') not in existing_names]
@@ -455,50 +480,51 @@ Search the web. Return ONLY this JSON (empty string if not found):
             new_leads = [self._enrich_lead(l) for l in new_leads]
 
         # ── STEP 4: Backfill existing unenriched leads ────────
-        # Pick up leads that have never been enriched (enriched=None or enriched='none')
-        # sorted by priority so highest-value leads get contact info first
+        # Pick leads with no contact info AND not already successfully enriched
+        # Sorted by priority so best leads get done first
         if ANTHROPIC_API_KEY and self.ai_calls < self.ai_call_limit:
             unenriched = [
                 l for l in existing
                 if not l.get('contact_email')
                 and not l.get('contact_name')
                 and not l.get('contact_phone')
-                and l.get('enriched') not in ('scraped', 'ai')
+                and l.get('enriched') not in ('ai', 'scraped')
             ]
-            # Sort by priority desc so we do best leads first
             unenriched.sort(key=lambda x: x.get('priority', 0), reverse=True)
             backfill_batch = unenriched[:BACKFILL_PER_RUN]
 
             if backfill_batch:
                 logger.info(f"Backfill: enriching {len(backfill_batch)} existing leads (priority 9+ first)...")
-                backfill_names = {l.get('name', '') for l in backfill_batch}
                 for lead in backfill_batch:
                     self._enrich_lead(lead)
                     if self.ai_calls >= self.ai_call_limit:
+                        logger.info(f"  AI call limit reached ({self.ai_call_limit}), stopping backfill.")
                         break
-                logger.info(f"Backfill complete. {len([l for l in backfill_batch if l.get('contact_email') or l.get('contact_name')])} contacts found.")
+                contacts_found = sum(1 for l in backfill_batch if l.get('contact_email') or l.get('contact_name') or l.get('contact_phone'))
+                logger.info(f"Backfill complete. {contacts_found}/{len(backfill_batch)} contacts found.")
             else:
                 logger.info("Backfill: all existing leads already processed.")
 
         # ── STEP 5: Save everything ───────────────────────────
-        # New leads go to front, existing (now potentially updated) behind
         combined = new_leads + existing
         self.save_all_leads(combined)
 
         total_with_contacts = sum(1 for l in combined if l.get('contact_email') or l.get('contact_name') or l.get('contact_phone'))
-        remaining_unenriched = sum(1 for l in combined if not l.get('contact_email') and not l.get('contact_name') and l.get('enriched') not in ('scraped', 'ai'))
+        remaining = sum(1 for l in combined
+                        if not l.get('contact_email') and not l.get('contact_name')
+                        and l.get('enriched') not in ('ai', 'scraped'))
 
         logger.info("=" * 60)
         logger.info(f"DONE.")
-        logger.info(f"  New leads today: {len(new_leads)}")
-        logger.info(f"  Total leads: {len(combined)}")
-        logger.info(f"  With contacts: {total_with_contacts}")
-        logger.info(f"  Still unenriched: {remaining_unenriched} (clears in ~{remaining_unenriched // BACKFILL_PER_RUN + 1} more runs)")
-        logger.info(f"  AI calls used: {self.ai_calls}/{self.ai_call_limit}")
+        logger.info(f"  New leads today:   {len(new_leads)}")
+        logger.info(f"  Total leads:       {len(combined)}")
+        logger.info(f"  With contacts:     {total_with_contacts}")
+        logger.info(f"  Still unenriched:  {remaining} (~{remaining // BACKFILL_PER_RUN + 1} more runs to clear)")
+        logger.info(f"  AI calls used:     {self.ai_calls}/{self.ai_call_limit}")
         if new_leads:
             logger.info("NEW LEADS:")
             for l in sorted(new_leads, key=lambda x: x.get('priority', 0), reverse=True):
-                contact = l.get('contact_email') or l.get('contact_name') or 'pending enrichment'
+                contact = l.get('contact_email') or l.get('contact_name') or 'pending'
                 logger.info(f"  [{l['priority']}] {l['name'][:55]} | {contact}")
         logger.info("=" * 60)
 
