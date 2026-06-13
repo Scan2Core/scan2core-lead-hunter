@@ -13126,7 +13126,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.675372",
-    "description": "Construction project involving an ambulatory surgery center (outpatient surgical facility) and associated parking structure in the Seattle, King County area",
+    "description": "Construction project involving an ambulatory surgery center (medical facility) and associated parking structure in Seattle, King County area. Scan2Core would likely be subcontracted for GPR (ground penetrating radar) scanning and core drilling services for structural assessment and utility location.",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -13364,7 +13364,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.677105",
-    "description": "OR Suite buildout/renovation at Capital Medical Center in Seattle - likely involves operating room suite construction, which may require GPR scanning for existing utilities/structures and core drilling for mechanical/electrical work",
+    "description": "OR (Operating Room) Suite renovation/construction project at Capital Medical Center in Seattle, WA. Likely involves specialized medical facility construction, possibly including GPR scanning for existing utilities and core drilling for structural modifications.",
     "direct_url": "https://www.bnbuilders.com/projects/capital-medical-center-or-suite",
     "enriched": "ai_partial"
   },
@@ -13380,7 +13380,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.677189",
-    "description": "OR (Operating Room) suite renovation/construction project at Capital Medical Center, a hospital facility in the Seattle/King County area",
+    "description": "Medical facility operating room suite renovation or construction at Capital Medical Center in Seattle, King County area. Likely requires GPR scanning for existing utilities and core drilling for structural modifications.",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -13397,7 +13397,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.677273",
-    "description": "Capital Medical Center project likely involving medical facility construction, renovation, or infrastructure work requiring GPR scanning and core drilling services",
+    "description": "Capital Medical Center project likely involves medical facility construction, renovation, or infrastructure work requiring GPR scanning and core drilling services",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -13440,7 +13440,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.677550",
-    "description": "Perioperative (Periop) expansion project at Central Washington Hospital involving construction of additional surgical preparation, operating room, and recovery space facilities",
+    "description": "Perioperative (Periop) expansion project at Central Washington Hospital involving construction of additional operating rooms, recovery areas, and related surgical support spaces to increase surgical capacity and capabilities.",
     "direct_url": "https://www.bnbuilders.com/projects/central-washington-hospital-periop-expansion",
     "enriched": "ai_partial"
   },
@@ -13456,7 +13456,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.677633",
-    "description": "Perioperative (Periop) expansion project for Central Washington Hospital, likely involving construction of additional surgical suite capacity, pre/post-operative recovery areas, and related medical infrastructure",
+    "description": "Perioperative (Periop) expansion project at Central Washington Hospital, likely involving construction of additional surgical suite space, pre-op/post-op recovery areas, and related medical infrastructure",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -13837,7 +13837,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.680132",
-    "description": "Hospital construction/renovation project at Fairfax Everett Hospital involving Universal Health Services",
+    "description": "Hospital construction or renovation project at Fairfax Everett Hospital, likely involving structural work, utilities, or facility upgrades",
     "direct_url": "https://www.bnbuilders.com/projects/fairfax-everett-hospital",
     "enriched": "ai_partial"
   },
@@ -13853,7 +13853,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.680216",
-    "description": "Hospital construction or renovation project at Fairfax Everett Hospital involving GPR scanning and core drilling services",
+    "description": "Hospital construction or renovation project at Fairfax Everett Hospital involving general contracting work",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -13883,7 +13883,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.680368",
-    "description": "Hospital construction or renovation project at Fairfax Kirkland Hospital (Universal Health Services facility in Kirkland, WA)",
+    "description": "Hospital construction or renovation project at Fairfax Kirkland Hospital (Universal Health Services facility) in Kirkland, WA",
     "direct_url": "https://www.bnbuilders.com/projects/fairfax-kirkland-hospital",
     "enriched": "ai_partial"
   },
@@ -13899,7 +13899,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.680456",
-    "description": "Hospital construction or renovation project at Fairfax Kirkland Hospital in the Seattle/King County area",
+    "description": "Hospital renovation or construction project at Fairfax Kirkland Hospital location",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
@@ -14631,10 +14631,10 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.686665",
-    "description": "Operating room expansion project at UW Medicine's Montlake Surgery Pavilion involving potential structural modifications, utilities, and medical equipment installation",
+    "description": "Operating room expansion project at University of Washington Medical Center's Montlake Surgery Pavilion, likely involving construction services for additional surgical capacity",
     "direct_url": "https://www.bnbuilders.com/projects/montlake-surgery-pavilion-or-expansion",
     "enriched": "ai_partial",
-    "contact_department": "University of Washington Medical Center Procurement"
+    "contact_department": "University of Washington Procurement"
   },
   {
     "name": "Montlake Surgery Pavilion OR Expansion",
@@ -14648,7 +14648,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.686769",
-    "description": "OR (Operating Room) expansion project for Montlake Surgery Pavilion, likely involving surgical facility infrastructure upgrades, requiring GPR scanning to locate existing utilities and core drilling for structural modifications.",
+    "description": "Operating room expansion project at Montlake Surgery Pavilion involving construction services, likely requiring GPR scanning and core drilling for utility location and structural assessment",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial",
@@ -14666,7 +14666,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.686882",
-    "description": "Medical center construction or renovation project at University of Washington Medical Center in Seattle",
+    "description": "Medical facility construction or renovation project at University of Washington Medical Center involving structural assessment, utility location, and/or core sampling services",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial",
@@ -14944,7 +14944,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.689350",
-    "description": "Medical office building construction project for SAC Health in Seattle, King County area. Likely involves general contracting, structural work, MEP systems, and specialized medical facility requirements.",
+    "description": "Medical office building construction project for SAC Health in Seattle, King County area. Likely involves general construction, structural work, MEP systems, and medical facility-specific requirements.",
     "direct_url": "https://www.bnbuilders.com/projects/sac-health-medical-office-building",
     "enriched": "ai_partial"
   },
@@ -14960,7 +14960,7 @@
     "notes": "Review specs to confirm scanning + core drilling needed",
     "priority": 10,
     "found_date": "2026-05-26T20:49:02.689435",
-    "description": "Medical office building construction project for SAC Health (likely Seattle/King County health services organization)",
+    "description": "Medical office building construction project for SAC Health (Seattle-area healthcare provider)",
     "bid_number": "rth",
     "direct_url": "https://www.bnbuilders.com/projects/",
     "enriched": "ai_partial"
