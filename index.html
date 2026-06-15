@@ -1,481 +1,638 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Scan2Core — Lead Hunter</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800&family=Barlow:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg:#08090b; --bg2:#0f1115; --bg3:#15181e; --bg4:#1a1e26;
-  --border:#1e222a; --border2:#272c36;
-  --orange:#f97316; --orange-dim:rgba(249,115,22,0.12); --orange-glow:rgba(249,115,22,0.25);
-  --blue:#38bdf8; --blue-dim:rgba(56,189,248,0.1);
-  --green:#4ade80; --green-dim:rgba(74,222,128,0.1);
-  --red:#f87171; --red-dim:rgba(248,113,113,0.1);
-  --yellow:#fbbf24; --yellow-dim:rgba(251,191,36,0.1);
-  --purple:#a78bfa; --purple-dim:rgba(167,139,250,0.1);
-  --text:#e2e8f0; --text2:#94a3b8; --text3:#4b5563;
-  --mono:'JetBrains Mono',monospace; --sans:'Barlow',sans-serif; --cond:'Barlow Condensed',sans-serif;
-}
-html { scroll-behavior:smooth; }
-body { font-family:var(--sans); background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
-.topbar { position:sticky; top:0; z-index:100; background:rgba(8,9,11,0.94); backdrop-filter:blur(16px); border-bottom:1px solid var(--border); padding:0 24px; display:flex; align-items:center; gap:16px; height:56px; }
-.logo { font-family:var(--cond); font-size:20px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; flex-shrink:0; }
-.logo span { color:var(--orange); }
-.topbar-div { width:1px; height:24px; background:var(--border2); flex-shrink:0; }
-.search-wrap { flex:1; position:relative; max-width:500px; }
-.search-wrap svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--text3); pointer-events:none; }
-#searchInput { width:100%; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:9px 14px 9px 36px; color:var(--text); font-family:var(--sans); font-size:14px; outline:none; transition:border-color 0.15s, box-shadow 0.15s; }
-#searchInput:focus { border-color:var(--orange); box-shadow:0 0 0 3px var(--orange-dim); }
-#searchInput::placeholder { color:var(--text3); }
-.topbar-right { display:flex; align-items:center; gap:10px; margin-left:auto; }
-.live-dot { width:7px; height:7px; border-radius:50%; background:var(--green); box-shadow:0 0 6px var(--green); animation:pulse 2s ease-in-out infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
-.btn-icon { display:flex; align-items:center; gap:6px; background:var(--bg3); border:1px solid var(--border2); border-radius:7px; padding:7px 14px; color:var(--text2); font-family:var(--sans); font-size:13px; font-weight:500; cursor:pointer; transition:all 0.15s; white-space:nowrap; }
-.btn-icon:hover { border-color:var(--orange); color:var(--orange); }
-.btn-icon svg { width:14px; height:14px; }
-.spinning svg { animation:spin 0.8s linear infinite; }
-@keyframes spin { to{transform:rotate(360deg)} }
-.stats-row { display:flex; gap:1px; background:var(--border); border-bottom:1px solid var(--border); }
-.stat-block { flex:1; background:var(--bg2); padding:14px 20px; min-width:90px; }
-.stat-num { font-family:var(--cond); font-size:26px; font-weight:800; line-height:1; }
-.stat-label { font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px; }
-.s-orange .stat-num{color:var(--orange)} .s-red .stat-num{color:var(--red)} .s-blue .stat-num{color:var(--blue)} .s-green .stat-num{color:var(--green)}
-.filter-bar { background:var(--bg2); border-bottom:1px solid var(--border); padding:10px 24px; display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
-.filter-label { font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; flex-shrink:0; margin-right:2px; }
-.chip { background:transparent; border:1px solid var(--border2); border-radius:5px; padding:5px 12px; font-family:var(--cond); font-size:13px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--text3); cursor:pointer; transition:all 0.12s; white-space:nowrap; }
-.chip:hover { border-color:var(--orange); color:var(--orange); }
-.chip.on { background:var(--orange); border-color:var(--orange); color:#000; }
-.chip-sep { width:1px; height:18px; background:var(--border2); }
-.sort-wrap { margin-left:auto; display:flex; align-items:center; gap:8px; }
-.sort-label { font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; }
-#sortSel { background:var(--bg3); border:1px solid var(--border2); border-radius:6px; padding:5px 10px; color:var(--text); font-family:var(--mono); font-size:12px; outline:none; cursor:pointer; }
-.main { flex:1; display:grid; grid-template-columns:1fr; padding:20px 24px; gap:10px; max-width:1600px; margin:0 auto; width:100%; }
-@media(min-width:860px){ .main{grid-template-columns:1fr 1fr} }
-@media(min-width:1280px){ .main{grid-template-columns:1fr 1fr 1fr} }
-.result-info { grid-column:1/-1; display:flex; align-items:center; justify-content:space-between; padding:4px 0 8px; border-bottom:1px solid var(--border); margin-bottom:4px; }
-.result-count { font-family:var(--mono); font-size:11px; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; }
-.result-count b { color:var(--orange); }
-.clear-btn { font-family:var(--mono); font-size:11px; color:var(--text3); cursor:pointer; text-decoration:underline; }
-.clear-btn:hover { color:var(--orange); }
-.card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; overflow:hidden; cursor:pointer; transition:transform 0.12s, border-color 0.12s, box-shadow 0.12s; display:flex; flex-direction:column; animation:up 0.2s ease both; }
-@keyframes up { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-.card:hover { transform:translateY(-2px); border-color:var(--border2); box-shadow:0 8px 24px rgba(0,0,0,0.4); }
-.card.open { border-color:var(--orange); box-shadow:0 0 0 1px var(--orange),0 8px 32px rgba(249,115,22,0.15); cursor:default; }
-.card-stripe { height:3px; flex-shrink:0; }
-.s10{background:linear-gradient(90deg,#ef4444,#f97316)} .s9{background:linear-gradient(90deg,#f97316,#fbbf24)} .s8{background:linear-gradient(90deg,#fbbf24,#84cc16)} .s7{background:linear-gradient(90deg,#38bdf8,#818cf8)} .s6{background:var(--border2)}
-.card-top { padding:14px 14px 0; display:flex; gap:10px; align-items:flex-start; }
-.pnum { font-family:var(--cond); font-size:34px; font-weight:800; line-height:1; flex-shrink:0; width:34px; text-align:center; }
-.pn10,.pn9{color:var(--orange)} .pn8{color:var(--yellow)} .pn7{color:var(--blue)} .pn6{color:var(--text3)}
-.title-block { flex:1; min-width:0; }
-.card-title { font-family:var(--cond); font-size:16px; font-weight:700; letter-spacing:0.02em; line-height:1.3; color:var(--text); word-break:break-word; }
-.card-src { font-family:var(--mono); font-size:10px; color:var(--text3); margin-top:3px; text-transform:uppercase; letter-spacing:0.06em; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-.svc-badge { display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:4px; font-family:var(--mono); font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:0.05em; border:1px solid transparent; margin-top:6px; }
-.svc-gpr{background:var(--blue-dim);color:var(--blue);border-color:rgba(56,189,248,0.25)} .svc-core{background:var(--orange-dim);color:var(--orange);border-color:rgba(249,115,22,0.25)} .svc-both{background:var(--purple-dim);color:var(--purple);border-color:rgba(167,139,250,0.25)} .svc-tbd{background:transparent;color:var(--text3);border-color:var(--border2)}
-.card-tags { padding:8px 14px 12px; display:flex; flex-wrap:wrap; gap:5px; }
-.tag { display:inline-flex; align-items:center; padding:3px 8px; border-radius:4px; font-family:var(--mono); font-size:10px; font-weight:500; text-transform:uppercase; letter-spacing:0.05em; border:1px solid transparent; }
-.t-city{background:var(--green-dim);color:var(--green);border-color:rgba(74,222,128,0.2)} .t-county{background:var(--blue-dim);color:var(--blue);border-color:rgba(56,189,248,0.2)} .t-time{background:transparent;color:var(--text3);border-color:var(--border2)} .t-enriched{background:var(--purple-dim);color:var(--purple);border-color:rgba(167,139,250,0.25)}
-.card-detail { display:none; background:var(--bg3); border-top:1px solid var(--border); }
-.card.open .card-detail { display:block; }
+"""
+daily_lead_hunter.py — Scan2Core Lead Hunter (GitHub Actions daily scraper)
+Scrapes WA State construction bid pages, deduplicates, priority-scores, and
+enriches leads with AI-sourced contact info.  Outputs found_projects.json.
 
-/* CONTACT BOX */
-.contact-box { background:linear-gradient(135deg,rgba(74,222,128,0.08) 0%,rgba(74,222,128,0.02) 100%); border-bottom:1px solid var(--border); padding:14px 16px; }
-.contact-box-title { font-family:var(--mono); font-size:10px; color:var(--green); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
-.contact-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:10px; }
-.contact-item { background:var(--bg4); border:1px solid var(--border2); border-radius:6px; padding:8px 10px; }
-.contact-item-label { font-family:var(--mono); font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; }
-.contact-item-val { font-size:13px; font-weight:600; color:var(--text); margin-top:2px; word-break:break-all; }
-.contact-item-val a { color:var(--green); text-decoration:none; }
-.contact-item-val a:hover { text-decoration:underline; }
-.contact-actions { display:flex; gap:8px; }
-.contact-btn { flex:1; padding:10px; border-radius:7px; font-family:var(--cond); font-size:13px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; border:none; transition:all 0.12s; text-align:center; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:6px; }
-.cb-call { background:var(--green-dim); border:1px solid rgba(74,222,128,0.3); color:var(--green); }
-.cb-call:hover { background:rgba(74,222,128,0.2); }
-.cb-email { background:var(--blue-dim); border:1px solid rgba(56,189,248,0.25); color:var(--blue); }
-.cb-email:hover { background:rgba(56,189,248,0.2); }
-.no-contact { font-family:var(--mono); font-size:11px; color:var(--text3); font-style:italic; }
+PHONE QUALITY POLICY:
+  - GC Portfolio leads (source starts with "GC"): AI may return the GC's main
+    office number. That's expected — it's saved as-is.
+  - Public Bid leads (city/county/state agencies): AI must ONLY return the
+    specific bid agency's project contact. Any phone that also appears on a GC
+    Portfolio lead is rejected as cross-contamination.
+  - After enrichment, any phone appearing on 5+ leads (across all types) is
+    flagged as a likely main-line number and cleared from non-GC leads.
+"""
 
-/* QUOTE BOX */
-.quote-box { background:linear-gradient(135deg,rgba(249,115,22,0.08) 0%,rgba(249,115,22,0.03) 100%); border-bottom:1px solid var(--border); padding:14px 16px; }
-.quote-box-title { font-family:var(--mono); font-size:10px; color:var(--orange); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
-.quote-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
-.quote-item { background:var(--bg4); border:1px solid var(--border2); border-radius:6px; padding:8px 10px; }
-.quote-item-label { font-family:var(--mono); font-size:9px; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; }
-.quote-item-val { font-family:var(--cond); font-size:18px; font-weight:700; color:var(--text); margin-top:2px; }
-.quote-item-val.orange { color:var(--orange); }
-.quote-rec { margin-top:10px; font-size:13px; color:var(--text2); line-height:1.5; }
-.quote-rec strong { color:var(--text); }
+import json, os, re, time, datetime, hashlib, random, urllib.request, urllib.error
+from dataclasses import dataclass, field, asdict
+from typing import Optional
 
-/* BID INFO */
-.bid-info { padding:14px 16px; border-bottom:1px solid var(--border); }
-.bid-info-title { font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.1em; margin-bottom:10px; }
-.info-rows { display:grid; gap:0; }
-.info-row { display:grid; grid-template-columns:90px 1fr; gap:10px; padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.03); align-items:start; }
-.info-row:last-child { border-bottom:none; padding-bottom:0; }
-.info-key { font-family:var(--mono); font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:0.08em; padding-top:1px; }
-.info-val { font-size:13px; font-weight:500; color:var(--text); word-break:break-word; line-height:1.4; }
-.info-val a { color:var(--blue); text-decoration:none; }
-.info-val a:hover { text-decoration:underline; }
-.info-val.yellow { color:var(--yellow); }
-.info-val.green { color:var(--green); }
+# ── CONFIG ────────────────────────────────────────────────────────────────────
+AI_MODEL          = "claude-haiku-4-5-20251001"
+AI_SLEEP_SECONDS  = 2       # pause between AI calls to avoid 429s
+BACKFILL_PER_RUN  = 15      # max unenriched leads to process per run
+OUTPUT_FILE       = "found_projects.json"
+ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
 
-.action-bar { padding:12px 14px; display:flex; gap:8px; }
-.abtn { flex:1; padding:11px 16px; border-radius:7px; font-family:var(--cond); font-size:14px; font-weight:700; letter-spacing:0.06em; text-transform:uppercase; cursor:pointer; border:none; transition:all 0.12s; }
-.abtn-primary{background:var(--orange);color:#000} .abtn-primary:hover{background:#fb923c;transform:translateY(-1px)} .abtn-sec{background:transparent;border:1px solid var(--border2);color:var(--text2)} .abtn-sec:hover{border-color:var(--text2);color:var(--text)} .abtn-green{background:var(--green-dim);border:1px solid rgba(74,222,128,0.3);color:var(--green)} .abtn-green:hover{background:rgba(74,222,128,0.2)}
+# Threshold: a phone on this many leads = GC main line / hallucination
+SHARED_PHONE_THRESHOLD = 5
 
-.load-screen { grid-column:1/-1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 24px; text-align:center; gap:14px; }
-.ls-icon { font-size:50px; line-height:1; }
-.ls-title { font-family:var(--cond); font-size:26px; font-weight:800; letter-spacing:0.04em; }
-.ls-sub { font-size:14px; color:var(--text2); max-width:440px; line-height:1.6; }
-.url-form { display:flex; flex-direction:column; gap:8px; width:100%; max-width:540px; }
-.url-inp { background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:12px 16px; color:var(--text); font-family:var(--mono); font-size:12px; outline:none; width:100%; transition:border-color 0.15s; }
-.url-inp:focus { border-color:var(--orange); }
-.big-btn { padding:14px 28px; border-radius:8px; font-family:var(--cond); font-size:16px; font-weight:800; letter-spacing:0.08em; text-transform:uppercase; cursor:pointer; border:none; transition:all 0.12s; display:flex; align-items:center; justify-content:center; gap:8px; }
-.bb-primary{background:var(--orange);color:#000} .bb-primary:hover{background:#fb923c;transform:translateY(-1px);box-shadow:0 6px 20px var(--orange-glow)} .bb-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px} .bb-ghost:hover{border-color:var(--text2);color:var(--text)}
-.err-box { background:var(--red-dim); border:1px solid rgba(248,113,113,0.3); border-radius:8px; padding:12px 16px; color:var(--red); font-size:13px; font-family:var(--mono); text-align:left; width:100%; max-width:540px; }
-.spin-wrap { display:flex; align-items:center; gap:12px; font-family:var(--mono); font-size:13px; color:var(--text2); }
-.spinner { width:20px; height:20px; border:2px solid var(--border2); border-top-color:var(--orange); border-radius:50%; animation:spin 0.7s linear infinite; }
-.toast { position:fixed; bottom:24px; right:24px; background:var(--bg3); border:1px solid var(--border2); border-radius:8px; padding:11px 18px; font-size:13px; color:var(--text); box-shadow:0 8px 32px rgba(0,0,0,0.5); opacity:0; transform:translateY(8px); transition:all 0.2s; z-index:9999; pointer-events:none; font-family:var(--mono); }
-.toast.show { opacity:1; transform:translateY(0); }
-.empty { grid-column:1/-1; text-align:center; padding:60px 20px; }
-.empty-icon { font-size:42px; margin-bottom:12px; }
-.empty-title { font-family:var(--cond); font-size:22px; font-weight:800; margin-bottom:8px; }
-.empty-sub { font-size:14px; color:var(--text2); }
-@media(max-width:640px){
-  .topbar{padding:0 14px;gap:8px;height:50px}
-  .btn-icon span{display:none}
-  .stats-row{overflow-x:auto}
-  .stat-block{min-width:85px;padding:10px 14px}
-  .stat-num{font-size:20px}
-  .filter-bar{padding:8px 14px;overflow-x:auto;flex-wrap:nowrap}
-  .sort-wrap{display:none}
-  .main{padding:12px 14px}
-  .quote-grid,.contact-grid{grid-template-columns:1fr 1fr}
-}
-</style>
-</head>
-<body>
-<div style="display:flex;flex-direction:column;min-height:100vh">
+# ── DATA MODEL ────────────────────────────────────────────────────────────────
+@dataclass
+class ContactInfo:
+    name:       Optional[str] = None
+    title:      Optional[str] = None
+    department: Optional[str] = None
+    email:      Optional[str] = None
+    phone:      Optional[str] = None
 
-<div class="topbar">
-  <div class="logo">SCAN<span>2</span>CORE</div>
-  <div class="topbar-div"></div>
-  <div class="search-wrap">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-    <input type="search" id="searchInput" placeholder="Search leads, cities, counties, sources..." oninput="doSearch(this.value)">
-  </div>
-  <div class="topbar-right">
-    <div class="live-dot" id="liveDot" style="display:none"></div>
-    <button class="btn-icon" id="refreshBtn" onclick="doRefresh()">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-      <span>Refresh</span>
-    </button>
-  </div>
-</div>
+    def has_contact_info(self) -> bool:
+        return bool(self.email or self.phone or self.name)
 
-<div class="stats-row" id="statsRow" style="display:none">
-  <div class="stat-block s-orange"><div class="stat-num" id="sTotal">0</div><div class="stat-label">Total Leads</div></div>
-  <div class="stat-block s-red"><div class="stat-num" id="sHot">0</div><div class="stat-label">Priority 9–10</div></div>
-  <div class="stat-block s-blue"><div class="stat-num" id="sToday">0</div><div class="stat-label">Last 24 Hours</div></div>
-  <div class="stat-block s-green"><div class="stat-num" id="sContacts">0</div><div class="stat-label">With Contacts</div></div>
-</div>
+    def is_empty(self) -> bool:
+        return not self.has_contact_info()
 
-<div class="filter-bar" id="filterBar" style="display:none">
-  <span class="filter-label">Filter:</span>
-  <button class="chip on" data-f="all" onclick="setFilter(this,'all')">All</button>
-  <button class="chip" data-f="hot" onclick="setFilter(this,'hot')">🔥 Hot</button>
-  <button class="chip" data-f="contacts" onclick="setFilter(this,'contacts')">📞 Has Contact</button>
-  <div class="chip-sep"></div>
-  <button class="chip" data-f="King" onclick="setFilter(this,'King')">King</button>
-  <button class="chip" data-f="Pierce" onclick="setFilter(this,'Pierce')">Pierce</button>
-  <button class="chip" data-f="Snohomish" onclick="setFilter(this,'Snohomish')">Snohomish</button>
-  <button class="chip" data-f="Kitsap" onclick="setFilter(this,'Kitsap')">Kitsap</button>
-  <button class="chip" data-f="Thurston" onclick="setFilter(this,'Thurston')">Thurston</button>
-  <button class="chip" data-f="State" onclick="setFilter(this,'State')">State/UW</button>
-  <div class="chip-sep"></div>
-  <button class="chip" data-f="gpr" onclick="setFilter(this,'gpr')">GPR Only</button>
-  <button class="chip" data-f="core" onclick="setFilter(this,'core')">Core Drill</button>
-  <button class="chip" data-f="nogc" onclick="setFilter(this,'nogc')">Hide GC</button>
-  <div class="sort-wrap">
-    <span class="sort-label">Sort:</span>
-    <select id="sortSel" onchange="setSort(this.value)">
-      <option value="priority">Priority ↓</option>
-      <option value="newest">Newest First</option>
-      <option value="oldest">Oldest First</option>
-      <option value="az">Name A–Z</option>
-      <option value="city">City A–Z</option>
-    </select>
-  </div>
-</div>
 
-<div class="main" id="mainGrid">
-  <div class="load-screen" id="loadScreen">
-    <div class="ls-icon">📡</div>
-    <div class="ls-title">Lead Hunter</div>
-    <div class="ls-sub">Click Load to pull today's leads from GitHub.</div>
-    <div class="url-form">
-      <input class="url-inp" id="urlInput" value="https://raw.githubusercontent.com/Scan2Core/scan2core-lead-hunter/main/found_projects.json">
-      <button class="big-btn bb-primary" onclick="doLoad()">📡 Load Leads from GitHub</button>
-      <button class="big-btn bb-ghost" onclick="loadDemo()">Load Demo Data</button>
-    </div>
-    <div class="err-box" id="errBox" style="display:none"></div>
-  </div>
-  <div class="load-screen" id="loadingScreen" style="display:none">
-    <div class="spin-wrap"><div class="spinner"></div>Fetching leads...</div>
-  </div>
-</div>
+@dataclass
+class Lead:
+    name:               str
+    source:             str
+    url:                str
+    city:               str  = ""
+    county:             str  = ""
+    state:              str  = "WA"
+    priority:           int  = 6
+    type:               str  = "Public Bid"
+    bid_number:         str  = ""
+    close_date:         str  = ""
+    description:        str  = ""
+    direct_url:         str  = ""
+    found_date:         str  = field(default_factory=lambda: datetime.datetime.utcnow().isoformat())
+    contact_name:       str  = ""
+    contact_title:      str  = ""
+    contact_department: str  = ""
+    contact_email:      str  = ""
+    contact_phone:      str  = ""
+    enriched:           Optional[str] = None   # None | 'scraped' | 'ai' | 'ai_partial' | 'none'
 
-<div class="toast" id="toast"></div>
-</div>
+    def is_gc(self) -> bool:
+        """GC Portfolio leads have source starting with 'GC'."""
+        return re.match(r'^GC[\s\-–—]', self.source or '') is not None
 
-<script>
-const GPR_KEYWORDS=['utility locate','utility detection','slab scan','concrete scan','rebar','post-tension','conduit','underground','subsurface','void','pavement','parking','overlay','road','street','asphalt','bridge deck','retaining wall','utility','storm','sewer','water main','watermain','transmission','drainage'];
-const CORE_KEYWORDS=['core drill','coring','core sample','boring','anchor','epoxy anchor','concrete core','asphalt core','pavement core','structural penetration','seismic','retrofit','reinforce','demolish','demolition','annex','renovation','remodel','building','facility','campus','school','hospital','clinic','medical','apartment','multifamily','residential','housing','tower','high-rise','garage','parking structure','construction','infrastructure','replacement','new build'];
-const NOISE_WORDS=['how do i','how can i','who should i','what is','register','supplier registration','previous bid','bid list','contact if','finding available','finding bid','locating executed','how does the','doing business','learn more','bid tabulation','finding bid tabulation','bid openings:','2025 bid openings','2024 bid openings','version options'];
+    def lead_id(self) -> str:
+        raw = f"{self.name}|{self.source}"
+        return hashlib.md5(raw.encode()).hexdigest()[:12]
 
-function detectService(name) {
-  const n=name.toLowerCase();
-  if (NOISE_WORDS.some(w=>n.includes(w))) return 'noise';
-  const g=GPR_KEYWORDS.some(w=>n.includes(w)), c=CORE_KEYWORDS.some(w=>n.includes(w));
-  if (g&&c) return 'both'; if (g) return 'gpr'; if (c) return 'core'; return 'tbd';
-}
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        # Remove None values to keep JSON clean
+        return {k: v for k, v in d.items() if v is not None}
 
-function estimateQuote(name,svc) {
-  const n=name.toLowerCase();
-  let gprMin=0,gprMax=0,coreMin=0,coreMax=0,gprNote='',coreNote='',complexity='Standard';
-  if (svc==='noise') return null;
-  if (svc==='gpr'||svc==='both') {
-    if (n.includes('parking')||n.includes('garage')){gprMin=1350;gprMax=4050;gprNote='1–3 deck scans @ $675/scan';complexity='Multi-deck likely';}
-    else if (n.includes('bridge')){gprMin=2025;gprMax=6750;gprNote='Multiple scan passes';complexity='Bridge deck protocol';}
-    else if (n.includes('hospital')||n.includes('medical')||n.includes('clinic')){gprMin=1350;gprMax=3375;gprNote='Multi-floor slabs';complexity='Occupied facility';}
-    else if (n.includes('campus')||n.includes('university')||n.includes('school')){gprMin=675;gprMax=3375;gprNote='1–5 slabs est.';complexity='Multi-building';}
-    else if (n.includes('overlay')||n.includes('road')||n.includes('street')){gprMin=675;gprMax=2025;gprNote='Linear scan + utility';complexity='Public works';}
-    else{gprMin=675;gprMax=2025;gprNote='Estimated 1–3 scans';complexity='Standard';}
-  }
-  if (svc==='core'||svc==='both') {
-    if (n.includes('seismic')||n.includes('retrofit')){coreMin=3000;coreMax=15000;coreNote='High core count, structural';complexity='Seismic scope';}
-    else if (n.includes('parking')||n.includes('garage')){coreMin=2000;coreMax=8000;coreNote='Deck anchors + samples';complexity='Multi-level';}
-    else if (n.includes('hospital')||n.includes('medical')){coreMin=2500;coreMax=10000;coreNote='Occupied facility premium';complexity='Medical grade';}
-    else if (n.includes('demolish')||n.includes('demolition')){coreMin=1500;coreMax=5000;coreNote='Pre-demo coring';complexity='Demo scope';}
-    else if (n.includes('campus')||n.includes('university')){coreMin=2000;coreMax=8000;coreNote='Multi-building scope';complexity='Campus scale';}
-    else{coreMin=1500;coreMax=5000;coreNote='Formula: 3.25 × dia × depth × count';complexity='Standard';}
-  }
-  return{gprMin,gprMax,gprNote,coreMin,coreMax,coreNote,totalMin:gprMin+coreMin,totalMax:gprMax+coreMax,complexity};
-}
 
-function fmtMoney(n){return n?'$'+n.toLocaleString():'—';}
-function isGC(l){return(l.source||'').startsWith('GC -');}
-function isNoise(l){return detectService(l.name||'')==='noise';}
-function hasContact(l){return !!(l.contact_email||l.contact_phone||l.contact_name);}
+# ── SOURCES ───────────────────────────────────────────────────────────────────
+# Each source is a dict with keys: name, url, city, county, type
+# "type" is "Public Bid" or "GC Portfolio"
+SOURCES = [
+    # ── King County / Seattle ────────────────────────────────
+    {"name": "Seattle DPD/DCI Bids",     "url": "https://www.seattle.gov/city-purchasing-and-contracting/bid-opportunities", "city": "Seattle",   "county": "King",      "type": "Public Bid"},
+    {"name": "Seattle Consultant Connection", "url": "https://consultants.seattle.gov",                                       "city": "Seattle",   "county": "King",      "type": "Public Bid"},
+    {"name": "King County Procurement",  "url": "https://www.kingcounty.gov/tools/procurement/Bids.aspx",                     "city": "Seattle",   "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Bellevue",     "url": "https://www.bellevuewa.gov/city-government/departments/finance/purchasing", "city": "Bellevue",  "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Redmond",      "url": "https://www.redmondwa.gov/331/Purchasing-Bids",                              "city": "Redmond",   "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Kirkland",     "url": "https://www.kirklandwa.gov/Government/Departments/Finance/Purchasing-Bids", "city": "Kirkland",  "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Renton",       "url": "https://rentonwa.gov/city_hall/administrative_services/purchasing_bids",    "city": "Renton",    "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Kent",         "url": "https://www.kentwa.gov/departments/finance/purchasing-and-bids",            "city": "Kent",      "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Auburn",       "url": "https://www.auburnwa.gov/city_hall/departments/finance/procurement",       "city": "Auburn",    "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Shoreline",    "url": "https://www.shorelinewa.gov/government/departments/city-manager-s-office/purchasing", "city": "Shoreline", "county": "King", "type": "Public Bid"},
+    {"name": "City Bids - Burien",       "url": "https://burienwa.gov/business/purchasing_and_bids",                        "city": "Burien",    "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Federal Way",  "url": "https://www.cityoffederalway.com/purchasing",                               "city": "Federal Way","county": "King",     "type": "Public Bid"},
+    # ── Pierce County ────────────────────────────────────────
+    {"name": "Pierce County Procurement","url": "https://www.piercecountywa.gov/1289/Purchasing-and-Contracting",            "city": "Tacoma",    "county": "Pierce",    "type": "Public Bid"},
+    {"name": "City Bids - Tacoma",       "url": "https://www.cityoftacoma.org/government/city_departments/purchasing/bids_and_proposals", "city": "Tacoma", "county": "Pierce", "type": "Public Bid"},
+    # ── Snohomish County ─────────────────────────────────────
+    {"name": "Snohomish County PW",      "url": "https://www.snohomishcountywa.gov/2195/Bid-Openings",                       "city": "Everett",   "county": "Snohomish", "type": "Public Bid"},
+    {"name": "City Bids - Everett",      "url": "https://www.everettwa.gov/319/Procurement",                                 "city": "Everett",   "county": "Snohomish", "type": "Public Bid"},
+    {"name": "City Bids - Marysville",   "url": "https://www.marysvillewa.gov/government/city_departments/public_works/bids_rfps", "city": "Marysville", "county": "Snohomish", "type": "Public Bid"},
+    # ── Kitsap County ────────────────────────────────────────
+    {"name": "City Bids - Kitsap County PW", "url": "https://www.kitsap.gov/publicworks/Pages/Bids.aspx",                   "city": "Bremerton", "county": "Kitsap",    "type": "Public Bid"},
+    {"name": "City Bids - Bremerton",    "url": "https://www.ci.bremerton.wa.us/288/Purchasing-Bids",                        "city": "Bremerton", "county": "Kitsap",    "type": "Public Bid"},
+    # ── Thurston County ──────────────────────────────────────
+    {"name": "City Bids - Olympia",      "url": "https://www.olympiawa.gov/government/departments/public-works/engineering-and-capital-projects", "city": "Olympia", "county": "Thurston", "type": "Public Bid"},
+    # ── State of Washington ──────────────────────────────────
+    {"name": "WSDOT Bids",               "url": "https://www.wsdot.wa.gov/Business/Construction/",                           "city": "",          "county": "",          "type": "Public Bid"},
+    {"name": "WA DES Bids",              "url": "https://des.wa.gov/services/contracting-purchasing/public-works-engineering/advertised-public-works-projects", "city": "", "county": "", "type": "Public Bid"},
+    {"name": "Sound Transit Bids",       "url": "https://www.soundtransit.org/business-center/contracting-procurement",     "city": "Seattle",   "county": "King",      "type": "Public Bid"},
+    {"name": "Port of Seattle Bids",     "url": "https://www.portseattle.org/business/doing-business-port/contracting-opportunities", "city": "Seattle", "county": "King", "type": "Public Bid"},
+    # ── GC Portfolio ─────────────────────────────────────────
+    {"name": "GC – Sellen Construction", "url": "https://www.sellen.com/projects/",                                          "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+    {"name": "GC – Skanska USA",         "url": "https://www.skanska.com/en/markets/usa/projects/",                          "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+    {"name": "GC – Mortenson",           "url": "https://www.mortenson.com/projects",                                        "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+    {"name": "GC – Lease Crutcher Lewis","url": "https://www.lewisbuilds.com/projects/",                                     "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+    {"name": "GC – Turner Construction", "url": "https://www.turnerconstruction.com/projects",                               "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+    {"name": "GC – Hensel Phelps",       "url": "https://www.henselphelps.com/projects/",                                    "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+]
 
-let ALL=[],VIEW=[],activeFilter='all',activeSort='priority',query='',openIdx=null;
+# Keywords that make a project HIGH priority for GPR/Core work
+HIGH_PRIORITY_KW = [
+    'seismic', 'retrofit', 'medical', 'hospital', 'clinic', 'parking', 'garage',
+    'bridge', 'bridge deck', 'tunnel', 'multifamily', 'apartment', 'campus',
+    'university', 'school', 'renovation', 'remodel', 'demolish', 'demolition',
+    'concrete', 'structural', 'ground penetrating', 'gpr', 'core drill',
+    'anchor', 'rebar', 'post-tension', 'subsurface', 'utility', 'underground',
+    'void', 'pavement', 'overlay', 'infrastructure', 'annex', 'addition',
+]
+LOW_PRIORITY_KW = [
+    'how do i', 'how can i', 'register', 'supplier registration', 'vendor list',
+    'bid list', 'previous bid', 'bid tabulation', 'finding bid', 'finding available',
+    '2024 bid', '2025 bid', 'learn more', 'doing business',
+]
 
-const DEMO=[
-  {name:"Everett Medical Campus Expansion Structural Engineering",city:"Everett",county:"Snohomish",source:"City Bids - Everett",priority:10,type:"Public Bid",url:"https://www.everettwa.gov/319/Procurement",found_date:new Date().toISOString(),enriched:'ai',contact_name:"Sarah Johnson",contact_title:"Procurement Manager",contact_email:"sjohnson@everettwa.gov",contact_phone:"(425) 257-8700",contact_department:"Public Works",close_date:"June 15, 2026",bid_number:"2026-045",description:"Structural engineering services for new medical campus expansion including parking structure and patient care facility."},
-  {name:"2026-016 IFB Dyes Inlet Lagoon Bulkhead Removal",city:"Silverdale",county:"Kitsap",source:"City Bids - Kitsap County PW",priority:9,type:"Public Bid",url:"https://www.kitsap.gov/pw/",found_date:new Date(Date.now()-3600000).toISOString(),enriched:'scraped',contact_name:"Mike Torres",contact_title:"Project Engineer",contact_email:"mtorres@kitsapgov.com",contact_phone:"(360) 337-5777",close_date:"June 3, 2026",bid_number:"2026-016",description:"Removal and restoration of lagoon bulkhead structure. GPR scanning required prior to demolition."},
-  {name:"SPU RFP Water Transmission Drainage Asset Engineering",city:"Seattle",county:"King",source:"Seattle Consultant Connection",priority:9,type:"Public Bid",url:"https://consultants.seattle.gov",found_date:new Date(Date.now()-7200000).toISOString(),enriched:'ai',contact_name:"Lisa Chen",contact_title:"Capital Projects Manager",contact_email:"lisa.chen@seattle.gov",contact_phone:"(206) 684-5800",close_date:"July 1, 2026",description:"Engineering services for water transmission and drainage asset assessment across SPU infrastructure."},
-  {name:"Auburn CP2418 2026 Local Street Preservation",city:"Auburn",county:"King",source:"City Bids - Auburn",priority:8,type:"Public Bid",url:"https://www.auburnwa.gov",found_date:new Date(Date.now()-86400000).toISOString(),enriched:'none'},
-];
 
-function timeAgo(iso){if(!iso)return'—';const s=(Date.now()-new Date(iso))/1000;if(s<60)return'just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';if(s<604800)return Math.floor(s/86400)+'d ago';return new Date(iso).toLocaleDateString('en-US',{month:'short',day:'numeric'});}
-function fmtDate(iso){if(!iso)return'—';return new Date(iso).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'2-digit',minute:'2-digit'});}
-function stripeClass(p){return p>=10?'s10':p>=9?'s9':p>=8?'s8':p>=7?'s7':'s6';}
-function pnClass(p){return p>=9?'pn9':p>=8?'pn8':p>=7?'pn7':'pn6';}
-function svcBadgeHTML(svc){const map={gpr:['svc-gpr','📡 GPR Scan'],core:['svc-core','🔩 Core Drill'],both:['svc-both','📡🔩 GPR + Core'],tbd:['svc-tbd','? TBD'],noise:['svc-tbd','— Nav Link']};const[cls,label]=map[svc]||map.tbd;return`<span class="svc-badge ${cls}">${label}</span>`;}
+# ── HELPERS ───────────────────────────────────────────────────────────────────
+def normalize_phone(phone: str) -> str:
+    """Strip all non-digits for comparison."""
+    return re.sub(r'\D', '', phone or '')
 
-function applyAll(){
-  let r=ALL.filter(l=>!isNoise(l));
-  if(query){const q=query.toLowerCase();r=r.filter(l=>(l.name||'').toLowerCase().includes(q)||(l.city||'').toLowerCase().includes(q)||(l.county||'').toLowerCase().includes(q)||(l.source||'').toLowerCase().includes(q)||(l.contact_name||'').toLowerCase().includes(q)||(l.contact_email||'').toLowerCase().includes(q));}
-  if(activeFilter==='hot')r=r.filter(l=>(l.priority||0)>=9);
-  else if(activeFilter==='contacts')r=r.filter(l=>hasContact(l));
-  else if(activeFilter==='gpr')r=r.filter(l=>['gpr','both'].includes(detectService(l.name)));
-  else if(activeFilter==='core')r=r.filter(l=>['core','both'].includes(detectService(l.name)));
-  else if(activeFilter==='nogc')r=r.filter(l=>!isGC(l));
-  else if(activeFilter!=='all')r=r.filter(l=>(l.county||'').includes(activeFilter)||(l.source||'').includes(activeFilter));
-  if(activeSort==='priority')r.sort((a,b)=>(b.priority||0)-(a.priority||0));
-  else if(activeSort==='newest')r.sort((a,b)=>new Date(b.found_date||0)-new Date(a.found_date||0));
-  else if(activeSort==='oldest')r.sort((a,b)=>new Date(a.found_date||0)-new Date(b.found_date||0));
-  else if(activeSort==='az')r.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
-  else if(activeSort==='city')r.sort((a,b)=>(a.city||'').localeCompare(b.city||''));
-  VIEW=r;
-}
+def score_priority(name: str, source: str) -> int:
+    n = name.lower()
+    if any(w in n for w in LOW_PRIORITY_KW):
+        return 1
+    score = 6
+    if any(w in n for w in HIGH_PRIORITY_KW):
+        score += 2
+    if re.search(r'(seismic|retrofit|hospital|medical)', n):
+        score += 1
+    if re.search(r'(parking.{0,15}structure|garage.{0,15}deck)', n):
+        score += 1
+    if source.startswith('GC'):
+        score += 1
+    return min(score, 10)
 
-function updateStats(){
-  const clean=ALL.filter(l=>!isNoise(l));
-  document.getElementById('sTotal').textContent=clean.length;
-  document.getElementById('sHot').textContent=clean.filter(l=>(l.priority||0)>=9).length;
-  const yesterday=new Date(Date.now()-86400000);
-  document.getElementById('sToday').textContent=clean.filter(l=>l.found_date&&new Date(l.found_date)>yesterday).length;
-  document.getElementById('sContacts').textContent=clean.filter(l=>hasContact(l)).length;
-}
+def is_noise(name: str) -> bool:
+    n = name.lower()
+    return any(w in n for w in LOW_PRIORITY_KW)
 
-function render(){
-  applyAll();updateStats();
-  const grid=document.getElementById('mainGrid');
-  if(!ALL.length)return;
-  const info=`<div class="result-info"><div class="result-count">Showing <b>${VIEW.length}</b> of <b>${ALL.filter(l=>!isNoise(l)).length}</b> leads</div>${query?`<div class="clear-btn" onclick="clearAll()">Clear</div>`:''}</div>`;
-  if(!VIEW.length){grid.innerHTML=info+`<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">No matches</div><div class="empty-sub">Try adjusting search or filters.</div></div>`;return;}
+def clean_text(text: str) -> str:
+    return re.sub(r'\s+', ' ', text).strip()
 
-  const cards=VIEW.map((lead,i)=>{
-    const svc=detectService(lead.name||'');
-    const q=estimateQuote(lead.name||'',svc);
-    const isOpen=openIdx===i;
-    const p=lead.priority||6;
-    const src=(lead.source||'').replace('City Bids - ','').replace('Seattle ','SEA ');
-    const hasUrl=lead.url&&lead.url.length>4;
-    const hc=hasContact(lead);
-    let detail='';
+def log(msg: str):
+    ts = datetime.datetime.utcnow().strftime('%H:%M:%S')
+    print(f"[{ts}] {msg}")
 
-    if(isOpen){
-      // Contact box
-      let contactHTML='';
-      if(hc){
-        contactHTML=`<div class="contact-box">
-          <div class="contact-box-title">📞 Contact Information ${lead.enriched==='ai'?'<span style="color:var(--purple);margin-left:6px">· AI verified</span>':lead.enriched==='scraped'?'<span style="color:var(--green);margin-left:6px">· Scraped from bid page</span>':''}</div>
-          <div class="contact-grid">
-            ${lead.contact_name?`<div class="contact-item"><div class="contact-item-label">Name</div><div class="contact-item-val">${lead.contact_name}</div></div>`:''}
-            ${lead.contact_title?`<div class="contact-item"><div class="contact-item-label">Title</div><div class="contact-item-val">${lead.contact_title}</div></div>`:''}
-            ${lead.contact_department?`<div class="contact-item"><div class="contact-item-label">Department</div><div class="contact-item-val">${lead.contact_department}</div></div>`:''}
-            ${lead.contact_phone?`<div class="contact-item"><div class="contact-item-label">Phone</div><div class="contact-item-val"><a href="tel:${lead.contact_phone}">${lead.contact_phone}</a></div></div>`:''}
-            ${lead.contact_email?`<div class="contact-item" style="grid-column:1/-1"><div class="contact-item-label">Email</div><div class="contact-item-val"><a href="mailto:${lead.contact_email}">${lead.contact_email}</a></div></div>`:''}
-          </div>
-          <div class="contact-actions">
-            ${lead.contact_phone?`<a class="contact-btn cb-call" href="tel:${lead.contact_phone}">📞 Call</a>`:''}
-            ${lead.contact_email?`<a class="contact-btn cb-email" href="mailto:${lead.contact_email}?subject=Scan2Core - ${encodeURIComponent(lead.name)}&body=Hello ${lead.contact_name||''},%0A%0AI am reaching out regarding the ${encodeURIComponent(lead.name)} project. Scan2Core provides GPR scanning and concrete core drilling services throughout Washington State and we would like to discuss how we can support this project.%0A%0APlease let me know if you have any questions.%0A%0AThank you">✉️ Email</a>`:''}
-          </div>
-        </div>`;
-      } else {
-        contactHTML=`<div class="contact-box"><div class="contact-box-title">📞 Contact Information</div><div class="no-contact">No contact info found yet — check back after tomorrow's run or open the bid page directly.</div></div>`;
-      }
 
-      // Quote
-      let quoteHTML='';
-      if(q&&q.totalMax>0){
-        quoteHTML=`<div class="quote-box"><div class="quote-box-title">⚡ Scan2Core Estimate</div><div class="quote-grid">${q.gprMax?`<div class="quote-item"><div class="quote-item-label">GPR Scan</div><div class="quote-item-val orange">${fmtMoney(q.gprMin)}–${fmtMoney(q.gprMax)}</div></div>`:''} ${q.coreMax?`<div class="quote-item"><div class="quote-item-label">Core Drill</div><div class="quote-item-val orange">${fmtMoney(q.coreMin)}–${fmtMoney(q.coreMax)}</div></div>`:''}<div class="quote-item"><div class="quote-item-label">Total Est.</div><div class="quote-item-val orange">${fmtMoney(q.totalMin)}–${fmtMoney(q.totalMax)}</div></div><div class="quote-item"><div class="quote-item-label">Complexity</div><div class="quote-item-val">${q.complexity}</div></div></div>${q.gprNote||q.coreNote?`<div class="quote-rec">${q.gprNote?`<strong>GPR:</strong> ${q.gprNote}<br>`:''}${q.coreNote?`<strong>Core:</strong> ${q.coreNote}`:''}</div>`:''}</div>`;
-      }
+# ── SCRAPER ───────────────────────────────────────────────────────────────────
+def fetch_url(url: str, timeout: int = 15) -> Optional[str]:
+    try:
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (compatible; Scan2Core-LeadHunter/1.0; +https://scan2core.github.io)',
+            'Accept': 'text/html,application/xhtml+xml,*/*',
+        })
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            charset = r.headers.get_content_charset() or 'utf-8'
+            return r.read().decode(charset, errors='replace')
+    except Exception as e:
+        log(f"  fetch error {url[:60]}: {e}")
+        return None
 
-      const bidNum=(lead.bid_number)||((lead.name||'').match(/\b(CP|RFP|RFQ|IFB|ITB)[\s#-]*([\w-]+)/i)||[])[0]||'';
-      const closeDate=lead.close_date||'';
-      const desc=lead.description||'';
-      const directUrl=lead.direct_url||lead.url||'';
+def extract_projects_from_html(html: str, source: dict) -> list[Lead]:
+    """
+    Very lightweight HTML scraper: finds anchor tags that look like
+    bid/project titles and returns them as Lead objects.
+    Real production scrape would use source-specific parsers; this
+    covers the common table/list pattern across WA agency sites.
+    """
+    leads = []
+    # Find all <a> text + href pairs
+    pattern = re.compile(r'<a[^>]+href=["\']([^"\']*)["\'][^>]*>(.*?)</a>', re.DOTALL | re.IGNORECASE)
+    for m in pattern.finditer(html):
+        href, raw_text = m.group(1), m.group(2)
+        text = clean_text(re.sub(r'<[^>]+>', '', raw_text))
+        if len(text) < 8 or len(text) > 300:
+            continue
+        if is_noise(text):
+            continue
+        # Only keep links that look like project/bid titles
+        # (contain year, bid#, or construction-related keywords)
+        has_year = bool(re.search(r'20(2[4-9]|3\d)', text))
+        has_bid  = bool(re.search(r'\b(bid|rfp|rfq|contract|project|cp\d|pw\d)', text.lower()))
+        has_kw   = any(k in text.lower() for k in HIGH_PRIORITY_KW)
+        if not (has_year or has_bid or has_kw):
+            continue
 
-      detail=`<div class="card-detail">
-        ${isGC(lead)?`<div style="background:rgba(251,191,36,0.08);border-bottom:1px solid rgba(251,191,36,0.2);padding:10px 16px;font-family:var(--mono);font-size:11px;color:var(--yellow);">⚠ GC Portfolio Page — Contact GC directly to get on their sub list.</div>`:''}
-        ${contactHTML}
-        ${quoteHTML}
-        <div class="bid-info"><div class="bid-info-title">Bid Details</div><div class="info-rows">
-          <div class="info-row"><div class="info-key">Service</div><div class="info-val">${svc==='gpr'?'📡 GPR Scanning':svc==='core'?'🔩 Core Drilling':svc==='both'?'📡🔩 GPR + Core':'❓ Review Specs'}</div></div>
-          ${closeDate?`<div class="info-row"><div class="info-key">Closes</div><div class="info-val yellow">⏰ ${closeDate}</div></div>`:''}
-          ${bidNum?`<div class="info-row"><div class="info-key">Bid #</div><div class="info-val green">${bidNum}</div></div>`:''}
-          ${desc?`<div class="info-row"><div class="info-key">Description</div><div class="info-val" style="color:var(--text2)">${desc}</div></div>`:''}
-          <div class="info-row"><div class="info-key">Source</div><div class="info-val">${lead.source||'—'}</div></div>
-          <div class="info-row"><div class="info-key">Location</div><div class="info-val">${[lead.city,lead.county].filter(Boolean).join(', ')||'—'}</div></div>
-          <div class="info-row"><div class="info-key">Found</div><div class="info-val">${fmtDate(lead.found_date)}</div></div>
-          ${directUrl?`<div class="info-row"><div class="info-key">Link</div><div class="info-val"><a href="${directUrl}" target="_blank" onclick="event.stopPropagation()">${directUrl.replace(/^https?:\/\//,'').substring(0,55)}${directUrl.length>55?'…':''}</a></div></div>`:''}
-        </div></div>
-        <div class="action-bar">
-          ${directUrl?`<button class="abtn ${isGC(lead)?'abtn-sec':'abtn-primary'}" onclick="event.stopPropagation();window.open('${directUrl}','_blank')">${isGC(lead)?'View Portfolio ↗':'Open Bid ↗'}</button>`:''}
-          <button class="abtn abtn-green" onclick="event.stopPropagation();buildQuote(${i})">Build Quote</button>
-          <button class="abtn abtn-sec" onclick="event.stopPropagation();copyLead(${i})">Copy</button>
-        </div>
-      </div>`;
-    }
+        # Build absolute URL
+        direct = href if href.startswith('http') else (source['url'].rstrip('/') + '/' + href.lstrip('/'))
 
-    return `<div class="card${isOpen?' open':''}" id="c${i}" onclick="toggle(${i})">
-      <div class="card-stripe ${stripeClass(p)}"></div>
-      <div class="card-top">
-        <div class="pnum ${pnClass(p)}">${p}</div>
-        <div class="title-block">
-          <div class="card-title">${lead.name||'Unnamed'}</div>
-          <div class="card-src">${src}</div>
-          ${svcBadgeHTML(svc)}
-        </div>
-      </div>
-      <div class="card-tags">
-        ${lead.city?`<span class="tag t-city">${lead.city}</span>`:''}
-        ${lead.county?`<span class="tag t-county">${lead.county}</span>`:''}
-        ${hc?`<span class="tag t-enriched">📞 Contact</span>`:''}
-        <span class="tag t-time">${timeAgo(lead.found_date)}</span>
-      </div>
-      ${detail}
-    </div>`;
-  }).join('');
+        # Extract bid number if present
+        bid_num = ''
+        bn = re.search(r'\b([A-Z]{1,4}[-_]?\d{4}[-_]\d{2,6}|\d{4}[-_]\d{2,5})\b', text)
+        if bn:
+            bid_num = bn.group(1)
 
-  grid.innerHTML=info+cards;
-}
+        priority = score_priority(text, source['name'])
+        if priority < 3:
+            continue
 
-function toggle(i){openIdx=openIdx===i?null:i;render();if(openIdx!==null)setTimeout(()=>{document.getElementById('c'+i)?.scrollIntoView({behavior:'smooth',block:'nearest'});},60);}
-function setFilter(el,val){document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));el.classList.add('on');activeFilter=val;openIdx=null;render();}
-function setSort(val){activeSort=val;openIdx=null;render();}
-function doSearch(v){query=v;openIdx=null;render();}
-function clearAll(){query='';document.getElementById('searchInput').value='';activeFilter='all';document.querySelectorAll('.chip').forEach(c=>c.classList.remove('on'));document.querySelector('[data-f="all"]').classList.add('on');openIdx=null;render();}
+        lead = Lead(
+            name        = text,
+            source      = source['name'],
+            url         = source['url'],
+            direct_url  = direct,
+            city        = source.get('city', ''),
+            county      = source.get('county', ''),
+            type        = source.get('type', 'Public Bid'),
+            bid_number  = bid_num,
+            priority    = priority,
+        )
+        leads.append(lead)
+    return leads
 
-function buildQuote(i){
-  const lead=VIEW[i];if(!lead)return;
-  const svc=detectService(lead.name);const q=estimateQuote(lead.name,svc);
-  let txt=`SCAN2CORE QUOTE ESTIMATE\n${'─'.repeat(40)}\nProject: ${lead.name}\nLocation: ${lead.city}, ${lead.county}\n`;
-  if(lead.bid_number)txt+=`Bid #: ${lead.bid_number}\n`;
-  if(lead.close_date)txt+=`Closes: ${lead.close_date}\n`;
-  txt+=`\n`;
-  if(lead.contact_name)txt+=`Contact: ${lead.contact_name}${lead.contact_title?', '+lead.contact_title:''}\n`;
-  if(lead.contact_phone)txt+=`Phone: ${lead.contact_phone}\n`;
-  if(lead.contact_email)txt+=`Email: ${lead.contact_email}\n`;
-  txt+=`\n`;
-  if(q&&q.totalMax>0){if(q.gprMax)txt+=`GPR Scanning: ${fmtMoney(q.gprMin)} – ${fmtMoney(q.gprMax)}\n  (${q.gprNote})\n`;if(q.coreMax)txt+=`Core Drilling: ${fmtMoney(q.coreMin)} – ${fmtMoney(q.coreMax)}\n  (${q.coreNote})\n`;txt+=`\nTotal Estimate: ${fmtMoney(q.totalMin)} – ${fmtMoney(q.totalMax)}\nComplexity: ${q.complexity}\n`;}
-  else txt+=`Base GPR: $675/scan\nCore Drill: 3.25 × diameter × depth × count\n`;
-  txt+=`\nBid URL: ${lead.direct_url||lead.url||'N/A'}\nFound: ${fmtDate(lead.found_date)}`;
-  navigator.clipboard?.writeText(txt).then(()=>toast('✓ Quote copied')).catch(()=>toast('⚠ Copy failed'));
-}
 
-function copyLead(i){
-  const lead=VIEW[i];if(!lead)return;
-  const svc=detectService(lead.name);
-  let txt=`${lead.name}\nPriority: ${lead.priority} | Service: ${svc.toUpperCase()}\nCity: ${lead.city}, ${lead.county}\n`;
-  if(lead.contact_name)txt+=`Contact: ${lead.contact_name}${lead.contact_title?', '+lead.contact_title:''}\n`;
-  if(lead.contact_phone)txt+=`Phone: ${lead.contact_phone}\n`;
-  if(lead.contact_email)txt+=`Email: ${lead.contact_email}\n`;
-  if(lead.close_date)txt+=`Closes: ${lead.close_date}\n`;
-  txt+=`Source: ${lead.source}\nFound: ${fmtDate(lead.found_date)}\n${lead.direct_url||lead.url||''}`;
-  navigator.clipboard?.writeText(txt).then(()=>toast('✓ Copied')).catch(()=>toast('⚠ Copy failed'));
-}
+def scrape_all_sources() -> list[Lead]:
+    all_leads: list[Lead] = []
+    for src in SOURCES:
+        log(f"Scraping: {src['name']}")
+        html = fetch_url(src['url'])
+        if not html:
+            continue
+        found = extract_projects_from_html(html, src)
+        log(f"  → {len(found)} candidates")
+        all_leads.extend(found)
+    return all_leads
 
-function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
 
-function showLoaded(){
-  document.getElementById('loadScreen').style.display='none';
-  document.getElementById('loadingScreen').style.display='none';
-  document.getElementById('statsRow').style.display='flex';
-  document.getElementById('filterBar').style.display='flex';
-  document.getElementById('liveDot').style.display='block';
-}
+# ── AI ENRICHMENT ─────────────────────────────────────────────────────────────
+def call_claude_api(prompt: str, api_key: str) -> Optional[str]:
+    """
+    POST to Anthropic Messages API.  Returns the assistant text or None.
+    No `tools` parameter — stripped to avoid rate-limit issues on Haiku.
+    """
+    payload = json.dumps({
+        "model": AI_MODEL,
+        "max_tokens": 400,
+        "messages": [{"role": "user", "content": prompt}],
+    }).encode()
 
-function doLoad(){
-  const url=(document.getElementById('urlInput')?.value||'').trim();
-  if(!url)return;
-  document.getElementById('loadScreen').style.display='none';
-  document.getElementById('loadingScreen').style.display='flex';
-  document.getElementById('errBox').style.display='none';
-  const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),10000);
-  fetch(url,{signal:ctrl.signal})
-    .then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
-    .then(data=>{if(!Array.isArray(data))throw new Error('Expected JSON array');ALL=data;showLoaded();render();toast('✓ Loaded '+ALL.filter(l=>!isNoise(l)).length+' leads');})
-    .catch(e=>{document.getElementById('loadingScreen').style.display='none';document.getElementById('loadScreen').style.display='flex';const eb=document.getElementById('errBox');eb.style.display='block';eb.textContent='⚠ '+(e.name==='AbortError'?'Timed out — check connection or try demo':e.message);});
-}
+    req = urllib.request.Request(
+        ANTHROPIC_API_URL,
+        data    = payload,
+        method  = "POST",
+        headers = {
+            "Content-Type":      "application/json",
+            "x-api-key":         api_key,
+            "anthropic-version": "2023-06-01",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            data = json.loads(r.read())
+            return data.get("content", [{}])[0].get("text", "")
+    except urllib.error.HTTPError as e:
+        code = e.code
+        if code == 429:
+            log("  AI: 429 rate-limit — skipping this lead")
+            return None
+        log(f"  AI: HTTP {code}")
+        return None
+    except Exception as e:
+        log(f"  AI: {e}")
+        return None
 
-function doRefresh(){
-  const url=(document.getElementById('urlInput')?.value||'').trim();
-  if(!url||!ALL.length)return;
-  const btn=document.getElementById('refreshBtn');btn.classList.add('spinning');
-  const ctrl=new AbortController();setTimeout(()=>ctrl.abort(),10000);
-  fetch(url+'?t='+Date.now(),{signal:ctrl.signal})
-    .then(r=>r.json()).then(data=>{if(Array.isArray(data)){const prev=ALL.filter(l=>!isNoise(l)).length;ALL=data;render();const diff=ALL.filter(l=>!isNoise(l)).length-prev;toast(diff>0?'↑ '+diff+' new leads':'✓ Up to date');}})
-    .catch(()=>toast('⚠ Refresh failed')).finally(()=>btn.classList.remove('spinning'));
-}
 
-function loadDemo(){ALL=DEMO;showLoaded();render();toast('Demo loaded');}
-</script>
-</body>
-</html>
+def build_enrichment_prompt(lead: Lead) -> str:
+    """
+    Separate prompts for GC Portfolio vs Public Bid leads.
+
+    GC Portfolio: ask for GC's main subcontractor contact / project manager.
+    Public Bid:   ask ONLY for the bid agency's project contact.
+                  Explicitly forbid returning general contractor phone numbers.
+    """
+    if lead.is_gc():
+        gc_name = re.sub(r'^GC\s*[-–—]\s*', '', lead.source).strip()
+        return f"""You are a construction industry researcher helping Scan2Core (a GPR scanning and core drilling company in Washington State) find contact information.
+
+PROJECT: {lead.name}
+GC COMPANY: {gc_name}
+LOCATION: {lead.city}, {lead.county} County, WA
+
+Find the best person at {gc_name} for a subcontractor looking to bid on this project (project manager, estimator, or subcontractor coordinator).
+
+Reply in this EXACT format — one field per line, no extras:
+NAME: [first last or blank]
+TITLE: [job title or blank]
+DEPARTMENT: [department or blank]
+EMAIL: [email@domain or blank]
+PHONE: [{gc_name} office/direct phone, or blank]
+
+If you are not highly confident about a field, leave it blank.
+Do not invent information."""
+    else:
+        # Public Bid — strict: agency contact only, no GC numbers
+        return f"""You are a construction industry researcher helping Scan2Core (a GPR scanning and core drilling company in Washington State) find bid contact information.
+
+PROJECT: {lead.name}
+AGENCY/SOURCE: {lead.source}
+LOCATION: {lead.city}, {lead.county} County, WA
+BID URL: {lead.direct_url or lead.url}
+
+Find the SPECIFIC PROJECT MANAGER or BID COORDINATOR at the AGENCY listed above ({lead.source}).
+
+CRITICAL RULES:
+- Return ONLY contact information for the AGENCY/MUNICIPALITY listed above, not for any general contractor.
+- Do NOT return any phone number belonging to Sellen Construction, Skanska, Turner, Mortenson, or any other GC.
+- If you only know the agency's general main number and not a specific project contact, leave PHONE blank.
+- Do NOT guess or hallucinate contact details. Only return information you are highly confident about.
+
+Reply in this EXACT format — one field per line:
+NAME: [first last or blank]
+TITLE: [job title or blank]
+DEPARTMENT: [department or blank]
+EMAIL: [email@domain or blank]
+PHONE: [direct agency number, or blank]
+
+If you are not confident about a field, leave it blank."""
+
+
+def parse_ai_response(text: str) -> ContactInfo:
+    ci = ContactInfo()
+    for line in text.splitlines():
+        line = line.strip()
+        if line.upper().startswith("NAME:"):
+            val = line.split(":", 1)[1].strip()
+            if val and val.lower() not in ('blank', 'n/a', 'unknown', ''):
+                ci.name = val
+        elif line.upper().startswith("TITLE:"):
+            val = line.split(":", 1)[1].strip()
+            if val and val.lower() not in ('blank', 'n/a', ''):
+                ci.title = val
+        elif line.upper().startswith("DEPARTMENT:"):
+            val = line.split(":", 1)[1].strip()
+            if val and val.lower() not in ('blank', 'n/a', ''):
+                ci.department = val
+        elif line.upper().startswith("EMAIL:"):
+            val = line.split(":", 1)[1].strip()
+            # Basic email validation
+            if val and '@' in val and '.' in val and val.lower() not in ('blank', 'n/a'):
+                ci.email = val
+        elif line.upper().startswith("PHONE:"):
+            val = line.split(":", 1)[1].strip()
+            if val and val.lower() not in ('blank', 'n/a', ''):
+                # Strip common formatting noise
+                val = re.sub(r'[^\d\s\(\)\-\+\.]', '', val).strip()
+                digits = re.sub(r'\D', '', val)
+                if 7 <= len(digits) <= 11:
+                    ci.phone = val
+    return ci
+
+
+def enrich_lead_with_ai(lead: Lead, api_key: str) -> bool:
+    """
+    Calls Claude Haiku to find contact info for a lead.
+    Returns True if any contact info was found.
+    """
+    prompt = build_enrichment_prompt(lead)
+    text = call_claude_api(prompt, api_key)
+    if text is None:
+        return False
+
+    ci = parse_ai_response(text)
+    if ci.has_contact_info():
+        lead.contact_name       = ci.name       or ""
+        lead.contact_title      = ci.title      or ""
+        lead.contact_department = ci.department or ""
+        lead.contact_email      = ci.email      or ""
+        lead.contact_phone      = ci.phone      or ""
+        lead.enriched = "ai" if (ci.email and ci.phone) else "ai_partial"
+        return True
+    else:
+        lead.enriched = "none"
+        return False
+
+
+# ── PHONE QUALITY ENFORCEMENT ─────────────────────────────────────────────────
+def build_gc_phone_set(leads: list[Lead]) -> set[str]:
+    """
+    Collect all phone numbers from GC Portfolio leads (normalized).
+    These are the GC main office lines we don't want appearing on
+    public bid leads.
+    """
+    gc_phones = set()
+    for lead in leads:
+        if lead.is_gc() and lead.contact_phone:
+            normalized = normalize_phone(lead.contact_phone)
+            if normalized:
+                gc_phones.add(normalized)
+    return gc_phones
+
+
+def build_phone_freq_map(leads: list[Lead]) -> dict[str, int]:
+    """Count how many leads each phone number appears on."""
+    freq: dict[str, int] = {}
+    for lead in leads:
+        if lead.contact_phone:
+            p = normalize_phone(lead.contact_phone)
+            if p:
+                freq[p] = freq.get(p, 0) + 1
+    return freq
+
+
+def enforce_phone_quality(leads: list[Lead]) -> int:
+    """
+    Post-enrichment phone quality pass:
+    1. Remove phones from non-GC leads that also appear on any GC lead
+       (cross-contamination: AI returned a GC office number for a public bid).
+    2. Remove phones from non-GC leads that appear on 5+ leads total
+       (frequency heuristic: shared = main line, not project contact).
+
+    Returns number of phones cleared.
+    """
+    gc_phones = build_gc_phone_set(leads)
+    phone_freq = build_phone_freq_map(leads)
+    cleared = 0
+
+    for lead in leads:
+        if lead.is_gc():
+            continue  # Never touch GC lead phone data
+        if not lead.contact_phone:
+            continue
+
+        p_norm = normalize_phone(lead.contact_phone)
+
+        # Rule 1: phone exists on a GC lead → reject for public bid lead
+        if p_norm in gc_phones:
+            log(f"  📵 Cleared GC phone from public bid lead: {lead.name[:50]}")
+            lead.contact_phone = ""
+            # Downgrade enrichment status if phone was the only contact
+            if not lead.contact_email and not lead.contact_name:
+                lead.enriched = "none"
+            elif lead.enriched == "ai":
+                lead.enriched = "ai_partial"
+            cleared += 1
+            continue
+
+        # Rule 2: phone appears on 5+ leads → shared main line
+        if phone_freq.get(p_norm, 0) >= SHARED_PHONE_THRESHOLD:
+            log(f"  📵 Cleared shared phone ({phone_freq[p_norm]}x) from: {lead.name[:50]}")
+            lead.contact_phone = ""
+            if not lead.contact_email and not lead.contact_name:
+                lead.enriched = "none"
+            elif lead.enriched == "ai":
+                lead.enriched = "ai_partial"
+            cleared += 1
+
+    return cleared
+
+
+# ── DEDUPLICATION ─────────────────────────────────────────────────────────────
+def dedup_leads(new_leads: list[Lead], existing: list[dict]) -> tuple[list[Lead], list[Lead]]:
+    """
+    Compare incoming scraped leads against existing JSON.
+    Returns (to_add, to_skip).
+    Dedup key = normalized name + source.
+    """
+    existing_keys = set()
+    for e in existing:
+        key = hashlib.md5(f"{e.get('name','')}|{e.get('source','')}".encode()).hexdigest()[:12]
+        existing_keys.add(key)
+
+    to_add, to_skip = [], []
+    for lead in new_leads:
+        if lead.lead_id() in existing_keys:
+            to_skip.append(lead)
+        else:
+            to_add.append(lead)
+    return to_add, to_skip
+
+
+# ── PERSISTENCE ───────────────────────────────────────────────────────────────
+def load_existing() -> list[dict]:
+    if not os.path.exists(OUTPUT_FILE):
+        return []
+    try:
+        with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data if isinstance(data, list) else []
+    except Exception as e:
+        log(f"Warning: could not read {OUTPUT_FILE}: {e}")
+        return []
+
+
+def save_leads(leads: list[dict]):
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+        json.dump(leads, f, indent=2, ensure_ascii=False)
+    log(f"Saved {len(leads)} leads to {OUTPUT_FILE}")
+
+
+def merge_existing_contact_data(new_lead: Lead, existing: list[dict]) -> bool:
+    """
+    If an existing lead (same name+source) already has enrichment data,
+    copy it onto the new_lead so we don't lose it.
+    Returns True if data was copied.
+    """
+    for e in existing:
+        if e.get('name') == new_lead.name and e.get('source') == new_lead.source:
+            for field in ['contact_name','contact_title','contact_department',
+                          'contact_email','contact_phone','enriched']:
+                if e.get(field):
+                    setattr(new_lead, field, e[field])
+            return True
+    return False
+
+
+# ── BACKFILL ENRICHMENT LOOP ──────────────────────────────────────────────────
+def run_backfill(all_leads: list[Lead], api_key: str):
+    """
+    Process up to BACKFILL_PER_RUN unenriched leads with AI.
+    Higher priority leads first.
+    """
+    unenriched = [l for l in all_leads if l.enriched is None and not l.is_noise_lead()]
+    unenriched.sort(key=lambda l: l.priority, reverse=True)
+
+    targets = unenriched[:BACKFILL_PER_RUN]
+    log(f"Backfill: {len(targets)} of {len(unenriched)} unenriched leads selected")
+
+    for i, lead in enumerate(targets):
+        log(f"  AI {i+1}/{len(targets)}: {lead.name[:60]}")
+        success = enrich_lead_with_ai(lead, api_key)
+        log(f"  → {'✓ contact found' if success else '✗ no contact'}")
+        time.sleep(AI_SLEEP_SECONDS)
+
+
+# ── MONKEY-PATCH Lead with helper ─────────────────────────────────────────────
+def _is_noise_lead(self) -> bool:
+    return any(w in self.name.lower() for w in LOW_PRIORITY_KW)
+Lead.is_noise_lead = _is_noise_lead
+
+
+# ── MAIN ──────────────────────────────────────────────────────────────────────
+def main():
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        log("WARNING: ANTHROPIC_API_KEY not set — AI enrichment disabled")
+
+    # 1. Load existing data
+    existing = load_existing()
+    log(f"Existing leads: {len(existing)}")
+
+    # 2. Scrape all sources
+    log("── Scraping sources ──")
+    raw_leads = scrape_all_sources()
+    log(f"Raw candidates: {len(raw_leads)}")
+
+    # 3. Dedup against existing
+    new_leads, skipped = dedup_leads(raw_leads, existing)
+    log(f"New: {len(new_leads)}, Already known: {len(skipped)}")
+
+    # 4. Restore contact data for any lead we've seen before (re-found on same source)
+    for lead in new_leads:
+        merge_existing_contact_data(lead, existing)
+
+    # 5. Rebuild full lead list: existing + new (convert existing dicts → Lead objects)
+    existing_leads: list[Lead] = []
+    for e in existing:
+        try:
+            lead = Lead(
+                name               = e.get('name', ''),
+                source             = e.get('source', ''),
+                url                = e.get('url', ''),
+                city               = e.get('city', ''),
+                county             = e.get('county', ''),
+                state              = e.get('state', 'WA'),
+                priority           = e.get('priority', 6),
+                type               = e.get('type', 'Public Bid'),
+                bid_number         = e.get('bid_number', ''),
+                close_date         = e.get('close_date', ''),
+                description        = e.get('description', ''),
+                direct_url         = e.get('direct_url', ''),
+                found_date         = e.get('found_date', ''),
+                contact_name       = e.get('contact_name', ''),
+                contact_title      = e.get('contact_title', ''),
+                contact_department = e.get('contact_department', ''),
+                contact_email      = e.get('contact_email', ''),
+                contact_phone      = e.get('contact_phone', ''),
+                enriched           = e.get('enriched'),
+            )
+            existing_leads.append(lead)
+        except Exception as ex:
+            log(f"  skip malformed existing lead: {ex}")
+
+    all_leads = existing_leads + new_leads
+    log(f"Total after merge: {len(all_leads)}")
+
+    # 6. AI backfill on unenriched leads
+    if api_key:
+        log("── AI enrichment ──")
+        run_backfill(all_leads, api_key)
+
+    # 7. Phone quality enforcement (post-enrichment pass)
+    log("── Phone quality pass ──")
+    cleared = enforce_phone_quality(all_leads)
+    log(f"Cleared {cleared} suspect phones")
+
+    # 8. Sort by priority desc, then by found_date desc
+    all_leads.sort(key=lambda l: (-(l.priority or 0), l.found_date or ''), reverse=False)
+    all_leads.sort(key=lambda l: -(l.priority or 0))
+
+    # 9. Save
+    save_leads([l.to_dict() for l in all_leads])
+
+    # 10. Summary stats
+    total     = len(all_leads)
+    has_email = sum(1 for l in all_leads if l.contact_email)
+    has_phone = sum(1 for l in all_leads if l.contact_phone)
+    gc_leads  = sum(1 for l in all_leads if l.is_gc())
+    hot       = sum(1 for l in all_leads if (l.priority or 0) >= 9)
+    log(f"── Summary: {total} leads | {hot} hot | {gc_leads} GC | {has_email} email | {has_phone} phone ──")
+
+
+if __name__ == "__main__":
+    main()
