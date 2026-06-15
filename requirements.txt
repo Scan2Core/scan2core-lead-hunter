@@ -1,2 +1,6 @@
-requests>=2.31.0
-beautifulsoup4>=4.12.0
+# Scan2Core Lead Hunter — dependencies
+# The scraper core uses only the Python standard library (urllib, json, re…).
+# Playwright is required ONLY for the experimental browser tier that renders the
+# JavaScript bid portals (Bellevue, King County/Bonfire, Sound Transit, WSDOT).
+# The workflow installs the browser with:  python -m playwright install --with-deps chromium
+playwright>=1.40
