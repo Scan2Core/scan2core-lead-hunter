@@ -33,7 +33,7 @@ from typing import Optional
 # ── CONFIG ────────────────────────────────────────────────────────────────────
 AI_MODEL          = "claude-haiku-4-5-20251001"
 AI_SLEEP_SECONDS  = 2
-BACKFILL_PER_RUN  = 20
+BACKFILL_PER_RUN  = 40
 OUTPUT_FILE       = "found_projects.json"
 ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
 PAGE_TEXT_LIMIT   = 6000
@@ -119,6 +119,24 @@ SOURCES = [
     {"name": "City Bids - Sequim",       "url": "https://www.sequimwa.gov/Bids.aspx",       "city": "Sequim",       "county": "Clallam",   "type": "Public Bid", "parser": "civicengage"},
     {"name": "City Bids - Pasco",        "url": "https://www.pasco-wa.gov/Bids.aspx",        "city": "Pasco",        "county": "Franklin",  "type": "Public Bid", "parser": "civicengage"},
     {"name": "City Bids - Ellensburg",   "url": "https://www.ci.ellensburg.wa.us/Bids.aspx", "city": "Ellensburg",  "county": "Kittitas",  "type": "Public Bid", "parser": "civicengage"},
+]
+
+# ── BROWSER (JavaScript) SOURCES — experimental, rendered via Playwright ───────
+# These portals are JS single-page apps that return an empty shell to urllib.
+# Playwright renders them in a real browser so the HTML can be parsed. This tier
+# is EXPERIMENTAL: each portal has a different structure, so expect to tune the
+# parser per source after reading the first browser run in the Action logs.
+# If Playwright is unavailable or a portal errors, these are skipped silently —
+# the verified CivicEngage + permit sources above always still run.
+BROWSER_SOURCES = [
+    {"name": "City Bids - Bellevue", "url": "https://bellevuewa.gov/city-government/departments/finance/procurement-contracting/current-solicitations",
+     "city": "Bellevue", "county": "King", "type": "Public Bid", "engine": "browser", "parser": "generic", "wait_ms": 4500},
+    {"name": "King County Procurement", "url": "https://kingcounty.bonfirehub.com/portal/?tab=openOpportunities",
+     "city": "Seattle", "county": "King", "type": "Public Bid", "engine": "browser", "parser": "generic", "wait_ms": 6000},
+    {"name": "Sound Transit Bids", "url": "https://www.soundtransit.org/business-center/contracting-procurement/contract-opportunities",
+     "city": "Seattle", "county": "King", "type": "Public Bid", "engine": "browser", "parser": "generic", "wait_ms": 4500},
+    {"name": "WSDOT Bids", "url": "https://wsdot.wa.gov/business-wsdot/contracting-opportunities/construction-contracts/contract-ad-and-award-information",
+     "city": "", "county": "", "type": "Public Bid", "engine": "browser", "parser": "generic", "wait_ms": 4500},
 ]
 
 HIGH_PRIORITY_KW = [
@@ -228,6 +246,47 @@ def fetch_json(url: str):
         return None
 
 
+_PLAYWRIGHT_STATE = None   # None=untried, True=works, False=unavailable
+
+def fetch_rendered(url: str, wait_ms: int = 4000, wait_selector: str = None) -> Optional[str]:
+    """
+    Render a JavaScript portal in headless Chromium and return its HTML.
+    Requires Playwright + chromium (installed by the workflow). If unavailable
+    or the render fails, returns None so the caller simply skips that source —
+    this never breaks the urllib-based sources.
+    """
+    global _PLAYWRIGHT_STATE
+    if _PLAYWRIGHT_STATE is False:
+        return None
+    try:
+        from playwright.sync_api import sync_playwright
+    except Exception:
+        if _PLAYWRIGHT_STATE is None:
+            log("  (Playwright not installed — browser sources skipped)")
+        _PLAYWRIGHT_STATE = False
+        return None
+    try:
+        with sync_playwright() as pw:
+            browser = pw.chromium.launch(
+                headless=True, args=["--no-sandbox", "--disable-dev-shm-usage", "--disable-gpu"])
+            page = browser.new_page(user_agent=HTTP_HEADERS["User-Agent"])
+            page.set_default_timeout(30000)
+            page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            if wait_selector:
+                try:
+                    page.wait_for_selector(wait_selector, timeout=15000)
+                except Exception:
+                    pass
+            page.wait_for_timeout(wait_ms)
+            html = page.content()
+            browser.close()
+            _PLAYWRIGHT_STATE = True
+            return html
+    except Exception as e:
+        log(f"  browser render error {url[:50]}: {str(e)[:90]}")
+        return None
+
+
 # ── PARSERS ─────────────────────────────────────────────────────────────────
 def parse_civicengage(html: str, source: dict) -> list:
     """Open solicitations on a Granicus/CivicEngage Bids.aspx page (Bids.aspx?bidID=)."""
@@ -291,9 +350,14 @@ def extract_projects_from_html(html: str, source: dict) -> list:
 
 def scrape_all_sources() -> list:
     all_leads = []
-    for src in SOURCES:
-        log(f"Scraping: {src['name']}")
-        html = fetch_url(src['url'])
+    for src in SOURCES + BROWSER_SOURCES:
+        browser = src.get('engine') == 'browser'
+        log(f"Scraping: {src['name']}{' [browser]' if browser else ''}")
+        if browser:
+            html = fetch_rendered(src['url'], wait_ms=src.get('wait_ms', 4000),
+                                  wait_selector=src.get('wait_selector'))
+        else:
+            html = fetch_url(src['url'])
         if not html:
             continue
         found = extract_projects_from_html(html, src)
@@ -625,10 +689,19 @@ def merge_existing_contact_data(new_lead: Lead, existing: list) -> bool:
 
 # ── BACKFILL ──────────────────────────────────────────────────────────────────
 def run_backfill(all_leads: list, api_key: str):
-    unenriched = [l for l in all_leads if l.enriched is None and not l.is_noise_lead()]
+    candidates = [l for l in all_leads if l.enriched is None and not l.is_noise_lead()]
+    # Permit detail pages are JavaScript (Accela) and expose no scrapeable
+    # contact, so they'd waste every backfill slot (this is what caused the
+    # "0 email" run). Mark them processed — their value is the address/project —
+    # and spend the whole backfill budget on harvestable bid pages.
+    for l in candidates:
+        if l.type == "Permit":
+            l.enriched = "none"
+    unenriched = [l for l in candidates if l.type != "Permit"]
     unenriched.sort(key=lambda l: l.priority, reverse=True)
     targets = unenriched[:BACKFILL_PER_RUN]
-    log(f"Backfill: {len(targets)} of {len(unenriched)} unenriched leads selected")
+    log(f"Backfill: {len(targets)} harvestable bid pages selected "
+        f"({sum(1 for l in candidates if l.type=='Permit')} permits skipped — JS, no contact)")
 
     page_cache = {}
     for i, lead in enumerate(targets):
