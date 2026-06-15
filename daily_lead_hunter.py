@@ -1,546 +1,638 @@
-#!/usr/bin/env python3
 """
-Scan2Core Daily Lead Hunter v8.5
-- Scrapes 37 WA city/county bid pages daily
-- AI enrichment on NEW leads immediately
-- Backfill: 15 leads per run, no web_search tool (prevents rate limits)
-- Claude uses training knowledge of WA agencies for contact info
+daily_lead_hunter.py — Scan2Core Lead Hunter (GitHub Actions daily scraper)
+Scrapes WA State construction bid pages, deduplicates, priority-scores, and
+enriches leads with AI-sourced contact info.  Outputs found_projects.json.
+
+PHONE QUALITY POLICY:
+  - GC Portfolio leads (source starts with "GC"): AI may return the GC's main
+    office number. That's expected — it's saved as-is.
+  - Public Bid leads (city/county/state agencies): AI must ONLY return the
+    specific bid agency's project contact. Any phone that also appears on a GC
+    Portfolio lead is rejected as cross-contamination.
+  - After enrichment, any phone appearing on 5+ leads (across all types) is
+    flagged as a likely main-line number and cleared from non-GC leads.
 """
 
-import os
-import json
-import requests
-import logging
-import re
-import time
-from datetime import datetime
-from typing import List, Dict
-from urllib.parse import urljoin
+import json, os, re, time, datetime, hashlib, random, urllib.request, urllib.error
+from dataclasses import dataclass, field, asdict
+from typing import Optional
 
-try:
-    from bs4 import BeautifulSoup
-except ImportError:
-    BeautifulSoup = None
+# ── CONFIG ────────────────────────────────────────────────────────────────────
+AI_MODEL          = "claude-haiku-4-5-20251001"
+AI_SLEEP_SECONDS  = 2       # pause between AI calls to avoid 429s
+BACKFILL_PER_RUN  = 15      # max unenriched leads to process per run
+OUTPUT_FILE       = "found_projects.json"
+ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages"
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+# Threshold: a phone on this many leads = GC main line / hallucination
+SHARED_PHONE_THRESHOLD = 5
 
-WORKSPACE = os.getenv('GITHUB_WORKSPACE', '/tmp')
-FOUND_FILE = os.path.join(WORKSPACE, 'found_projects.json')
-CURRENT_YEAR = str(datetime.now().year)
-ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
-
-HIGH_PRIORITY_TYPES = [
-    'hospital', 'medical', 'clinic', 'healthcare', 'surgery', 'health',
-    'apartment', 'residential', 'multifamily', 'multi-family', 'housing', 'mixed-use',
-    'parking', 'garage', 'data center', 'server room',
-    'bridge', 'infrastructure', 'highway', 'road', 'transit', 'light rail', 'station',
-    'stadium', 'arena', 'convention', 'high-rise', 'highrise', 'tower', 'high rise',
-    'retrofit', 'seismic', 'renovation', 'remodel', 'modernization',
-    'school', 'university', 'college', 'campus', 'educational',
-    'office', 'commercial', 'tenant improvement',
-    'industrial', 'warehouse', 'manufacturing', 'plant',
-    'utility', 'water', 'sewer', 'wastewater', 'treatment plant',
-    'port', 'marine', 'dock', 'terminal',
-    'concrete', 'structural', 'foundation', 'facility', 'building', 'construction',
-]
-
-CONSTRUCTION_KEYWORDS = [
-    'bid', 'rfq', 'rfp', 'ifb', 'construct', 'project', 'build', 'renovation',
-    'contract', 'install', 'repair', 'upgrade', 'facility', 'phase',
-    'structural', 'concrete', 'foundation', 'infrastructure', 'work',
-    'demolish', 'improvement', 'modernization', 'replacement', 'solicitation',
-    'engineering', 'design', 'services', 'maintenance',
-]
-
-SKIP_EXACT = {
-    'home', 'contact', 'about', 'login', 'search', 'menu',
-    'next', 'previous', 'submit', 'more', 'back', 'top',
-    'facebook', 'twitter', 'linkedin', 'instagram', 'youtube',
-    'subscribe', 'newsletter', 'sitemap', 'privacy', 'register',
-    'bids', 'rfps', 'rfqs', 'procurement', 'purchasing',
-}
-
-NOISE_PHRASES = [
-    'click here', 'access the', 'please post', 'post the information',
-    'view the', 'read more', 'learn more', 'sign up', 'register now',
-    'follow us', 'contact us', 'get more info', 'no bids', 'no current',
-    'no open', 'there are no', 'return to', 'back to', 'go to', 'see all',
-    'legal ad', 'plan holders', 'addendum', 'tabulation', 'notice of intent',
-    'plan set', 'bid drawings', 'contract documents', 'scope of work',
-    'exhibit a', 'exhibit b', 'exhibit c', 'attachment a', 'attachment b',
-    'sign in sheet', 'pre-bid sign', 'contacts list', 'doing business with',
-    'join the meeting', 'microsoft teams', 'how does the city',
-    'city hall closure', 'employee services', 'future competitive',
-    'certifying your company', 'who should i contact',
-    'finance and administrative', 'general services', 'professional services',
-    'goods and services', 'goods, services',
-]
-
-CLOSED_PREFIXES = ('closed', 'archived', 'canceled', 'cancelled', 'awarded', 'closed*')
-
-WA_CITY_BID_PAGES = [
-    ('Auburn', 'King', 'https://www.auburnwa.gov/city_hall/documents/request_for_bids_proposals'),
-    ('Bellevue', 'King', 'https://bellevuewa.gov/city-government/departments/finance/bid-opportunities-rfps-and-rfqs'),
-    ('Bothell', 'King', 'http://www.ci.bothell.wa.us/bids.aspx'),
-    ('Burien', 'King', 'https://www.burienwa.gov/city_hall/working_with_us/bids_rfp_rfq'),
-    ('Federal Way', 'King', 'https://www.cityoffederalway.com/bids'),
-    ('Issaquah', 'King', 'https://issaquahwa.gov/1464/Bids-RFPs'),
-    ('Kent', 'King', 'https://www.kentwa.gov/pay-and-apply/bids-procurement-rfps'),
-    ('King County', 'King', 'https://kingcounty.gov/depts/finance-business-operations/procurement.aspx'),
-    ('Kirkland', 'King', 'https://www.kirklandwa.gov/Government/Departments/Finance-and-Administration/Purchasing-Services/Doing-Business-with-the-City'),
-    ('Mercer Island', 'King', 'https://www.mercerisland.gov/rfps'),
-    ('Redmond', 'King', 'https://www.redmond.gov/445/Bidding-Contracting'),
-    ('Renton', 'King', 'https://www.rentonwa.gov/city_hall/executive_services/city_clerk/CallForBids'),
-    ('SeaTac', 'King', 'https://www.seatacwa.gov/business/rfp-rfq-bid-procurement'),
-    ('Seattle', 'King', 'https://www.seattle.gov/purchasing-and-contracting/construction-contracting'),
-    ('Seattle Public Schools', 'King', 'https://www.seattleschools.org/departments/finance/procurement/current-solicitations/'),
-    ('Shoreline', 'King', 'https://www.shorelinewa.gov/government/departments/administrative-services/bids-rfps'),
-    ('Port of Seattle', 'King', 'https://www.portseattle.org/business/bid-opportunities'),
-    ('Bellevue School District', 'King', 'https://www.bsd405.org/about-us/departments/finance/open-bids'),
-    ('Everett', 'Snohomish', 'https://www.everettwa.gov/319/Procurement'),
-    ('Lynnwood', 'Snohomish', 'https://www.lynnwoodwa.gov/Government/City-Clerk/Procurement-Contracts-Division/Current-Contract-Opportunities'),
-    ('Marysville', 'Snohomish', 'https://marysvillewa.gov/Bids.aspx'),
-    ('Monroe', 'Snohomish', 'https://www.monroewa.gov/bids.aspx'),
-    ('Snohomish County', 'Snohomish', 'https://snohomishcountywa.gov/3706/Purchasing-Portal'),
-    ('Lakewood', 'Pierce', 'https://cityoflakewood.us/category/rfp-rfq-bids/'),
-    ('Pierce County', 'Pierce', 'https://www.piercecountywa.gov/5260/Current-Solicitations'),
-    ('Puyallup', 'Pierce', 'https://www.cityofpuyallup.org/Bids.aspx'),
-    ('Tacoma', 'Pierce', 'https://www.cityoftacoma.org/government/city_departments/finance/procurement_and_payables_division/purchasing/contracting_opportunities'),
-    ('Tacoma Public Schools', 'Pierce', 'https://www.tacomaschools.org/departments/purchasing'),
-    ('University Place', 'Pierce', 'https://cityofup.com/Bids.aspx'),
-    ('Lacey', 'Thurston', 'http://www.ci.lacey.wa.us/city-government/city-departments/public-works/solicitations'),
-    ('Olympia', 'Thurston', 'https://www.olympiawa.gov/government/contracts___purchasing/bids.php'),
-    ('Thurston County', 'Thurston', 'https://www.thurstoncountywa.gov/cs/Pages/bids-projects.aspx'),
-    ('Bremerton', 'Kitsap', 'https://bremertonwa.gov/bids.aspx'),
-    ('Kitsap County PW', 'Kitsap', 'https://www.kitsap.gov/pw/Pages/Current-Requests-For-Proposals-.aspx'),
-    ('WA Dept of Enterprise Services', 'State', 'https://des.wa.gov/services/contracting-purchasing/doing-business-state/bid-opportunities'),
-    ('University of Washington', 'King', 'https://facilities.uw.edu/projects/business-opportunities/solicitations'),
-    ('Sound Transit', 'Multi', 'https://www.soundtransit.org/doing-business-sound-transit/selling-sound-transit/solicitations'),
-]
-
-BACKFILL_PER_RUN = 15
-AI_SLEEP_SECONDS = 2
-
-
+# ── DATA MODEL ────────────────────────────────────────────────────────────────
+@dataclass
 class ContactInfo:
-    def __init__(self):
-        self.name = ''; self.title = ''; self.email = ''; self.phone = ''
-        self.department = ''; self.close_date = ''; self.bid_number = ''
-        self.description = ''; self.direct_url = ''
+    name:       Optional[str] = None
+    title:      Optional[str] = None
+    department: Optional[str] = None
+    email:      Optional[str] = None
+    phone:      Optional[str] = None
 
-    def to_dict(self):
-        return {k: v for k, v in {
-            'contact_name': self.name, 'contact_title': self.title,
-            'contact_email': self.email, 'contact_phone': self.phone,
-            'contact_department': self.department, 'close_date': self.close_date,
-            'bid_number': self.bid_number, 'description': self.description,
-            'direct_url': self.direct_url,
-        }.items() if v}
+    def has_contact_info(self) -> bool:
+        return bool(self.email or self.phone or self.name)
 
-    def has_contact_info(self):
-        """True only if we found actual contact fields — description alone does not count."""
-        return any([self.email, self.phone, self.name])
-
-    def has_any_info(self):
-        """True if we found anything useful at all."""
-        return any([self.email, self.phone, self.name, self.close_date, self.description, self.bid_number])
+    def is_empty(self) -> bool:
+        return not self.has_contact_info()
 
 
-class Scan2CoreBot:
-    def __init__(self):
-        self.found = self._load_found()
-        self.session = requests.Session()
-        self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-            'Accept-Language': 'en-US,en;q=0.9',
+@dataclass
+class Lead:
+    name:               str
+    source:             str
+    url:                str
+    city:               str  = ""
+    county:             str  = ""
+    state:              str  = "WA"
+    priority:           int  = 6
+    type:               str  = "Public Bid"
+    bid_number:         str  = ""
+    close_date:         str  = ""
+    description:        str  = ""
+    direct_url:         str  = ""
+    found_date:         str  = field(default_factory=lambda: datetime.datetime.utcnow().isoformat())
+    contact_name:       str  = ""
+    contact_title:      str  = ""
+    contact_department: str  = ""
+    contact_email:      str  = ""
+    contact_phone:      str  = ""
+    enriched:           Optional[str] = None   # None | 'scraped' | 'ai' | 'ai_partial' | 'none'
+
+    def is_gc(self) -> bool:
+        """GC Portfolio leads have source starting with 'GC'."""
+        return re.match(r'^GC[\s\-–—]', self.source or '') is not None
+
+    def lead_id(self) -> str:
+        raw = f"{self.name}|{self.source}"
+        return hashlib.md5(raw.encode()).hexdigest()[:12]
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        # Remove None values to keep JSON clean
+        return {k: v for k, v in d.items() if v is not None}
+
+
+# ── SOURCES ───────────────────────────────────────────────────────────────────
+# Each source is a dict with keys: name, url, city, county, type
+# "type" is "Public Bid" or "GC Portfolio"
+SOURCES = [
+    # ── King County / Seattle ────────────────────────────────
+    {"name": "Seattle DPD/DCI Bids",     "url": "https://www.seattle.gov/city-purchasing-and-contracting/bid-opportunities", "city": "Seattle",   "county": "King",      "type": "Public Bid"},
+    {"name": "Seattle Consultant Connection", "url": "https://consultants.seattle.gov",                                       "city": "Seattle",   "county": "King",      "type": "Public Bid"},
+    {"name": "King County Procurement",  "url": "https://www.kingcounty.gov/tools/procurement/Bids.aspx",                     "city": "Seattle",   "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Bellevue",     "url": "https://www.bellevuewa.gov/city-government/departments/finance/purchasing", "city": "Bellevue",  "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Redmond",      "url": "https://www.redmondwa.gov/331/Purchasing-Bids",                              "city": "Redmond",   "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Kirkland",     "url": "https://www.kirklandwa.gov/Government/Departments/Finance/Purchasing-Bids", "city": "Kirkland",  "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Renton",       "url": "https://rentonwa.gov/city_hall/administrative_services/purchasing_bids",    "city": "Renton",    "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Kent",         "url": "https://www.kentwa.gov/departments/finance/purchasing-and-bids",            "city": "Kent",      "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Auburn",       "url": "https://www.auburnwa.gov/city_hall/departments/finance/procurement",       "city": "Auburn",    "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Shoreline",    "url": "https://www.shorelinewa.gov/government/departments/city-manager-s-office/purchasing", "city": "Shoreline", "county": "King", "type": "Public Bid"},
+    {"name": "City Bids - Burien",       "url": "https://burienwa.gov/business/purchasing_and_bids",                        "city": "Burien",    "county": "King",      "type": "Public Bid"},
+    {"name": "City Bids - Federal Way",  "url": "https://www.cityoffederalway.com/purchasing",                               "city": "Federal Way","county": "King",     "type": "Public Bid"},
+    # ── Pierce County ────────────────────────────────────────
+    {"name": "Pierce County Procurement","url": "https://www.piercecountywa.gov/1289/Purchasing-and-Contracting",            "city": "Tacoma",    "county": "Pierce",    "type": "Public Bid"},
+    {"name": "City Bids - Tacoma",       "url": "https://www.cityoftacoma.org/government/city_departments/purchasing/bids_and_proposals", "city": "Tacoma", "county": "Pierce", "type": "Public Bid"},
+    # ── Snohomish County ─────────────────────────────────────
+    {"name": "Snohomish County PW",      "url": "https://www.snohomishcountywa.gov/2195/Bid-Openings",                       "city": "Everett",   "county": "Snohomish", "type": "Public Bid"},
+    {"name": "City Bids - Everett",      "url": "https://www.everettwa.gov/319/Procurement",                                 "city": "Everett",   "county": "Snohomish", "type": "Public Bid"},
+    {"name": "City Bids - Marysville",   "url": "https://www.marysvillewa.gov/government/city_departments/public_works/bids_rfps", "city": "Marysville", "county": "Snohomish", "type": "Public Bid"},
+    # ── Kitsap County ────────────────────────────────────────
+    {"name": "City Bids - Kitsap County PW", "url": "https://www.kitsap.gov/publicworks/Pages/Bids.aspx",                   "city": "Bremerton", "county": "Kitsap",    "type": "Public Bid"},
+    {"name": "City Bids - Bremerton",    "url": "https://www.ci.bremerton.wa.us/288/Purchasing-Bids",                        "city": "Bremerton", "county": "Kitsap",    "type": "Public Bid"},
+    # ── Thurston County ──────────────────────────────────────
+    {"name": "City Bids - Olympia",      "url": "https://www.olympiawa.gov/government/departments/public-works/engineering-and-capital-projects", "city": "Olympia", "county": "Thurston", "type": "Public Bid"},
+    # ── State of Washington ──────────────────────────────────
+    {"name": "WSDOT Bids",               "url": "https://www.wsdot.wa.gov/Business/Construction/",                           "city": "",          "county": "",          "type": "Public Bid"},
+    {"name": "WA DES Bids",              "url": "https://des.wa.gov/services/contracting-purchasing/public-works-engineering/advertised-public-works-projects", "city": "", "county": "", "type": "Public Bid"},
+    {"name": "Sound Transit Bids",       "url": "https://www.soundtransit.org/business-center/contracting-procurement",     "city": "Seattle",   "county": "King",      "type": "Public Bid"},
+    {"name": "Port of Seattle Bids",     "url": "https://www.portseattle.org/business/doing-business-port/contracting-opportunities", "city": "Seattle", "county": "King", "type": "Public Bid"},
+    # ── GC Portfolio ─────────────────────────────────────────
+    {"name": "GC – Sellen Construction", "url": "https://www.sellen.com/projects/",                                          "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+    {"name": "GC – Skanska USA",         "url": "https://www.skanska.com/en/markets/usa/projects/",                          "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+    {"name": "GC – Mortenson",           "url": "https://www.mortenson.com/projects",                                        "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+    {"name": "GC – Lease Crutcher Lewis","url": "https://www.lewisbuilds.com/projects/",                                     "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+    {"name": "GC – Turner Construction", "url": "https://www.turnerconstruction.com/projects",                               "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+    {"name": "GC – Hensel Phelps",       "url": "https://www.henselphelps.com/projects/",                                    "city": "Seattle",   "county": "King",      "type": "GC Portfolio"},
+]
+
+# Keywords that make a project HIGH priority for GPR/Core work
+HIGH_PRIORITY_KW = [
+    'seismic', 'retrofit', 'medical', 'hospital', 'clinic', 'parking', 'garage',
+    'bridge', 'bridge deck', 'tunnel', 'multifamily', 'apartment', 'campus',
+    'university', 'school', 'renovation', 'remodel', 'demolish', 'demolition',
+    'concrete', 'structural', 'ground penetrating', 'gpr', 'core drill',
+    'anchor', 'rebar', 'post-tension', 'subsurface', 'utility', 'underground',
+    'void', 'pavement', 'overlay', 'infrastructure', 'annex', 'addition',
+]
+LOW_PRIORITY_KW = [
+    'how do i', 'how can i', 'register', 'supplier registration', 'vendor list',
+    'bid list', 'previous bid', 'bid tabulation', 'finding bid', 'finding available',
+    '2024 bid', '2025 bid', 'learn more', 'doing business',
+]
+
+
+# ── HELPERS ───────────────────────────────────────────────────────────────────
+def normalize_phone(phone: str) -> str:
+    """Strip all non-digits for comparison."""
+    return re.sub(r'\D', '', phone or '')
+
+def score_priority(name: str, source: str) -> int:
+    n = name.lower()
+    if any(w in n for w in LOW_PRIORITY_KW):
+        return 1
+    score = 6
+    if any(w in n for w in HIGH_PRIORITY_KW):
+        score += 2
+    if re.search(r'(seismic|retrofit|hospital|medical)', n):
+        score += 1
+    if re.search(r'(parking.{0,15}structure|garage.{0,15}deck)', n):
+        score += 1
+    if source.startswith('GC'):
+        score += 1
+    return min(score, 10)
+
+def is_noise(name: str) -> bool:
+    n = name.lower()
+    return any(w in n for w in LOW_PRIORITY_KW)
+
+def clean_text(text: str) -> str:
+    return re.sub(r'\s+', ' ', text).strip()
+
+def log(msg: str):
+    ts = datetime.datetime.utcnow().strftime('%H:%M:%S')
+    print(f"[{ts}] {msg}")
+
+
+# ── SCRAPER ───────────────────────────────────────────────────────────────────
+def fetch_url(url: str, timeout: int = 15) -> Optional[str]:
+    try:
+        req = urllib.request.Request(url, headers={
+            'User-Agent': 'Mozilla/5.0 (compatible; Scan2Core-LeadHunter/1.0; +https://scan2core.github.io)',
+            'Accept': 'text/html,application/xhtml+xml,*/*',
         })
-        self.ai_calls = 0
-        self.ai_call_limit = 20
+        with urllib.request.urlopen(req, timeout=timeout) as r:
+            charset = r.headers.get_content_charset() or 'utf-8'
+            return r.read().decode(charset, errors='replace')
+    except Exception as e:
+        log(f"  fetch error {url[:60]}: {e}")
+        return None
 
-    def _load_found(self) -> Dict:
-        if os.path.exists(FOUND_FILE):
-            try:
-                with open(FOUND_FILE, 'r') as f:
-                    data = json.load(f)
-                if isinstance(data, list):
-                    return {item.get('name', '') + '|' + item.get('source', ''): item
-                            for item in data if isinstance(item, dict)}
-                return {k: v for k, v in data.items() if isinstance(v, dict)}
-            except:
-                return {}
-        return {}
+def extract_projects_from_html(html: str, source: dict) -> list[Lead]:
+    """
+    Very lightweight HTML scraper: finds anchor tags that look like
+    bid/project titles and returns them as Lead objects.
+    Real production scrape would use source-specific parsers; this
+    covers the common table/list pattern across WA agency sites.
+    """
+    leads = []
+    # Find all <a> text + href pairs
+    pattern = re.compile(r'<a[^>]+href=["\']([^"\']*)["\'][^>]*>(.*?)</a>', re.DOTALL | re.IGNORECASE)
+    for m in pattern.finditer(html):
+        href, raw_text = m.group(1), m.group(2)
+        text = clean_text(re.sub(r'<[^>]+>', '', raw_text))
+        if len(text) < 8 or len(text) > 300:
+            continue
+        if is_noise(text):
+            continue
+        # Only keep links that look like project/bid titles
+        # (contain year, bid#, or construction-related keywords)
+        has_year = bool(re.search(r'20(2[4-9]|3\d)', text))
+        has_bid  = bool(re.search(r'\b(bid|rfp|rfq|contract|project|cp\d|pw\d)', text.lower()))
+        has_kw   = any(k in text.lower() for k in HIGH_PRIORITY_KW)
+        if not (has_year or has_bid or has_kw):
+            continue
 
-    def _is_construction(self, text: str) -> bool:
-        return any(k in text.lower() for k in CONSTRUCTION_KEYWORDS)
+        # Build absolute URL
+        direct = href if href.startswith('http') else (source['url'].rstrip('/') + '/' + href.lstrip('/'))
 
-    def _is_current_year(self, text: str) -> bool:
-        years_found = re.findall(r'20\d\d', text)
-        if not years_found:
-            return True
-        return CURRENT_YEAR in years_found
+        # Extract bid number if present
+        bid_num = ''
+        bn = re.search(r'\b([A-Z]{1,4}[-_]?\d{4}[-_]\d{2,6}|\d{4}[-_]\d{2,5})\b', text)
+        if bn:
+            bid_num = bn.group(1)
 
-    def _is_closed(self, text: str) -> bool:
-        return any(text.lower().strip().startswith(p) for p in CLOSED_PREFIXES)
+        priority = score_priority(text, source['name'])
+        if priority < 3:
+            continue
 
-    def _should_skip(self, text: str) -> bool:
-        t = text.lower().strip()
-        if t in SKIP_EXACT: return True
-        if len(t) < 15: return True
-        if any(n in t for n in NOISE_PHRASES): return True
-        if 'http' in t or 'www.' in t: return True
-        non_ascii = sum(1 for c in text if ord(c) > 127)
-        if non_ascii > len(text) * 0.15: return True
+        lead = Lead(
+            name        = text,
+            source      = source['name'],
+            url         = source['url'],
+            direct_url  = direct,
+            city        = source.get('city', ''),
+            county      = source.get('county', ''),
+            type        = source.get('type', 'Public Bid'),
+            bid_number  = bid_num,
+            priority    = priority,
+        )
+        leads.append(lead)
+    return leads
+
+
+def scrape_all_sources() -> list[Lead]:
+    all_leads: list[Lead] = []
+    for src in SOURCES:
+        log(f"Scraping: {src['name']}")
+        html = fetch_url(src['url'])
+        if not html:
+            continue
+        found = extract_projects_from_html(html, src)
+        log(f"  → {len(found)} candidates")
+        all_leads.extend(found)
+    return all_leads
+
+
+# ── AI ENRICHMENT ─────────────────────────────────────────────────────────────
+def call_claude_api(prompt: str, api_key: str) -> Optional[str]:
+    """
+    POST to Anthropic Messages API.  Returns the assistant text or None.
+    No `tools` parameter — stripped to avoid rate-limit issues on Haiku.
+    """
+    payload = json.dumps({
+        "model": AI_MODEL,
+        "max_tokens": 400,
+        "messages": [{"role": "user", "content": prompt}],
+    }).encode()
+
+    req = urllib.request.Request(
+        ANTHROPIC_API_URL,
+        data    = payload,
+        method  = "POST",
+        headers = {
+            "Content-Type":      "application/json",
+            "x-api-key":         api_key,
+            "anthropic-version": "2023-06-01",
+        },
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            data = json.loads(r.read())
+            return data.get("content", [{}])[0].get("text", "")
+    except urllib.error.HTTPError as e:
+        code = e.code
+        if code == 429:
+            log("  AI: 429 rate-limit — skipping this lead")
+            return None
+        log(f"  AI: HTTP {code}")
+        return None
+    except Exception as e:
+        log(f"  AI: {e}")
+        return None
+
+
+def build_enrichment_prompt(lead: Lead) -> str:
+    """
+    Separate prompts for GC Portfolio vs Public Bid leads.
+
+    GC Portfolio: ask for GC's main subcontractor contact / project manager.
+    Public Bid:   ask ONLY for the bid agency's project contact.
+                  Explicitly forbid returning general contractor phone numbers.
+    """
+    if lead.is_gc():
+        gc_name = re.sub(r'^GC\s*[-–—]\s*', '', lead.source).strip()
+        return f"""You are a construction industry researcher helping Scan2Core (a GPR scanning and core drilling company in Washington State) find contact information.
+
+PROJECT: {lead.name}
+GC COMPANY: {gc_name}
+LOCATION: {lead.city}, {lead.county} County, WA
+
+Find the best person at {gc_name} for a subcontractor looking to bid on this project (project manager, estimator, or subcontractor coordinator).
+
+Reply in this EXACT format — one field per line, no extras:
+NAME: [first last or blank]
+TITLE: [job title or blank]
+DEPARTMENT: [department or blank]
+EMAIL: [email@domain or blank]
+PHONE: [{gc_name} office/direct phone, or blank]
+
+If you are not highly confident about a field, leave it blank.
+Do not invent information."""
+    else:
+        # Public Bid — strict: agency contact only, no GC numbers
+        return f"""You are a construction industry researcher helping Scan2Core (a GPR scanning and core drilling company in Washington State) find bid contact information.
+
+PROJECT: {lead.name}
+AGENCY/SOURCE: {lead.source}
+LOCATION: {lead.city}, {lead.county} County, WA
+BID URL: {lead.direct_url or lead.url}
+
+Find the SPECIFIC PROJECT MANAGER or BID COORDINATOR at the AGENCY listed above ({lead.source}).
+
+CRITICAL RULES:
+- Return ONLY contact information for the AGENCY/MUNICIPALITY listed above, not for any general contractor.
+- Do NOT return any phone number belonging to Sellen Construction, Skanska, Turner, Mortenson, or any other GC.
+- If you only know the agency's general main number and not a specific project contact, leave PHONE blank.
+- Do NOT guess or hallucinate contact details. Only return information you are highly confident about.
+
+Reply in this EXACT format — one field per line:
+NAME: [first last or blank]
+TITLE: [job title or blank]
+DEPARTMENT: [department or blank]
+EMAIL: [email@domain or blank]
+PHONE: [direct agency number, or blank]
+
+If you are not confident about a field, leave it blank."""
+
+
+def parse_ai_response(text: str) -> ContactInfo:
+    ci = ContactInfo()
+    for line in text.splitlines():
+        line = line.strip()
+        if line.upper().startswith("NAME:"):
+            val = line.split(":", 1)[1].strip()
+            if val and val.lower() not in ('blank', 'n/a', 'unknown', ''):
+                ci.name = val
+        elif line.upper().startswith("TITLE:"):
+            val = line.split(":", 1)[1].strip()
+            if val and val.lower() not in ('blank', 'n/a', ''):
+                ci.title = val
+        elif line.upper().startswith("DEPARTMENT:"):
+            val = line.split(":", 1)[1].strip()
+            if val and val.lower() not in ('blank', 'n/a', ''):
+                ci.department = val
+        elif line.upper().startswith("EMAIL:"):
+            val = line.split(":", 1)[1].strip()
+            # Basic email validation
+            if val and '@' in val and '.' in val and val.lower() not in ('blank', 'n/a'):
+                ci.email = val
+        elif line.upper().startswith("PHONE:"):
+            val = line.split(":", 1)[1].strip()
+            if val and val.lower() not in ('blank', 'n/a', ''):
+                # Strip common formatting noise
+                val = re.sub(r'[^\d\s\(\)\-\+\.]', '', val).strip()
+                digits = re.sub(r'\D', '', val)
+                if 7 <= len(digits) <= 11:
+                    ci.phone = val
+    return ci
+
+
+def enrich_lead_with_ai(lead: Lead, api_key: str) -> bool:
+    """
+    Calls Claude Haiku to find contact info for a lead.
+    Returns True if any contact info was found.
+    """
+    prompt = build_enrichment_prompt(lead)
+    text = call_claude_api(prompt, api_key)
+    if text is None:
         return False
 
-    def _score(self, text: str) -> int:
-        t = text.lower()
-        if any(x in t for x in ['hospital', 'medical', 'healthcare', 'surgery']): return 10
-        if any(x in t for x in ['parking', 'garage', 'multifamily', 'apartment', 'housing']): return 9
-        if any(x in t for x in ['bridge', 'infrastructure', 'transit', 'light rail']): return 9
-        if any(x in t for x in ['university', 'campus', 'school', 'college']): return 8
-        if any(x in t for x in ['office', 'commercial', 'warehouse', 'industrial']): return 7
-        return 6
+    ci = parse_ai_response(text)
+    if ci.has_contact_info():
+        lead.contact_name       = ci.name       or ""
+        lead.contact_title      = ci.title      or ""
+        lead.contact_department = ci.department or ""
+        lead.contact_email      = ci.email      or ""
+        lead.contact_phone      = ci.phone      or ""
+        lead.enriched = "ai" if (ci.email and ci.phone) else "ai_partial"
+        return True
+    else:
+        lead.enriched = "none"
+        return False
 
-    # ── DEEP SCRAPE ───────────────────────────────────────────
-    def _scrape_contact_from_page(self, url: str) -> ContactInfo:
-        info = ContactInfo()
-        if not url or len(url) < 10: return info
-        try:
-            resp = self.session.get(url, timeout=15)
-            if resp.status_code != 200 or not BeautifulSoup: return info
-            soup = BeautifulSoup(resp.content, 'html.parser')
-            text = soup.get_text(separator=' ', strip=True)
 
-            emails = re.findall(r'[\w\.-]+@[\w\.-]+\.\w{2,4}', text)
-            emails = [e for e in emails if not any(x in e.lower() for x in ['example', 'test', 'noreply', 'no-reply'])]
-            if emails: info.email = emails[0]
+# ── PHONE QUALITY ENFORCEMENT ─────────────────────────────────────────────────
+def build_gc_phone_set(leads: list[Lead]) -> set[str]:
+    """
+    Collect all phone numbers from GC Portfolio leads (normalized).
+    These are the GC main office lines we don't want appearing on
+    public bid leads.
+    """
+    gc_phones = set()
+    for lead in leads:
+        if lead.is_gc() and lead.contact_phone:
+            normalized = normalize_phone(lead.contact_phone)
+            if normalized:
+                gc_phones.add(normalized)
+    return gc_phones
 
-            phones = re.findall(r'(?:\(?\d{3}\)?[\s.\-]?\d{3}[\s.\-]?\d{4})', text)
-            if phones: info.phone = phones[0]
 
-            for pat in [
-                r'(?:due|close[sd]?|deadline|submit(?:tal)?s?\s+due|bid\s+opening)[:\s]+([A-Z][a-z]+\.?\s+\d{1,2},?\s+\d{4})',
-                r'(?:due|close[sd]?|deadline)[:\s]+(\d{1,2}/\d{1,2}/\d{2,4})',
-                r'(?:due|close[sd]?|deadline)[:\s]+(\w+\s+\d{1,2},?\s+\d{4})',
-            ]:
-                m = re.search(pat, text, re.IGNORECASE)
-                if m: info.close_date = m.group(1).strip(); break
+def build_phone_freq_map(leads: list[Lead]) -> dict[str, int]:
+    """Count how many leads each phone number appears on."""
+    freq: dict[str, int] = {}
+    for lead in leads:
+        if lead.contact_phone:
+            p = normalize_phone(lead.contact_phone)
+            if p:
+                freq[p] = freq.get(p, 0) + 1
+    return freq
 
-            for pat in [
-                r'(?:bid|rfp|rfq|itb|ifb|project|contract)\s*(?:no\.?|number|#)[:\s]*([A-Z0-9][\w\-]{2,20})',
-                r'\b(20\d\d-\d{3,4})\b',
-                r'\b([A-Z]{2,4}\d{4,6})\b',
-            ]:
-                m = re.search(pat, text, re.IGNORECASE)
-                if m: info.bid_number = m.group(1).strip(); break
 
-            for pat in [
-                r'(?:contact|questions?|inquiries?)[:\s]+([A-Z][a-z]+ [A-Z][a-z]+)',
-                r'([A-Z][a-z]+ [A-Z][a-z]+)[,\s]+(?:Project Manager|Procurement|Purchasing|Contract|Director|Officer|Coordinator)',
-            ]:
-                m = re.search(pat, text)
-                if m: info.name = m.group(1).strip(); break
+def enforce_phone_quality(leads: list[Lead]) -> int:
+    """
+    Post-enrichment phone quality pass:
+    1. Remove phones from non-GC leads that also appear on any GC lead
+       (cross-contamination: AI returned a GC office number for a public bid).
+    2. Remove phones from non-GC leads that appear on 5+ leads total
+       (frequency heuristic: shared = main line, not project contact).
 
-            for tag in soup.find_all(['p', 'div'], limit=30):
-                t = tag.get_text(strip=True)
-                if len(t) > 80 and self._is_construction(t) and not self._should_skip(t):
-                    info.description = t[:400]; break
+    Returns number of phones cleared.
+    """
+    gc_phones = build_gc_phone_set(leads)
+    phone_freq = build_phone_freq_map(leads)
+    cleared = 0
 
-            info.direct_url = url
-        except Exception as e:
-            logger.debug(f"  Scrape error {url}: {e}")
-        return info
+    for lead in leads:
+        if lead.is_gc():
+            continue  # Never touch GC lead phone data
+        if not lead.contact_phone:
+            continue
 
-    # ── AI ENRICHMENT (no web_search — uses training knowledge) ──
-    def _ai_enrich(self, lead_name: str, city: str, county: str, source: str, url: str) -> ContactInfo:
-        info = ContactInfo()
-        if not ANTHROPIC_API_KEY or self.ai_calls >= self.ai_call_limit:
-            return info
+        p_norm = normalize_phone(lead.contact_phone)
 
-        self.ai_calls += 1
-        logger.info(f"  AI enriching ({self.ai_calls}/{self.ai_call_limit}): {lead_name[:55]}")
+        # Rule 1: phone exists on a GC lead → reject for public bid lead
+        if p_norm in gc_phones:
+            log(f"  📵 Cleared GC phone from public bid lead: {lead.name[:50]}")
+            lead.contact_phone = ""
+            # Downgrade enrichment status if phone was the only contact
+            if not lead.contact_email and not lead.contact_name:
+                lead.enriched = "none"
+            elif lead.enriched == "ai":
+                lead.enriched = "ai_partial"
+            cleared += 1
+            continue
 
-        prompt = f"""You are helping Scan2Core (WA State GPR scanning and core drilling company) find contact information for a construction bid opportunity.
+        # Rule 2: phone appears on 5+ leads → shared main line
+        if phone_freq.get(p_norm, 0) >= SHARED_PHONE_THRESHOLD:
+            log(f"  📵 Cleared shared phone ({phone_freq[p_norm]}x) from: {lead.name[:50]}")
+            lead.contact_phone = ""
+            if not lead.contact_email and not lead.contact_name:
+                lead.enriched = "none"
+            elif lead.enriched == "ai":
+                lead.enriched = "ai_partial"
+            cleared += 1
 
-Project: {lead_name}
-Agency: {city}, {county} County
-Source: {source}
-URL: {url}
+    return cleared
 
-Using your knowledge of Washington State government agencies, municipalities, school districts, and public institutions — provide the procurement department contact for this agency. For WA city/county agencies, procurement and purchasing contacts are publicly listed. Provide the department email, general purchasing phone number, and the name of the purchasing/procurement manager or director if known.
 
-Also provide a brief description of what this project likely involves based on the name, and the direct URL to this bid if you can infer it from the agency and source.
+# ── DEDUPLICATION ─────────────────────────────────────────────────────────────
+def dedup_leads(new_leads: list[Lead], existing: list[dict]) -> tuple[list[Lead], list[Lead]]:
+    """
+    Compare incoming scraped leads against existing JSON.
+    Returns (to_add, to_skip).
+    Dedup key = normalized name + source.
+    """
+    existing_keys = set()
+    for e in existing:
+        key = hashlib.md5(f"{e.get('name','')}|{e.get('source','')}".encode()).hexdigest()[:12]
+        existing_keys.add(key)
 
-Return ONLY this JSON (use empty string if genuinely unknown — do not fabricate):
-{{"contact_name":"","contact_title":"","contact_email":"","contact_phone":"","contact_department":"","close_date":"","bid_number":"","description":"","direct_url":""}}"""
-
-        try:
-            resp = requests.post(
-                'https://api.anthropic.com/v1/messages',
-                headers={
-                    'x-api-key': ANTHROPIC_API_KEY,
-                    'anthropic-version': '2023-06-01',
-                    'content-type': 'application/json',
-                },
-                json={
-                    'model': 'claude-haiku-4-5-20251001',
-                    'max_tokens': 400,
-                    'messages': [{'role': 'user', 'content': prompt}]
-                },
-                timeout=20
-            )
-
-            if resp.status_code == 429:
-                logger.warning(f"  Rate limited — skipping (will retry tomorrow)")
-                self.ai_calls -= 1
-                time.sleep(AI_SLEEP_SECONDS)
-                return info
-
-            if resp.status_code != 200:
-                logger.warning(f"  AI API error: {resp.status_code}")
-                time.sleep(AI_SLEEP_SECONDS)
-                return info
-
-            data = resp.json()
-            result_text = ''.join(b.get('text', '') for b in data.get('content', []) if b.get('type') == 'text')
-
-            json_match = re.search(r'\{[^{}]+\}', result_text, re.DOTALL)
-            if json_match:
-                parsed = json.loads(json_match.group())
-                info.name = parsed.get('contact_name', '')
-                info.title = parsed.get('contact_title', '')
-                info.email = parsed.get('contact_email', '')
-                info.phone = parsed.get('contact_phone', '')
-                info.department = parsed.get('contact_department', '')
-                info.close_date = parsed.get('close_date', '')
-                info.bid_number = parsed.get('bid_number', '')
-                info.description = parsed.get('description', '')
-                info.direct_url = parsed.get('direct_url', '') or url
-
-        except Exception as e:
-            logger.warning(f"  AI enrich error: {e}")
-
-        time.sleep(AI_SLEEP_SECONDS)
-        return info
-
-    # ── ENRICH LEAD ───────────────────────────────────────────
-    def _enrich_lead(self, lead: Dict) -> Dict:
-        """Scrape page first. If no contact found, ask AI using training knowledge."""
-        if lead.get('contact_email') or lead.get('contact_name') or lead.get('contact_phone'):
-            return lead
-
-        url = lead.get('url', '')
-
-        # Step 1: direct page scrape
-        scraped = self._scrape_contact_from_page(url)
-
-        if scraped.has_contact_info():
-            lead.update(scraped.to_dict())
-            lead['enriched'] = 'scraped'
-            logger.info(f"  ✓ Scraped contact: {lead.get('name', '')[:50]}")
+    to_add, to_skip = [], []
+    for lead in new_leads:
+        if lead.lead_id() in existing_keys:
+            to_skip.append(lead)
         else:
-            # Save partial scrape data (description/dates) even without contact
-            if scraped.has_any_info():
-                partial = scraped.to_dict()
-                for field in ('description', 'close_date', 'bid_number', 'direct_url'):
-                    if partial.get(field) and not lead.get(field):
-                        lead[field] = partial[field]
+            to_add.append(lead)
+    return to_add, to_skip
 
-            # Step 2: AI with training knowledge (no web search = no rate limits)
-            ai_info = self._ai_enrich(
-                lead.get('name', ''), lead.get('city', ''),
-                lead.get('county', ''), lead.get('source', ''), url
-            )
-            if ai_info.has_contact_info():
-                lead.update(ai_info.to_dict())
-                lead['enriched'] = 'ai'
-                logger.info(f"  ✓ AI found contact: {lead.get('name', '')[:50]}")
-            elif ai_info.has_any_info():
-                lead.update(ai_info.to_dict())
-                lead['enriched'] = 'ai_partial'
-                logger.info(f"  ~ AI partial: {lead.get('name', '')[:50]}")
-            else:
-                lead['enriched'] = 'none'
 
-        return lead
-
-    # ── ADD LEAD ──────────────────────────────────────────────
-    def _add_lead(self, leads: List, name: str, city: str, county: str,
-                  source: str, url: str = '', gc: str = '', notes: str = '', text: str = ''):
-        name = name.strip()[:150]
-        if len(name) < 15: return
-        lead_id = f"{name}|{source}"
-        if lead_id in self.found: return
-        lead = {
-            'name': name, 'city': city, 'county': county,
-            'status': 'Posted', 'type': 'GC Project' if gc else 'Public Bid',
-            'gc': gc, 'source': source, 'url': url,
-            'notes': notes or 'Review specs to confirm scanning + core drilling needed',
-            'priority': self._score(text or name),
-            'found_date': datetime.now().isoformat(),
-            'enriched': None,
-        }
-        leads.append(lead)
-        self.found[lead_id] = lead
-        logger.info(f"  FOUND [{source}]: {name[:70]}")
-
-    # ── SCRAPERS ──────────────────────────────────────────────
-    def scrape_wordpress_bids(self, source_name: str, url: str, city: str, county: str) -> List[Dict]:
-        leads = []
-        try:
-            resp = self.session.get(url, timeout=20)
-            logger.info(f"  {source_name}: HTTP {resp.status_code}")
-            if resp.status_code != 200 or not BeautifulSoup: return leads
-            soup = BeautifulSoup(resp.content, 'html.parser')
-            for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']): tag.decompose()
-            for a in soup.find_all('a', href=True):
-                href = a.get('href', ''); text = a.get_text(strip=True)
-                if not text or len(text) < 20 or len(text) > 250: continue
-                if self._should_skip(text) or self._is_closed(text): continue
-                url_years = re.findall(r'/(\d{4})/', href)
-                if url_years and CURRENT_YEAR not in url_years: continue
-                if not self._is_construction(text): continue
-                self._add_lead(leads, text, city, county, source_name, href, text=text)
-        except Exception as e:
-            logger.warning(f"  {source_name} error: {e}")
-        logger.info(f"  {source_name}: {len(leads)} leads found")
-        return leads
-
-    def scrape_city_bid_page(self, city: str, county: str, url: str) -> List[Dict]:
-        leads = []
-        try:
-            resp = self.session.get(url, timeout=20)
-            if resp.status_code != 200 or not BeautifulSoup: return leads
-            soup = BeautifulSoup(resp.content, 'html.parser')
-            for tag in soup.find_all(['nav', 'footer', 'header', 'script', 'style']): tag.decompose()
-            seen_texts = set()
-            for el in soup.find_all(['h2', 'h3', 'h4', 'a', 'li', 'td']):
-                text = re.sub(r'\s+', ' ', el.get_text(separator=' ', strip=True)).strip()
-                if text in seen_texts: continue
-                seen_texts.add(text)
-                if self._should_skip(text) or self._is_closed(text): continue
-                if len(text) > 250: continue
-                if not self._is_current_year(text): continue
-                if not self._is_construction(text): continue
-                href = el.get('href', '') if el.name == 'a' else ''
-                if not href:
-                    link = el.find('a', href=True)
-                    href = link.get('href', '') if link else url
-                full_url = href if href.startswith('http') else urljoin(url, href)
-                self._add_lead(leads, text, city, county, f'City Bids - {city}', full_url, text=text)
-        except Exception as e:
-            logger.debug(f"  {city} error: {e}")
-        return leads
-
-    def scrape_all_city_pages(self) -> List[Dict]:
-        leads = []
-        logger.info(f"Scraping {len(WA_CITY_BID_PAGES)} WA city/county bid pages...")
-        for city, county, url in WA_CITY_BID_PAGES:
-            city_leads = self.scrape_city_bid_page(city, county, url)
-            if city_leads: logger.info(f"  {city}: {len(city_leads)} leads")
-            leads.extend(city_leads)
-        logger.info(f"  City pages total: {len(leads)} leads found")
-        return leads
-
-    # ── LOAD / SAVE ───────────────────────────────────────────
-    def load_all_leads(self) -> List[Dict]:
-        if os.path.exists(FOUND_FILE):
-            try:
-                with open(FOUND_FILE, 'r') as f:
-                    data = json.load(f)
-                return data if isinstance(data, list) else []
-            except:
-                return []
+# ── PERSISTENCE ───────────────────────────────────────────────────────────────
+def load_existing() -> list[dict]:
+    if not os.path.exists(OUTPUT_FILE):
+        return []
+    try:
+        with open(OUTPUT_FILE, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data if isinstance(data, list) else []
+    except Exception as e:
+        log(f"Warning: could not read {OUTPUT_FILE}: {e}")
         return []
 
-    def save_all_leads(self, leads: List[Dict]):
-        with open(FOUND_FILE, 'w') as f:
-            json.dump(leads, f, indent=2)
 
-    # ── MAIN RUN ──────────────────────────────────────────────
-    def run(self):
-        logger.info("=" * 60)
-        logger.info("Scan2Core Daily Lead Hunter v8.5 starting...")
-        logger.info(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
-        logger.info(f"AI enrichment: {'ENABLED' if ANTHROPIC_API_KEY else 'DISABLED (no API key)'}")
-        logger.info("=" * 60)
-
-        # ── STEP 1: Scrape all sources ────────────────────────
-        all_scraped = []
-        all_scraped.extend(self.scrape_wordpress_bids(
-            'Seattle Buy Line',
-            'https://thebuyline.seattle.gov/category/bids-and-proposals/',
-            'Seattle', 'King'))
-        all_scraped.extend(self.scrape_wordpress_bids(
-            'Seattle Consultant Connection',
-            'https://consultants.seattle.gov/category/bids-proposals/',
-            'Seattle', 'King'))
-        all_scraped.extend(self.scrape_all_city_pages())
-
-        # ── STEP 2: Identify new leads ────────────────────────
-        existing = self.load_all_leads()
-        existing_names = {l.get('name', '') for l in existing}
-        new_leads = [l for l in all_scraped if l.get('name', '') not in existing_names]
-        logger.info(f"New leads found today: {len(new_leads)}")
-
-        # ── STEP 3: Enrich new leads immediately ──────────────
-        if new_leads and ANTHROPIC_API_KEY:
-            logger.info(f"Enriching {len(new_leads)} new leads...")
-            new_leads = [self._enrich_lead(l) for l in new_leads]
-
-        # ── STEP 4: Backfill unenriched existing leads ────────
-        if ANTHROPIC_API_KEY and self.ai_calls < self.ai_call_limit:
-            unenriched = [
-                l for l in existing
-                if not l.get('contact_email')
-                and not l.get('contact_name')
-                and not l.get('contact_phone')
-                and l.get('enriched') not in ('ai', 'scraped')
-            ]
-            # Priority-sorted so highest-value leads get contacts first
-            unenriched.sort(key=lambda x: x.get('priority', 0), reverse=True)
-            backfill_batch = unenriched[:BACKFILL_PER_RUN]
-
-            if backfill_batch:
-                logger.info(f"Backfill: {len(backfill_batch)} leads @ {AI_SLEEP_SECONDS}s spacing...")
-                for lead in backfill_batch:
-                    self._enrich_lead(lead)
-                    if self.ai_calls >= self.ai_call_limit:
-                        break
-                contacts_found = sum(1 for l in backfill_batch
-                                     if l.get('contact_email') or l.get('contact_name') or l.get('contact_phone'))
-                logger.info(f"Backfill complete. {contacts_found}/{len(backfill_batch)} contacts found.")
-            else:
-                logger.info("Backfill: all leads already processed.")
-
-        # ── STEP 5: Save everything ───────────────────────────
-        combined = new_leads + existing
-        self.save_all_leads(combined)
-
-        total_contacts = sum(1 for l in combined
-                             if l.get('contact_email') or l.get('contact_name') or l.get('contact_phone'))
-        remaining = sum(1 for l in combined
-                        if not l.get('contact_email') and not l.get('contact_name')
-                        and not l.get('contact_phone')
-                        and l.get('enriched') not in ('ai', 'scraped'))
-
-        logger.info("=" * 60)
-        logger.info(f"DONE.")
-        logger.info(f"  New leads today:   {len(new_leads)}")
-        logger.info(f"  Total leads:       {len(combined)}")
-        logger.info(f"  With contacts:     {total_contacts}")
-        logger.info(f"  Still unenriched:  {remaining} (~{remaining // BACKFILL_PER_RUN + 1} more runs)")
-        logger.info(f"  AI calls used:     {self.ai_calls}/{self.ai_call_limit}")
-        if new_leads:
-            logger.info("NEW LEADS:")
-            for l in sorted(new_leads, key=lambda x: x.get('priority', 0), reverse=True):
-                contact = l.get('contact_email') or l.get('contact_name') or 'pending'
-                logger.info(f"  [{l['priority']}] {l['name'][:55]} | {contact}")
-        logger.info("=" * 60)
+def save_leads(leads: list[dict]):
+    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
+        json.dump(leads, f, indent=2, ensure_ascii=False)
+    log(f"Saved {len(leads)} leads to {OUTPUT_FILE}")
 
 
-if __name__ == '__main__':
-    bot = Scan2CoreBot()
-    bot.run()
+def merge_existing_contact_data(new_lead: Lead, existing: list[dict]) -> bool:
+    """
+    If an existing lead (same name+source) already has enrichment data,
+    copy it onto the new_lead so we don't lose it.
+    Returns True if data was copied.
+    """
+    for e in existing:
+        if e.get('name') == new_lead.name and e.get('source') == new_lead.source:
+            for field in ['contact_name','contact_title','contact_department',
+                          'contact_email','contact_phone','enriched']:
+                if e.get(field):
+                    setattr(new_lead, field, e[field])
+            return True
+    return False
+
+
+# ── BACKFILL ENRICHMENT LOOP ──────────────────────────────────────────────────
+def run_backfill(all_leads: list[Lead], api_key: str):
+    """
+    Process up to BACKFILL_PER_RUN unenriched leads with AI.
+    Higher priority leads first.
+    """
+    unenriched = [l for l in all_leads if l.enriched is None and not l.is_noise_lead()]
+    unenriched.sort(key=lambda l: l.priority, reverse=True)
+
+    targets = unenriched[:BACKFILL_PER_RUN]
+    log(f"Backfill: {len(targets)} of {len(unenriched)} unenriched leads selected")
+
+    for i, lead in enumerate(targets):
+        log(f"  AI {i+1}/{len(targets)}: {lead.name[:60]}")
+        success = enrich_lead_with_ai(lead, api_key)
+        log(f"  → {'✓ contact found' if success else '✗ no contact'}")
+        time.sleep(AI_SLEEP_SECONDS)
+
+
+# ── MONKEY-PATCH Lead with helper ─────────────────────────────────────────────
+def _is_noise_lead(self) -> bool:
+    return any(w in self.name.lower() for w in LOW_PRIORITY_KW)
+Lead.is_noise_lead = _is_noise_lead
+
+
+# ── MAIN ──────────────────────────────────────────────────────────────────────
+def main():
+    api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        log("WARNING: ANTHROPIC_API_KEY not set — AI enrichment disabled")
+
+    # 1. Load existing data
+    existing = load_existing()
+    log(f"Existing leads: {len(existing)}")
+
+    # 2. Scrape all sources
+    log("── Scraping sources ──")
+    raw_leads = scrape_all_sources()
+    log(f"Raw candidates: {len(raw_leads)}")
+
+    # 3. Dedup against existing
+    new_leads, skipped = dedup_leads(raw_leads, existing)
+    log(f"New: {len(new_leads)}, Already known: {len(skipped)}")
+
+    # 4. Restore contact data for any lead we've seen before (re-found on same source)
+    for lead in new_leads:
+        merge_existing_contact_data(lead, existing)
+
+    # 5. Rebuild full lead list: existing + new (convert existing dicts → Lead objects)
+    existing_leads: list[Lead] = []
+    for e in existing:
+        try:
+            lead = Lead(
+                name               = e.get('name', ''),
+                source             = e.get('source', ''),
+                url                = e.get('url', ''),
+                city               = e.get('city', ''),
+                county             = e.get('county', ''),
+                state              = e.get('state', 'WA'),
+                priority           = e.get('priority', 6),
+                type               = e.get('type', 'Public Bid'),
+                bid_number         = e.get('bid_number', ''),
+                close_date         = e.get('close_date', ''),
+                description        = e.get('description', ''),
+                direct_url         = e.get('direct_url', ''),
+                found_date         = e.get('found_date', ''),
+                contact_name       = e.get('contact_name', ''),
+                contact_title      = e.get('contact_title', ''),
+                contact_department = e.get('contact_department', ''),
+                contact_email      = e.get('contact_email', ''),
+                contact_phone      = e.get('contact_phone', ''),
+                enriched           = e.get('enriched'),
+            )
+            existing_leads.append(lead)
+        except Exception as ex:
+            log(f"  skip malformed existing lead: {ex}")
+
+    all_leads = existing_leads + new_leads
+    log(f"Total after merge: {len(all_leads)}")
+
+    # 6. AI backfill on unenriched leads
+    if api_key:
+        log("── AI enrichment ──")
+        run_backfill(all_leads, api_key)
+
+    # 7. Phone quality enforcement (post-enrichment pass)
+    log("── Phone quality pass ──")
+    cleared = enforce_phone_quality(all_leads)
+    log(f"Cleared {cleared} suspect phones")
+
+    # 8. Sort by priority desc, then by found_date desc
+    all_leads.sort(key=lambda l: (-(l.priority or 0), l.found_date or ''), reverse=False)
+    all_leads.sort(key=lambda l: -(l.priority or 0))
+
+    # 9. Save
+    save_leads([l.to_dict() for l in all_leads])
+
+    # 10. Summary stats
+    total     = len(all_leads)
+    has_email = sum(1 for l in all_leads if l.contact_email)
+    has_phone = sum(1 for l in all_leads if l.contact_phone)
+    gc_leads  = sum(1 for l in all_leads if l.is_gc())
+    hot       = sum(1 for l in all_leads if (l.priority or 0) >= 9)
+    log(f"── Summary: {total} leads | {hot} hot | {gc_leads} GC | {has_email} email | {has_phone} phone ──")
+
+
+if __name__ == "__main__":
+    main()
