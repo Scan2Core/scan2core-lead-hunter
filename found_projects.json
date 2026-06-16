@@ -1,5 +1,47 @@
 [
   {
+    "name": "Shoring and excavation for future construction of a medical office and medical support ser @ 1115 COLUMBIA ST",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 10,
+    "type": "Permit",
+    "bid_number": "6513552-CN",
+    "close_date": "",
+    "description": "1115 COLUMBIA ST · est $10,000,000 · Non-Residential · Issued",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=6513552-CN",
+    "found_date": "2026-06-16T21:50:20.206393",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
+    "name": "Interior renovation of approximately 22 400 SF of the existing E-Wing at Northwest Hospita @ 1550 N 115TH ST",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 10,
+    "type": "Permit",
+    "bid_number": "6697776-CN",
+    "close_date": "",
+    "description": "1550 N 115TH ST · est $10,000,000 · Non-Residential · Scheduled",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=6697776-CN",
+    "found_date": "2026-06-16T21:50:20.206368",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Remodel of existing Warehouse and Office building to include heated gathering area in the  @ 3440 EAST MARGINAL WAY S",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
@@ -3129,6 +3171,27 @@
     "enriched": "none"
   },
   {
+    "name": "Demolish existing one family dwelling (Building 36) per plan. Review and processing under  @ 11209 3RD AVE NE",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 9,
+    "type": "Permit",
+    "bid_number": "7124551-DM",
+    "close_date": "",
+    "description": "11209 3RD AVE NE · est $24,102,600 · Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7124551-DM",
+    "found_date": "2026-06-16T21:50:20.203681",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "SR 520 floating bridge sentinel lights",
     "source": "WSDOT Bids",
     "url": "https://wsdot.wa.gov/business-wsdot/contracting-opportunities/construction-contracts/contract-ad-and-award-information",
@@ -4910,7 +4973,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Surveying &amp; roadway construction",
@@ -6845,6 +6909,46 @@
     "enriched": "none"
   },
   {
+    "name": "On-Call Survey Services",
+    "source": "City Bids - Marysville",
+    "url": "https://www.marysvillewa.gov/Bids.aspx",
+    "city": "Marysville",
+    "county": "Snohomish",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "3",
+    "close_date": "",
+    "description": "",
+    "direct_url": "https://www.marysvillewa.gov/bids.aspx?bidID=3",
+    "found_date": "2026-06-16T21:49:48.213869",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": ""
+  },
+  {
+    "name": "Evergreen HVAC Removal and Replacement REBID Bid Tab",
+    "source": "City Bids - Lake Stevens",
+    "url": "https://www.lakestevenswa.gov/Bids.aspx",
+    "city": "Lake Stevens",
+    "county": "Snohomish",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "144",
+    "close_date": "",
+    "description": "",
+    "direct_url": "https://www.lakestevenswa.gov/bids.aspx?bidID=144",
+    "found_date": "2026-06-16T21:49:46.122292",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": ""
+  },
+  {
     "name": "Project management",
     "source": "WSDOT Bids",
     "url": "https://wsdot.wa.gov/business-wsdot/contracting-opportunities/construction-contracts/contract-ad-and-award-information",
@@ -6862,7 +6966,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Project management &amp; training",
@@ -6882,7 +6987,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Project delivery memos",
@@ -6901,8 +7007,9 @@
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "s@wsdot.wa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "Project management &amp; training",
@@ -6922,7 +7029,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Equal Employment Opportunity Contract Compliance",
@@ -6942,7 +7050,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Contact equal opportunity in contracting",
@@ -6961,8 +7070,9 @@
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "WSDOTADA@wsdot.wa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "Equal opportunity in contracting",
@@ -6982,7 +7092,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Find a local project",
@@ -7002,7 +7113,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Delivering your project",
@@ -7022,7 +7134,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Project delivery methods",
@@ -7042,7 +7155,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Contract services",
@@ -7062,7 +7176,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Contract materials archive",
@@ -7081,8 +7196,9 @@
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "caa@wsdot.wa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "Bid history",
@@ -7101,8 +7217,9 @@
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "caa@wsdot.wa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "Public works contract history",
@@ -7122,7 +7239,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Public works contract history",
@@ -7141,8 +7259,9 @@
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "caa@wsdot.wa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "How to bid on a contract",
@@ -7161,8 +7280,9 @@
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "prequal@wsdot.wa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "Bid opening results",
@@ -7175,14 +7295,15 @@
     "type": "Public Bid",
     "bid_number": "",
     "close_date": "",
-    "description": "",
+    "description": "of work: none proposed Second bidder: Midmountain Contractors, Inc. Bid amount: $2,023,500.00 Subcontractor named None proposed Description of work: none proposed Third bidder: M.J. Hughes Construction, Inc. Bid amount: $2,898,964.00 Subcontractor named M.J. Hughes Construction, Inc. Description of ",
     "direct_url": "https://wsdot.wa.gov/business-wsdot/contracts/about-public-works-contracts/bid-opening-results",
     "found_date": "2026-06-15T21:33:26.936013",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "caa@wsdot.wa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "About public works contracts",
@@ -7202,7 +7323,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Ferries contracts",
@@ -7222,7 +7344,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Contract services",
@@ -7235,14 +7358,15 @@
     "type": "Public Bid",
     "bid_number": "",
     "close_date": "",
-    "description": "",
+    "description": "of the requested records including as much information as possible. Approved consultant for right-of-way services ** Effective immediately, the approved consultant list has been eliminated and is no longer a requirement to work for WSDOT as a ROW consultant. ** Rate submittal process Find the rate s",
     "direct_url": "https://wsdot.wa.gov/business-wsdot/contracts/contract-services",
     "found_date": "2026-06-15T21:33:26.935892",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "About public works contracts",
@@ -7261,8 +7385,9 @@
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "caa@wsdot.wa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "Search contracting opportunities",
@@ -7282,7 +7407,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Contracts",
@@ -7302,7 +7428,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Equal opportunity in contracting",
@@ -7322,7 +7449,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Contracts",
@@ -7342,7 +7470,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Performance-based project evaluation",
@@ -7355,14 +7484,15 @@
     "type": "Public Bid",
     "bid_number": "",
     "close_date": "",
-    "description": "",
+    "description": "inputs to match available data. Testing and updating scoring criteria based on the available data. Analyzing how WSDOT engages and communicates with stakeholders, including historically underrepresented people, about project evaluation. Implementation and next steps The performance-based project eva",
     "direct_url": "https://wsdot.wa.gov/construction-planning/funding/performance-based-project-evaluation-model",
     "found_date": "2026-06-15T21:33:26.935083",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "Joseph.Coppo@wsdot.wa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "Project delivery plan",
@@ -7382,7 +7512,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Major projects",
@@ -7402,7 +7533,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Search projects",
@@ -7422,7 +7554,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Current projects",
@@ -7441,8 +7574,9 @@
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "main@soundtransit.org",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "Ellensburg Public Library and Hal Holmes Community Center HVAC Replacement",
@@ -7454,7 +7588,7 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "170",
-    "close_date": "",
+    "close_date": "7/2/2026",
     "description": "",
     "direct_url": "https://www.ci.ellensburg.wa.us/bids.aspx?bidID=170",
     "found_date": "2026-06-15T20:47:30.777860",
@@ -7462,7 +7596,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Senior Engineering and Project Management Services",
@@ -7474,15 +7609,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "374",
-    "close_date": "",
-    "description": "",
+    "close_date": "6/23/2026",
+    "description": "CITY OF PASCO &ndash; REQUEST FOR QUALIFICATIONS (RFQ) Senior Engineering and Project Management Services The City of Pasco (City), is soliciting a Statement of Qualifications (SOQ) from qualified Firms to provide Senior Engineering and Project Management Services on a staff-augmentation basis. The ",
     "direct_url": "https://www.pasco-wa.gov/bids.aspx?bidID=374",
     "found_date": "2026-06-15T20:47:29.329977",
-    "contact_name": "",
-    "contact_title": "",
-    "contact_department": "",
+    "contact_name": "Dustin C Wittman",
+    "contact_title": "Public Works Project Coordinator II",
+    "contact_department": "Public Works",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "(509) 545-3447",
+    "enriched": "ai_partial"
   },
   {
     "name": "RFP - Operations of the Pasco Farmer's market Program and/or The Pasco Specialty Kitchen",
@@ -7494,15 +7630,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "376",
-    "close_date": "",
-    "description": "",
+    "close_date": "8/5/2026",
+    "description": "The City of Pasco, Washington, Parks & Recreation Department is soliciting proposals from qualified organizations, nonprofits, or private operators to manage and operate one or both of the following complementary City-owned programs and facilities starting in 2027: The Pasco Farmers Market &mdash; a",
     "direct_url": "https://www.pasco-wa.gov/bids.aspx?bidID=376",
     "found_date": "2026-06-15T20:47:29.329918",
-    "contact_name": "",
-    "contact_title": "",
+    "contact_name": "Samantha McCanse",
+    "contact_title": "Management Analyst I [email protected]",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "Request for Proposals - Purchase & Activation of City-Owned Downtown Properties",
@@ -7514,15 +7651,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "373",
-    "close_date": "",
-    "description": "",
+    "close_date": "7/17/2026",
+    "description": "The City of Pasco, Washington (City), through its City Manager&rsquo;s Office, is soliciting proposals from qualified businesses, entrepreneurs, or entities interested in purchasing and activating City-owned properties located in the downtown area. The objective of this RFP is to identify a buyer(s)",
     "direct_url": "https://www.pasco-wa.gov/bids.aspx?bidID=373",
     "found_date": "2026-06-15T20:47:29.329863",
-    "contact_name": "",
+    "contact_name": "Samantha McCanse",
     "contact_title": "",
-    "contact_department": "",
+    "contact_department": "City Manager",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "2026 RFQ On Call Right-of-Way Services",
@@ -7534,15 +7672,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "180",
-    "close_date": "",
-    "description": "",
+    "close_date": "6/19/2026",
+    "description": "The City of Sequim seeks qualified firms to provide on-call right of way services. The City adheres to the Americans with Disabilities Act (ADA) and commits to nondiscrimination on the basis of disability in all of its programs and activities and the provisions of Title VI of the Civil Rights Act of",
     "direct_url": "https://www.sequimwa.gov/bids.aspx?bidID=180",
     "found_date": "2026-06-15T20:47:28.919987",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "2026 RFQ On Call Material Testing Services",
@@ -7554,15 +7693,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "181",
-    "close_date": "",
-    "description": "",
+    "close_date": "6/19/2026",
+    "description": "The City of Sequim seeks qualified firms to provide on-call material testing services. The City adheres to the Americans with Disabilities Act (ADA) and commits to nondiscrimination on the basis of disability in all of its programs and activities and the provisions of Title VI of the Civil Rights Ac",
     "direct_url": "https://www.sequimwa.gov/bids.aspx?bidID=181",
     "found_date": "2026-06-15T20:47:28.919953",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "WTP Pumps and Motors Repair",
@@ -7574,15 +7714,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "442",
-    "close_date": "",
-    "description": "",
+    "close_date": "7/1/2026",
+    "description": "Bids are invited for the inspection, maintenance, and service of two (2) vertical turbine pumps and two (2) motors at the Port Angeles Treatment Plant and Elwha Rive Ranney Well. Engineer&apos;s Estimate: $100,000 - $130,000 Pre-bid Site Visit: 10:00 AM, Wednesday, June 17, 2026 at Elwha River Ranne",
     "direct_url": "https://www.cityofpa.us/bids.aspx?bidID=442",
     "found_date": "2026-06-15T20:47:28.101589",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "PA Transfer Station Rubber Recycling",
@@ -7594,15 +7735,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "443",
-    "close_date": "",
-    "description": "",
+    "close_date": "7/1/2026",
+    "description": "The City of Port Angeles (City) is seeking proposals from qualified firms for recycling services of rubber products at the Port Angeles Transfer Station. The primary goal is to provide efficient, cost effective and safe collection, transporting, and processing of recyclable rubber products for Port ",
     "direct_url": "https://www.cityofpa.us/bids.aspx?bidID=443",
     "found_date": "2026-06-15T20:47:28.101545",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "HP Latex 730W Printer Purchase",
@@ -7614,15 +7756,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "439",
-    "close_date": "",
-    "description": "",
+    "close_date": "6/17/2026",
+    "description": "The City is looking to purchase a new HP Latex 730W Printer for traffic sign manufacturing. Government Estimate: $30,000 Direct all questions to Sealed Bids Due: No later than 2:00 PM, Wednesday, June 17, 2026 Publication Date/Time: 6/2/2026 12:00 AM Closing Date/Time: 6/17/2026 2:00 PM Related Docu",
     "direct_url": "https://www.cityofpa.us/bids.aspx?bidID=439",
     "found_date": "2026-06-15T20:47:28.101497",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Construction 24HR Restroom",
