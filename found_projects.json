@@ -3171,6 +3171,27 @@
     "enriched": "none"
   },
   {
+    "name": "Demolish two-family dwelling per plan. @ 1604 AURORA AVE N",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 9,
+    "type": "Permit",
+    "bid_number": "7003961-DM",
+    "close_date": "",
+    "description": "1604 AURORA AVE N · est $10,000,000 · Residential · Issued",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7003961-DM",
+    "found_date": "2026-06-17T21:24:23.826450",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Demolish existing one family dwelling (Building 36) per plan. Review and processing under  @ 11209 3RD AVE NE",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
@@ -6909,6 +6930,48 @@
     "enriched": "none"
   },
   {
+    "name": "Phase I Environmental Site Assessment",
+    "source": "City Bids - Marysville",
+    "url": "https://www.marysvillewa.gov/Bids.aspx",
+    "city": "Marysville",
+    "county": "Snohomish",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "4",
+    "close_date": "7/7/2026",
+    "description": "The City of Marysville is requesting proposals from qualified interested firms, to assist the City in the completing of a Phase I Environmental Site Assessment (ESA) for the subject property in accordance with ASTM E1527 21, the U.S. EPA All Appropriate Inquiry (AAI) rule (40 CFR 312), and applicabl",
+    "direct_url": "https://www.marysvillewa.gov/bids.aspx?bidID=4",
+    "found_date": "2026-06-17T21:23:52.264995",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
+    "name": "Request for Information for Hazard Mitigation Planning Services",
+    "source": "City Bids - Puyallup",
+    "url": "https://www.cityofpuyallup.org/Bids.aspx",
+    "city": "Puyallup",
+    "county": "Pierce",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "398",
+    "close_date": "7/7/2026",
+    "description": "",
+    "direct_url": "https://www.cityofpuyallup.org/bids.aspx?bidID=398",
+    "found_date": "2026-06-17T21:23:51.015911",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "On-Call Survey Services",
     "source": "City Bids - Marysville",
     "url": "https://www.marysvillewa.gov/Bids.aspx",
@@ -6918,15 +6981,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "3",
-    "close_date": "",
-    "description": "",
+    "close_date": "7/8/2026",
+    "description": "The City of Marysville is requesting Statements of Qualifications (SOQ) for consultants interested in providing On-Call Survey Services, pursuant to RCW 18.43 , for various city projects and tasks. The on-call survey scope of work which will not be related to public works construction projects. Publ",
     "direct_url": "https://www.marysvillewa.gov/bids.aspx?bidID=3",
     "found_date": "2026-06-16T21:49:48.213869",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Evergreen HVAC Removal and Replacement REBID Bid Tab",
@@ -6939,14 +7003,15 @@
     "type": "Public Bid",
     "bid_number": "144",
     "close_date": "",
-    "description": "",
+    "description": "Bid Tabulation for 26003 Evergreen HVAC Removal and Replacement REBID Publication Date/Time: 6/15/2026 12:00 AM Closing Date/Time: Open Until Contracted Related Documents: 26003 Evergreen HVAC Removal and Replacement REBID Bid Tab Return To Main Bid Postings Page Live Edit Agendas and Minutes City C",
     "direct_url": "https://www.lakestevenswa.gov/bids.aspx?bidID=144",
     "found_date": "2026-06-16T21:49:46.122292",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Project management",
@@ -7777,15 +7842,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "441",
-    "close_date": "",
-    "description": "",
+    "close_date": "6/25/2026",
+    "description": "The City of Port Angeles is inviting you to bid on the installation of a restroom at Erickson Playfield in Port Angeles, WA. Work includes utilities installation, foundation slab installation, concrete sidewalks placement, and unload, move, and install of one Portland Loo restroom purchased by the C",
     "direct_url": "https://www.cityofpa.us/bids.aspx?bidID=441",
     "found_date": "2026-06-15T20:47:28.101464",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Fife Lodging Tax Request for Proposal 2027 & 2028",
@@ -7797,15 +7863,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "101",
-    "close_date": "",
-    "description": "",
+    "close_date": "7/12/2026",
+    "description": "Please download the lodging tax application in the \"Related Documents\" section and send completed applications to Kelsey Geddes at prior to July 12, 2026 at 5 p.m. For more information please visit https://www.fifewa.gov/195/Lodging-Tax-Advisory-Commission . Publication Date/Time: 6/15/2026 12:00 AM",
     "direct_url": "https://www.cityoffife.org/bids.aspx?bidID=101",
     "found_date": "2026-06-15T20:47:27.378767",
-    "contact_name": "",
+    "contact_name": "Kelsey Geddes",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "kgeddes@fifewa.gov",
+    "contact_phone": "253-896-8628",
+    "enriched": "ai"
   },
   {
     "name": "Oyster Bay Regional Treatment Facilities",
@@ -7817,15 +7884,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "215",
-    "close_date": "",
-    "description": "",
+    "close_date": "7/13/2026",
+    "description": "The City of Bremerton is soliciting Statements of Qualification from consulting firms with expertise in Civil and Stormwater Engineering Design for the Oyster Bay Regional Treatment Facilities project. The consultant will prepare 90% level PS&E package and obtain all required permits and approvals. ",
     "direct_url": "https://www.bremertonwa.gov/bids.aspx?bidID=215",
     "found_date": "2026-06-15T20:47:25.972021",
-    "contact_name": "",
-    "contact_title": "",
+    "contact_name": "Olivia Paraschiv",
+    "contact_title": "Project Manager",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "olivia.paraschiv@ci.bremerton.wa.us",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "Parks, Recreation, and Open Space Plan",
@@ -7837,15 +7905,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "2",
-    "close_date": "",
-    "description": "",
+    "close_date": "7/8/2026",
+    "description": "The City of Marysville Parks, Culture and Recreation Department is seeking proposals from qualified consultant firms to provide professional services to develop a 20-year Parks, Recreation and Open Space (PROS) Master Plan. The PROS Master Plan will provide a fiscally sound framework for prioritized",
     "direct_url": "https://www.marysvillewa.gov/bids.aspx?bidID=2",
     "found_date": "2026-06-15T20:47:25.207760",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Legal Case Management System",
@@ -7857,15 +7926,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "199",
-    "close_date": "",
-    "description": "",
+    "close_date": "7/6/2026",
+    "description": "The City of Bothell is requesting proposals from qualified vendors for a cloud-based Legal Case Management System to support the City&apos;s Prosecutor&apos;s Office. The solution should provide case tracking, workflow management, document management, reporting, deadline tracking, and integration wi",
     "direct_url": "https://www.bothellwa.gov/bids.aspx?bidID=199",
     "found_date": "2026-06-15T20:47:24.494614",
-    "contact_name": "",
-    "contact_title": "",
+    "contact_name": "Laura Curley",
+    "contact_title": "IT Project/Portfolio Manager",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "laura.curley@bothellwa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   },
   {
     "name": "SAMMAMISH RIVER & WAYNITA CREEK RESTORATION",
@@ -7877,15 +7947,16 @@
     "priority": 6,
     "type": "Public Bid",
     "bid_number": "203",
-    "close_date": "",
-    "description": "",
+    "close_date": "6/29/2026",
+    "description": "A mandatory site walk for potential bidders will be held at the project site on Tuesday June 16th from noon &ndash; 2 pm to view the project site and ask questions of the City and Engineer. Participation in the site walk and registering in person with the City at the site walk is mandatory for bid c",
     "direct_url": "https://www.bothellwa.gov/bids.aspx?bidID=203",
     "found_date": "2026-06-15T20:47:24.494529",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "robert.mccadden@bothellwa.gov",
+    "contact_phone": "425-471-9300",
+    "enriched": "ai"
   },
   {
     "name": "2026 ELODEA MANAGEMENT",
@@ -7898,14 +7969,15 @@
     "type": "Public Bid",
     "bid_number": "396",
     "close_date": "",
-    "description": "",
+    "description": "STM03-026 ELODEA MANAGEMENT PRELIM BID TAB Publication Date/Time: 5/28/2026 7:00 AM Closing Date/Time: Open Until Contracted Return To Main Bid Postings Page Live Edit Police Library Municipal Court Parks & Recreation Meeting Agendas Pay My Bill Contact Us Puyallup City Hall 333 S. Meridian Puyallup",
     "direct_url": "https://www.cityofpuyallup.org/bids.aspx?bidID=396",
     "found_date": "2026-06-15T20:47:23.409791",
     "contact_name": "",
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "Bayview Trail - Phase 0",
@@ -7925,7 +7997,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "91st Ave SE Multiuse Path - Phase II",
@@ -7945,7 +8018,8 @@
     "contact_title": "",
     "contact_department": "",
     "contact_email": "",
-    "contact_phone": ""
+    "contact_phone": "",
+    "enriched": "none"
   },
   {
     "name": "24006 HVAC Replacement at Police Station and Training Center Re-Bid",
@@ -7961,10 +8035,11 @@
     "description": "",
     "direct_url": "https://www.lakestevenswa.gov/bids.aspx?bidID=122",
     "found_date": "2026-06-15T20:47:21.888974",
-    "contact_name": "",
-    "contact_title": "",
+    "contact_name": "Lori Erickson",
+    "contact_title": "Public Works Analyst",
     "contact_department": "",
-    "contact_email": "",
-    "contact_phone": ""
+    "contact_email": "lerickson@lakestevenswa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
   }
 ]
