@@ -40,4 +40,331 @@
   .stat b{color:var(--accent)}
   /* grid */
   main{padding:20px 22px 80px}
-  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(360px,1fr));gap:16px;align-items:start}
+  .lead{background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .lead.hot{box-shadow:inset 0 0 0 1px #6a3030, 0 0 0 1px #5a2a2a}
+  .lead.hot .railtop{background:linear-gradient(90deg,var(--red),transparent)}
+  .railtop{height:3px;background:linear-gradient(90deg,var(--accent),transparent)}
+  .pad{padding:14px 15px}
+  .badges{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+  .b{font-size:10.5px;padding:3px 8px;border-radius:6px;letter-spacing:.5px;font-weight:700;text-transform:uppercase;border:1px solid var(--line);color:var(--muted);background:var(--card2)}
+  .b.svc{background:var(--core);color:#e9b873;border-color:var(--core-b)}
+  .b.svc.gpr{background:#102a2a;color:#5fe0d2;border-color:#1f4f4a}
+  .b.city{background:#0f2730;color:#69d5e6;border-color:#1c4753}
+  .b.cty{background:#0f2730;color:#69d5e6;border-color:#1c4753}
+  .b.ph{background:#10231b;color:#67e3a8;border-color:#1f5742}
+  .b.date{background:var(--card2);color:var(--muted)}
+  .b.pri{margin-left:auto;color:#04121f}
+  .b.pri.hi{background:var(--red);color:#fff;border:0}
+  .b.pri.md{background:var(--gold);border:0}
+  .b.pri.lo{background:#3a4855;color:var(--txt);border:0}
+  h3.title{margin:2px 0 6px;font-size:15px;line-height:1.35;font-family:-apple-system,Segoe UI,Roboto,sans-serif}
+  .sub{color:var(--muted);font-size:11.5px;margin-bottom:10px}
+  .gcwarn{background:#2a2310;border:1px solid #5c4a1e;color:var(--gold);border-radius:8px;
+          padding:8px 10px;font-size:11.5px;margin:10px 0}
+  .sharedwarn{background:#2a2310;border:1px solid #5c4a1e;color:var(--gold);border-radius:8px;
+          padding:8px 10px;font-size:11px;margin:8px 0}
+  .section{margin-top:14px}
+  .section .lbl{color:var(--muted);font-size:10.5px;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+  /* track chips */
+  .track{display:flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:11px;padding:6px 10px;border-radius:7px;border:1px solid var(--line);background:var(--card2);
+        color:var(--muted);cursor:pointer;font-family:var(--mono);font-weight:700;letter-spacing:.3px}
+  .chip:hover{border-color:#3a4a58}
+  .chip.called.on{background:#0f2e2a;color:var(--accent);border-color:#1f5a52}
+  .chip.emailed.on{background:#231a3a;color:var(--purple);border-color:#3d2e68}
+  .chip.quoted.on{background:#2a2310;color:var(--gold);border-color:#5c4a1e}
+  .chip.won.on{background:#10301f;color:var(--green);border-color:#1f5a3a}
+  .chip.lost.on{background:#301418;color:var(--red);border-color:#5a2530}
+  textarea{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:8px;color:var(--txt);
+           padding:9px;font-family:var(--mono);font-size:12px;resize:vertical;min-height:54px;margin-top:8px}
+  .savenote{background:var(--gold);color:#1a1405;border:0;border-radius:7px;padding:7px 13px;font-weight:700;
+            font-family:var(--mono);font-size:11px;cursor:pointer;margin-top:8px;letter-spacing:.4px}
+  /* contact */
+  .field{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:8px 11px;margin-bottom:8px}
+  .field .k{color:var(--muted);font-size:10px;letter-spacing:.5px;text-transform:uppercase}
+  .field .v{font-size:14px;margin-top:2px}
+  .gcnote{color:var(--purple);font-size:10.5px;margin-left:6px}
+  .callbtn{display:block;width:100%;text-align:center;background:#10301f;color:var(--green);border:1px solid #1f5a3a;
+           border-radius:8px;padding:10px;font-weight:700;font-family:var(--mono);font-size:12px;cursor:pointer;letter-spacing:.5px}
+  .nocontact{color:var(--muted);font-style:italic;font-size:12px;padding:4px 0}
+  /* estimate */
+  .estgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .estbox{background:var(--card2);border:1px solid var(--line);border-radius:8px;padding:9px 11px}
+  .estbox .k{color:var(--muted);font-size:10px;letter-spacing:.5px;text-transform:uppercase}
+  .estbox .v{color:var(--orange);font-size:15px;font-weight:700;margin-top:3px}
+  .estbox.full{grid-column:1/3}
+  .estbox.full .v{color:var(--txt);font-size:14px}
+  .estnote{color:var(--muted);font-size:11px;margin-top:6px}
+  .estnote b{color:#c9d6e2}
+  /* bid details */
+  .det{display:grid;grid-template-columns:80px 1fr;gap:6px 10px;font-size:12px}
+  .det .dk{color:var(--muted);text-transform:uppercase;font-size:10px;letter-spacing:.5px;padding-top:2px}
+  .det .dv{color:#cdd9e4;word-break:break-word}
+  .scope{max-height:64px;overflow:hidden}
+  /* actions */
+  .actions{display:flex;gap:8px;margin-top:14px}
+  .actions .ab{flex:1;text-align:center;border-radius:8px;padding:10px;font-weight:700;font-family:var(--mono);
+               font-size:12px;cursor:pointer;letter-spacing:.4px;border:1px solid var(--line)}
+  .ab.view{background:var(--orange);color:#1a0d02;border:0}
+  .ab.quote{background:#10241c;color:var(--green);border-color:#1f5a3a}
+  .ab.copy{background:var(--card2);color:var(--txt)}
+  .empty{grid-column:1/-1;text-align:center;color:var(--muted);padding:60px 10px}
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--accent);color:#04121f;
+         font-weight:700;padding:11px 20px;border-radius:10px;opacity:0;transition:.2s;pointer-events:none;z-index:60;font-size:13px}
+  #toast.show{opacity:1}
+  .url-row{display:none}
+  .url-row.show{display:flex;gap:8px;padding:10px 22px;border-bottom:1px solid var(--line);background:#0b1015}
+  #urlInput{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:7px;color:var(--muted);
+            padding:7px 10px;font-family:var(--mono);font-size:11px;outline:none}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">SCAN<b>2</b>CORE</div>
+  <div class="searchwrap">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4-4"/></svg>
+    <input id="search" type="text" placeholder="Search leads, cities, contacts..." oninput="render()">
+  </div>
+  <div class="hdr-right">
+    <span class="dot" id="dot"></span>
+    <button class="btn ghost" onclick="toggleUrl()">⚙</button>
+    <button class="btn" onclick="doRefresh()">⟳ Refresh</button>
+  </div>
+</header>
+
+<div class="url-row" id="urlRow">
+  <input id="urlInput" type="text" value="https://raw.githubusercontent.com/Scan2Core/scan2core-lead-hunter/main/found_projects.json">
+  <button class="btn ghost" onclick="doRefresh()">Load</button>
+</div>
+
+<div class="filters">
+  <select id="fType" onchange="render()"><option value="">All types</option><option>Public Bid</option><option>Permit</option><option>GC Portfolio</option></select>
+  <select id="fCounty" onchange="render()"><option value="">All counties</option></select>
+  <select id="fSvc" onchange="render()"><option value="">All services</option><option>GPR</option><option>Core</option><option>GPR + Core</option></select>
+  <select id="fEnrich" onchange="render()">
+    <option value="">Any contact</option>
+    <option value="has">Has contact</option>
+    <option value="ai">Full contact</option>
+    <option value="none">No contact</option>
+    <option value="pending">Not processed</option>
+  </select>
+  <select id="fPri" onchange="render()"><option value="0">Any priority</option><option value="9">Hot 9+</option><option value="7">High 7+</option></select>
+  <select id="fStatus" onchange="render()"><option value="">All statuses</option><option value="won">Won</option><option value="quoted">Quoted</option><option value="called">Called</option><option value="emailed">Emailed</option><option value="untracked">Untracked</option></select>
+  <select id="fHidden" onchange="render()"><option value="">Hide hidden</option><option value="show">Show hidden</option></select>
+  <div class="stat" id="stat"></div>
+</div>
+
+<main><div id="grid"></div></main>
+<div id="toast"></div>
+
+<script>
+const LS_KEY='s2c_v2';
+const SHARED_PHONE_THRESHOLD=3;
+const JSON_URL='https://raw.githubusercontent.com/Scan2Core/scan2core-lead-hunter/main/found_projects.json';
+var ALL=[], VIEW=[], PHONE_FREQ={};
+
+/* helpers */
+function stripPhone(p){return (p||'').replace(/\D/g,'');}
+function isGC(l){return /^GC[\s\-–—]/i.test(l.source||'');}
+function leadKey(l){return (l.name||'')+'|'+(l.source||'');}
+function esc(s){return (s==null?'':String(s)).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function buildPhoneFreq(ls){PHONE_FREQ={};ls.forEach(l=>{if(isGC(l))return;const p=stripPhone(l.contact_phone);if(p)PHONE_FREQ[p]=(PHONE_FREQ[p]||0)+1;});}
+function phoneShared(p){const d=stripPhone(p);return d&&(PHONE_FREQ[d]||0)>=SHARED_PHONE_THRESHOLD;}
+
+/* localStorage state: { key: {called,emailed,quoted,won,lost,hidden, note} } */
+function state(){try{return JSON.parse(localStorage.getItem(LS_KEY))||{};}catch(e){return {};}}
+function saveState(s){try{localStorage.setItem(LS_KEY,JSON.stringify(s));}catch(e){}}
+function rec(l){return state()[leadKey(l)]||{};}
+function toggle(key,flag){const s=state();s[key]=s[key]||{};s[key][flag]=!s[key][flag];saveState(s);render();}
+function setNote(key,v){const s=state();s[key]=s[key]||{};s[key].note=v;saveState(s);}
+function saveNote(key){showToast('Note saved');}
+
+/* service + estimate heuristics (client-side, like the original build) */
+function classify(l){
+  const n=(l.name||'').toLowerCase();
+  const gpr=/gpr|ground penetrat|scan|locat|rebar|conduit|utility|subsurface|void|pre-?pour/.test(n);
+  const core=/core|coring|cut|saw|anchor|bolt|drill|penetrat|plumb|electr|hvac|riser/.test(n);
+  if(gpr&&!core) return 'GPR';
+  if(core&&!gpr) return 'Core';
+  if(gpr&&core) return 'GPR + Core';
+  return 'GPR + Core';
+}
+function complexity(l){
+  const n=(l.name||'').toLowerCase();
+  if(/hospital|medical|clinic|surg|patient|health/.test(n)) return ['Medical grade','Occupied premium'];
+  if(/school|university|campus|college|dorm/.test(n)) return ['Institutional','Occupied'];
+  if(/parking|garage|bridge|tunnel|deck|structural|seismic/.test(n)) return ['Structural','Heavy slab'];
+  if(/sewer|storm|water|utility|pipe|main/.test(n)) return ['Utility locate','Underground'];
+  return ['Standard','Standard'];
+}
+function estimate(l){
+  const n=(l.name||'').toLowerCase(); let gLo=450,gHi=1200,cLo=600,cHi=2500;
+  if(/hospital|medical|campus|university|bridge|parking|garage|tunnel|infrastructure/.test(n)){gLo=900;gHi=3500;cLo=2500;cHi=10000;}
+  else if(/seismic|retrofit|structural|post-tension|multifamily|apartment|facility/.test(n)){gLo=650;gHi=2200;cLo=1000;cHi=5000;}
+  else if(/sewer|storm|water|sidewalk|street|road|pavement/.test(n)){gLo=500;gHi=1800;cLo=800;cHi=3500;}
+  return {gLo,gHi,cLo,cHi};
+}
+const $=n=>'$'+n.toLocaleString();
+
+/* clipboard */
+function copyText(t,m){if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(t).then(()=>showToast(m),()=>fb(t,m));}else fb(t,m);}
+function fb(t,m){const a=document.createElement('textarea');a.value=t;document.body.appendChild(a);a.select();try{document.execCommand('copy');}catch(e){}a.remove();showToast(m);}
+function copyLead(i){const l=VIEW[i];const sup=!isGC(l)&&phoneShared(l.contact_phone);
+  copyText([l.name,l.source,[l.city,l.county&&l.county+' County',l.state].filter(Boolean).join(', '),
+    l.bid_number&&'Bid #'+l.bid_number,l.close_date&&'Closes '+l.close_date,l.contact_name,l.contact_title,
+    l.contact_email,(sup?'':l.contact_phone),l.direct_url||l.url].filter(Boolean).join('\n'),'Lead copied');}
+function copyQuote(i){const l=VIEW[i],svc=classify(l),e=estimate(l);
+  copyText(`Scan2Core — Preliminary ${svc} Estimate
+Project: ${l.name}
+Location: ${[l.city,l.county&&l.county+' County',l.state].filter(Boolean).join(', ')}
+${l.bid_number?'Bid #: '+l.bid_number+'\n':''}${l.close_date?'Closes: '+l.close_date+'\n':''}
+GPR scanning: ${$(e.gLo)}–${$(e.gHi)}
+Core drilling: ${$(e.cLo)}–${$(e.cHi)}
+
+Estimate only; final pricing depends on scope, access, and slab thickness.
+Scan2Core • scan2core.github.io`,'Quote copied');}
+
+let tT=null;
+function showToast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tT);tT=setTimeout(()=>t.classList.remove('show'),1600);}
+function toggleUrl(){document.getElementById('urlRow').classList.toggle('show');}
+function priClass(p){return p>=9?'hi':(p>=7?'md':'lo');}
+function dstr(iso){if(!iso)return '';const d=new Date(iso);if(isNaN(d))return '';return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase();}
+
+function fillFilters(ls){
+  const cos=[...new Set(ls.map(l=>l.county).filter(Boolean))].sort();
+  const cSel=document.getElementById('fCounty');cSel.length=1;
+  cos.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c+' County';cSel.appendChild(o);});
+}
+function afterLoad(data){ALL=Array.isArray(data)?data:[];buildPhoneFreq(ALL);fillFilters(ALL);document.getElementById('dot').style.background=ALL.length?'var(--green)':'var(--gold)';render();}
+
+function passes(l){
+  const r=rec(l);
+  const showHidden=document.getElementById('fHidden').value==='show';
+  if(r.hidden && !showHidden) return false;
+  const q=document.getElementById('search').value.trim().toLowerCase();
+  const ft=document.getElementById('fType').value, fc=document.getElementById('fCounty').value;
+  const fs=document.getElementById('fSvc').value, fe=document.getElementById('fEnrich').value;
+  const fp=parseInt(document.getElementById('fPri').value,10)||0, fst=document.getElementById('fStatus').value;
+  if(ft && (l.type||'')!==ft) return false;
+  if(fc && l.county!==fc) return false;
+  if(fs && classify(l)!==fs) return false;
+  if(fp && (l.priority||0)<fp) return false;
+  const sup=!isGC(l)&&phoneShared(l.contact_phone);
+  const hasContact=l.contact_name||l.contact_email||(l.contact_phone&&!sup);
+  if(fe==='has' && !hasContact) return false;
+  if(fe==='ai' && l.enriched!=='ai') return false;
+  if(fe==='none' && l.enriched!=='none') return false;
+  if(fe==='pending' && (l.enriched!==undefined&&l.enriched!==null)) return false;
+  if(fst==='untracked' && (r.called||r.emailed||r.quoted||r.won||r.lost)) return false;
+  if(fst && fst!=='untracked' && !r[fst]) return false;
+  if(q){const hay=[l.name,l.source,l.city,l.county,l.contact_name,l.contact_email,l.bid_number].filter(Boolean).join(' ').toLowerCase();if(!hay.includes(q))return false;}
+  return true;
+}
+
+function render(){
+  VIEW=ALL.filter(passes);
+  const t=ALL.length,hot=ALL.filter(l=>(l.priority||0)>=9).length,gc=ALL.filter(isGC).length;
+  const ph=ALL.filter(l=>l.contact_phone&&!(!isGC(l)&&phoneShared(l.contact_phone))).length;
+  const em=ALL.filter(l=>l.contact_email).length;
+  document.getElementById('stat').innerHTML=`<span><b>${t}</b> leads</span><span><b>${hot}</b> hot</span><span><b>${gc}</b> GC</span><span><b>${em}</b> email</span><span><b>${ph}</b> phone</span><span><b>${VIEW.length}</b> shown</span>`;
+  const grid=document.getElementById('grid');
+  if(!VIEW.length){grid.innerHTML='<div class="empty">'+(t?'No leads match your filters.':'No leads yet — the next scheduled run will populate this.')+'</div>';return;}
+
+  grid.innerHTML=VIEW.map((l,i)=>{
+    const gc=isGC(l),pri=l.priority||0,r=rec(l),svc=classify(l);
+    const sup=!gc&&phoneShared(l.contact_phone);
+    const [cx,cxNote]=complexity(l),e=estimate(l);
+    const k=esc(leadKey(l)).replace(/'/g,"\\'");
+
+    // contact block
+    let contact;
+    const hasC=l.contact_name||l.contact_title||l.contact_email||(l.contact_phone&&!sup);
+    if(hasC){
+      let f='';
+      if(l.contact_name) f+=`<div class="field"><div class="k">Contact</div><div class="v">${esc(l.contact_name)}${l.contact_title?' · '+esc(l.contact_title):''}</div></div>`;
+      if(l.contact_department) f+=`<div class="field"><div class="k">Department</div><div class="v">${esc(l.contact_department)}</div></div>`;
+      if(l.contact_email) f+=`<div class="field"><div class="k">Email</div><div class="v"><a href="mailto:${esc(l.contact_email)}">${esc(l.contact_email)}</a></div></div>`;
+      if(l.contact_phone&&!sup){
+        f+=`<div class="field"><div class="k">Phone${gc?'<span class="gcnote">· GC main office</span>':''}</div><div class="v">${esc(l.contact_phone)}</div></div>`;
+        f+=`<div class="callbtn" onclick="copyText('${esc(l.contact_phone)}','Phone copied')">☎ CALL · ${esc(l.contact_phone)}</div>`;
+      }
+      contact=f;
+    } else {
+      contact=`<div class="nocontact">No project contact found on the bid page. Open the listing to request the bid package.</div>`;
+    }
+    if(sup) contact+=`<div class="sharedwarn">Phone hidden — appears on ${PHONE_FREQ[stripPhone(l.contact_phone)]} leads (shared main line, not a project contact).</div>`;
+
+    const enrLbl = l.enriched==='ai'?'VERIFIED':(l.enriched==='ai_partial'?'PARTIAL':(l.enriched==='none'?'PAGE ONLY':'PENDING'));
+    const loc=[l.city,l.county&&l.county+' County',l.state].filter(Boolean).join(', ');
+    const link=l.direct_url||l.url;
+
+    return `<div class="lead ${pri>=9?'hot':''}"><div class="railtop"></div><div class="pad">
+      <div class="badges">
+        <span class="b svc ${svc==='GPR'?'gpr':''}">⛏ ${esc(svc)}</span>
+        ${l.city?`<span class="b city">${esc(l.city)}</span>`:''}
+        ${l.county?`<span class="b cty">${esc(l.county)}</span>`:''}
+        ${(l.contact_phone&&!sup)?'<span class="b ph">☎</span>':''}
+        ${dstr(l.found_date)?`<span class="b date">${dstr(l.found_date)}</span>`:''}
+        <span class="b pri ${priClass(pri)}">P${pri}</span>
+      </div>
+      <h3 class="title">${esc(l.name)}</h3>
+      <div class="sub">${esc(l.source)}${l.bid_number?' · Bid #'+esc(l.bid_number):''}${l.close_date?' · closes '+esc(l.close_date):''} · ${enrLbl}</div>
+      ${gc?'<div class="gcwarn">⚠ GC Portfolio — contact the GC directly to get on their sub list.</div>':''}
+
+      <div class="section"><div class="lbl">▣ Track this lead</div>
+        <div class="track">
+          <span class="chip called ${r.called?'on':''}" onclick="toggle('${k}','called')">☎ Called</span>
+          <span class="chip emailed ${r.emailed?'on':''}" onclick="toggle('${k}','emailed')">✉ Emailed</span>
+          <span class="chip quoted ${r.quoted?'on':''}" onclick="toggle('${k}','quoted')">💰 Quoted</span>
+          <span class="chip won ${r.won?'on':''}" onclick="toggle('${k}','won')">✓ Won</span>
+          <span class="chip lost ${r.lost?'on':''}" onclick="toggle('${k}','lost')">✕ Lost</span>
+          <span class="chip ${r.hidden?'on':''}" onclick="toggle('${k}','hidden')">⊘ ${r.hidden?'Unhide':'Hide'}</span>
+        </div>
+        <textarea placeholder="Left voicemail… sent quote $2,400… need specs…" oninput="setNote('${k}',this.value)">${esc(r.note||'')}</textarea>
+        <button class="savenote" onclick="saveNote('${k}')">Save note</button>
+      </div>
+
+      <div class="section"><div class="lbl">☎ Contact info · ${l.enriched==='ai'?'verified':(l.enriched?'grounded':'pending')}</div>${contact}</div>
+
+      <div class="section"><div class="lbl">⚡ Estimate</div>
+        <div class="estgrid">
+          <div class="estbox"><div class="k">GPR scan</div><div class="v">${$(e.gLo)}–${$(e.gHi)}</div></div>
+          <div class="estbox"><div class="k">Core drill</div><div class="v">${$(e.cLo)}–${$(e.cHi)}</div></div>
+          <div class="estbox full"><div class="k">Complexity</div><div class="v">${esc(cx)}</div></div>
+        </div>
+        <div class="estnote"><b>Profile:</b> ${esc(cxNote)}</div>
+      </div>
+
+      <div class="section"><div class="lbl">▦ Bid details</div>
+        <div class="det">
+          <div class="dk">Service</div><div class="dv">⛏ ${esc(svc)}</div>
+          ${l.description?`<div class="dk">Scope</div><div class="dv scope">${esc(l.description)}</div>`:''}
+          <div class="dk">Source</div><div class="dv">${esc(l.source)}</div>
+          <div class="dk">Found</div><div class="dv">${esc(l.found_date?new Date(l.found_date).toLocaleString():'—')}</div>
+          ${link?`<div class="dk">URL</div><div class="dv"><a href="${esc(link)}" target="_blank" rel="noopener">${esc(link.replace(/^https?:\/\//,'').slice(0,46))}…</a></div>`:''}
+        </div>
+      </div>
+
+      <div class="actions">
+        ${link?`<a class="ab view" href="${esc(link)}" target="_blank" rel="noopener">VIEW ↗</a>`:'<span class="ab view" style="opacity:.4">VIEW</span>'}
+        <span class="ab quote" onclick="copyQuote(${i})">COPY QUOTE</span>
+        <span class="ab copy" onclick="copyLead(${i})">COPY</span>
+      </div>
+    </div></div>`;
+  }).join('');
+}
+
+/* fetch */
+function fetchLeads(url,ok,fail){fetch(url,{cache:'no-store'}).then(r=>{if(!r.ok)throw 0;return r.json();}).then(ok).catch(e=>{if(fail)fail(e);});}
+function doRefresh(){const u=document.getElementById('urlInput').value.trim()||JSON_URL;showToast('Loading…');fetchLeads(u,afterLoad,()=>{showToast('Load failed — showing demo');loadDemo();});}
+function loadDemo(){afterLoad([
+ {name:"131st Ave Infrastructure Improvements",source:"City Bids - Lake Stevens",city:"Lake Stevens",county:"Snohomish",state:"WA",priority:8,type:"Public Bid",bid_number:"312",close_date:"7/15/2026",description:"Roadway widening, new storm drainage, sidewalk and curb, utility relocation along 131st Ave SE.",direct_url:"https://www.lakestevenswa.gov/Bids.aspx?bidID=312",found_date:new Date().toISOString(),contact_name:"Eric Durpos",contact_title:"City Engineer",contact_department:"Public Works",contact_email:"edurpos@lakestevenswa.gov",contact_phone:"425 622 9400",enriched:"ai"},
+ {name:"Lake Stevens Civic Campus",source:"City Bids - Lake Stevens",city:"Lake Stevens",county:"Snohomish",state:"WA",priority:9,type:"Public Bid",bid_number:"305",close_date:"7/1/2026",description:"New civic campus building — structural concrete, post-tension slab, MEP rough-in.",direct_url:"https://www.lakestevenswa.gov/Bids.aspx?bidID=305",found_date:new Date().toISOString(),contact_email:"projects@lakestevenswa.gov",enriched:"ai_partial"},
+ {name:"Managed Sheltering: Safe Parking Site",source:"City Bids - Port Angeles",city:"Port Angeles",county:"Clallam",state:"WA",priority:7,type:"Public Bid",bid_number:"178",close_date:"7/2/2026",description:"Site improvements incl. paving, utility connections, lighting.",direct_url:"https://www.cityofpa.us/Bids.aspx?bidID=178",found_date:new Date().toISOString(),enriched:"none"},
+ {name:"Seattle Children's Hospital Expansion",source:"GC – Lease Crutcher Lewis",city:"Seattle",county:"King",state:"WA",priority:10,type:"GC Portfolio",description:"Healthcare expansion, occupied facility.",direct_url:"https://www.lewisbuilds.com/projects/",found_date:new Date().toISOString(),contact_phone:"206 588 5800",enriched:"ai_partial"}
+]);}
+doRefresh();
+</script>
+</body>
+</html>
