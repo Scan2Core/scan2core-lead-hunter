@@ -3192,6 +3192,27 @@
     "enriched": "none"
   },
   {
+    "name": "Demolish existing multi-family building per plan. @ 3632 WOODLAND PARK AVE N",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 9,
+    "type": "Permit",
+    "bid_number": "7125140-DM",
+    "close_date": "",
+    "description": "3632 WOODLAND PARK AVE N · est $19,000,000 · Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7125140-DM",
+    "found_date": "2026-06-20T20:43:46.775672",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Construct alterations and selective demolition to the West side of Northgate mall per plan @ 401 NE NORTHGATE WAY",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
