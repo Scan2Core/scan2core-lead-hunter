@@ -1,5 +1,26 @@
 [
   {
+    "name": "Phased project. Change of use from office to multifamily residential per land use code. Co @ 425 PONTIUS AVE N",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 10,
+    "type": "Permit",
+    "bid_number": "7117725-PH",
+    "close_date": "",
+    "description": "425 PONTIUS AVE N · est $32,854,630 · Non-Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7117725-PH",
+    "found_date": "2026-06-25T21:04:46.335098",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "New 4-story office building with street-level retail and 2 levels of partially-below-grade @ 3825 S FERDINAND ST",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
