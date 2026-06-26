@@ -6027,6 +6027,27 @@
     "enriched": "none"
   },
   {
+    "name": "Establish use as permanent supportive housing for 83 stacked dwelling units and human serv @ 2402 2ND AVE",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 7,
+    "type": "Permit",
+    "bid_number": "7118487-CN",
+    "close_date": "",
+    "description": "2402 2ND AVE · est $16,012,212 · Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7118487-CN",
+    "found_date": "2026-06-26T20:58:03.539867",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Construct blanket permit tenant improvements to Amazon on floors: 1-5 of existing commerci @ 551 BOREN AVE N",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
