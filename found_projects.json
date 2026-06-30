@@ -5145,6 +5145,27 @@
     "enriched": "none"
   },
   {
+    "name": "2026 Pavement Preservation",
+    "source": "City Bids - Lake Stevens",
+    "url": "https://www.lakestevenswa.gov/Bids.aspx",
+    "city": "Lake Stevens",
+    "county": "Snohomish",
+    "state": "WA",
+    "priority": 8,
+    "type": "Public Bid",
+    "bid_number": "147",
+    "close_date": "7/8/2026",
+    "description": "Notice is hereby given that sealed bids will be received by the City Clerk at Lake Stevens City Hall, 1812 Main Street, P.O. Box 257, Lake Stevens, WA 98258 until 11:00 A.M., local time, on July 8, 2026, at which time and place they will be publicly opened and read aloud. Bids received after the due",
+    "direct_url": "https://www.lakestevenswa.gov/bids.aspx?bidID=147",
+    "found_date": "2026-06-30T21:07:34.175076",
+    "contact_name": "Whitney Ojalehto",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "ai_partial"
+  },
+  {
     "name": "PHASED PERMIT: Construct substantial alterations to a commercial office building for a mix @ 2601 ELLIOTT AVE",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
