@@ -7413,6 +7413,27 @@
     "enriched": "none"
   },
   {
+    "name": "Painting of City-Owned Buildings",
+    "source": "City Bids - Lake Stevens",
+    "url": "https://www.lakestevenswa.gov/Bids.aspx",
+    "city": "Lake Stevens",
+    "county": "Snohomish",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "149",
+    "close_date": "",
+    "description": "The City of Lake Stevens is seeking bids from qualified, responsive, and responsible contractors to provide all labor, materials, equipment, and services required to prepare, repair, paint, and clean up five (5) city-owned buildings. The scope includes surface preparation, necessary repairs prior to",
+    "direct_url": "https://www.lakestevenswa.gov/bids.aspx?bidID=149",
+    "found_date": "2026-07-06T21:02:58.713875",
+    "contact_name": "Mitch Anderson",
+    "contact_title": "Public Works Facilities Supervisor",
+    "contact_department": "",
+    "contact_email": "manderson@lakestevenswa.gov",
+    "contact_phone": "(360) 926-6385",
+    "enriched": "ai"
+  },
+  {
     "name": "Bayview Trail Improvements Phase 0.5",
     "source": "City Bids - Lake Stevens",
     "url": "https://www.lakestevenswa.gov/Bids.aspx",
