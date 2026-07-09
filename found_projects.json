@@ -7455,6 +7455,27 @@
     "enriched": "none"
   },
   {
+    "name": "WWTP Digester Circulation Pump Purchase",
+    "source": "City Bids - Port Angeles",
+    "url": "https://www.cityofpa.us/Bids.aspx",
+    "city": "Port Angeles",
+    "county": "Clallam",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "445",
+    "close_date": "7/21/2026",
+    "description": "Accepting bids to procure one (1) Wemco Model C 4\"x4\" Torque Flow Pump for the Wastewater Treatment Plant. Government Estimate: $30,000 Bids Due: 2:00PM, Tuesday, July 21, 2026 Publication Date/Time: 7/9/2026 12:00 AM Closing Date/Time: 7/21/2026 2:00 PM Contact Person: Tyler White, WWTP Superintend",
+    "direct_url": "https://www.cityofpa.us/bids.aspx?bidID=445",
+    "found_date": "2026-07-09T20:57:56.465409",
+    "contact_name": "Tyler White",
+    "contact_title": "WWTP Superintendent at 360-417-4690 or",
+    "contact_department": "",
+    "contact_email": "twhite@cityofpa.us",
+    "contact_phone": "360-417-4690",
+    "enriched": "ai"
+  },
+  {
     "name": "Davies Beach Decking Replacement",
     "source": "City Bids - Lake Stevens",
     "url": "https://www.lakestevenswa.gov/Bids.aspx",
