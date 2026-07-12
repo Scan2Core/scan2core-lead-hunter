@@ -3276,6 +3276,27 @@
     "enriched": "none"
   },
   {
+    "name": "Demolish commercial building per plan @ 3700 S GENESEE ST",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 9,
+    "type": "Permit",
+    "bid_number": "7067549-DM",
+    "close_date": "",
+    "description": "3700 S GENESEE ST · est $10,000,000 · Non-Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7067549-DM",
+    "found_date": "2026-07-12T20:11:03.346827",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Managed Sheltering: Sanctioned Encampments and Safe Parking Projects",
     "source": "City Bids - Port Angeles",
     "url": "https://www.cityofpa.us/Bids.aspx",
