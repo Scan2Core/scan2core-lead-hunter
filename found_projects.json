@@ -5271,6 +5271,27 @@
     "enriched": "none"
   },
   {
+    "name": "ROW Improvement Exception Request @ 2520 32ND AVE W",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 8,
+    "type": "Permit",
+    "bid_number": "7152219-EX",
+    "close_date": "",
+    "description": "2520 32ND AVE W · est $60,000,000 · Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7152219-EX",
+    "found_date": "2026-07-16T20:13:57.909092",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "2026 Parks Structures Demolition and Abatement Project",
     "source": "City Bids - Bothell",
     "url": "https://www.bothellwa.gov/Bids.aspx",
