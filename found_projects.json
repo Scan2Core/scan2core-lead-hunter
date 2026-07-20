@@ -3297,6 +3297,27 @@
     "enriched": "none"
   },
   {
+    "name": "Proposed project is a 7-story mixed-use apartment building. @ 1820 N 45TH ST",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 9,
+    "type": "Permit",
+    "bid_number": "7113735-CN",
+    "close_date": "",
+    "description": "1820 N 45TH ST · est $16,000,000 · Residential · Scheduled",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7113735-CN",
+    "found_date": "2026-07-20T20:43:46.547311",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "The Elliot Bay Fishing pier is a public access pier that is on the waterfront of Elliott B @ 955 ALASKAN WAY W",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
