@@ -7623,6 +7623,27 @@
     "enriched": "none"
   },
   {
+    "name": "Systemic Intersection Improvements - Traffic Circle Program",
+    "source": "City Bids - Port Angeles",
+    "url": "https://www.cityofpa.us/Bids.aspx",
+    "city": "Port Angeles",
+    "county": "Clallam",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "446",
+    "close_date": "8/11/2026",
+    "description": "The City of Port Angeles is requesting statements from qualifications firms experienced in plan developments, specifications, and estimates for the installation of mini-roundabouts, stop control visibility enhancements, marked crosswalks, and curb ramps for local street intersections. This project i",
+    "direct_url": "https://www.cityofpa.us/bids.aspx?bidID=446",
+    "found_date": "2026-07-21T20:37:48.666364",
+    "contact_name": "Timothy Hayes",
+    "contact_title": "Project Manager, P.E.",
+    "contact_department": "Public Works",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "ai_partial"
+  },
+  {
     "name": "Lake Stevens Traffic Safety Camera Program",
     "source": "City Bids - Lake Stevens",
     "url": "https://www.lakestevenswa.gov/Bids.aspx",
