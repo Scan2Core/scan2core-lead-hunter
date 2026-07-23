@@ -1,5 +1,26 @@
 [
   {
+    "name": "Shoring and Excavation for two office and retail towers constructed over a common parking  @ 1120 JOHN ST",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 10,
+    "type": "Permit",
+    "bid_number": "6703421-CN",
+    "close_date": "",
+    "description": "1120 JOHN ST · est $10,000,000 · Non-Residential · Issued",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=6703421-CN",
+    "found_date": "2026-07-23T20:32:44.001324",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Install rooftop air-water heat pumps basement water-water heat pumps and piping in mechani @ 1701 BROADWAY",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
