@@ -7686,6 +7686,27 @@
     "enriched": "none"
   },
   {
+    "name": "Painting of City of Owned Buildings Bid Tab",
+    "source": "City Bids - Lake Stevens",
+    "url": "https://www.lakestevenswa.gov/Bids.aspx",
+    "city": "Lake Stevens",
+    "county": "Snohomish",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "155",
+    "close_date": "",
+    "description": "",
+    "direct_url": "https://www.lakestevenswa.gov/bids.aspx?bidID=155",
+    "found_date": "2026-07-27T20:45:28.954380",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Systemic Intersection Improvements - Traffic Circle Program RFQ",
     "source": "City Bids - Port Angeles",
     "url": "https://www.cityofpa.us/Bids.aspx",
