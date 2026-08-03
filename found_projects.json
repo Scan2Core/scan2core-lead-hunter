@@ -1,5 +1,26 @@
 [
   {
+    "name": "Establish as multi-family use with 186 units and parking per the land use code. Construct  @ 3622 WOODLAND PARK AVE N",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 10,
+    "type": "Permit",
+    "bid_number": "7097611-CN",
+    "close_date": "",
+    "description": "3622 WOODLAND PARK AVE N · est $37,293,003 · Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7097611-CN",
+    "found_date": "2026-08-03T20:40:57.224452",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Shoring and Excavation for two office and retail towers constructed over a common parking  @ 1120 JOHN ST",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
