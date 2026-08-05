@@ -5418,6 +5418,27 @@
     "enriched": "none"
   },
   {
+    "name": "Clark Street Improvements RFQ",
+    "source": "City Bids - Pasco",
+    "url": "https://www.pasco-wa.gov/Bids.aspx",
+    "city": "Pasco",
+    "county": "Franklin",
+    "state": "WA",
+    "priority": 8,
+    "type": "Public Bid",
+    "bid_number": "379",
+    "close_date": "8/27/2026",
+    "description": "CITY OF PASCO &ndash; REQUEST FOR QUALIFICATIONS (RFQ) Clark Street Improvements Project No. 26 709 &ndash; State Aid No. HLP-PB25(016) The City of Pasco, Washington, (City) Department of Public Works &ndash; CIP Engineering is soliciting a Statement of Qualifications (SOQ) from qualified Consultant",
+    "direct_url": "https://www.pasco-wa.gov/bids.aspx?bidID=379",
+    "found_date": "2026-08-05T20:40:35.111869",
+    "contact_name": "Brooklynn Jefferson",
+    "contact_title": "Public Works Project Coordinator I",
+    "contact_department": "Department of Public Works",
+    "contact_email": "",
+    "contact_phone": "(509) 202-4793",
+    "enriched": "ai_partial"
+  },
+  {
     "name": "Francis Street Sewer Trestle Repair",
     "source": "City Bids - Port Angeles",
     "url": "https://www.cityofpa.us/Bids.aspx",
