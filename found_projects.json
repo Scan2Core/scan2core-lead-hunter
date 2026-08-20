@@ -3402,6 +3402,27 @@
     "enriched": "none"
   },
   {
+    "name": "Construct alterations to existing multifamily building (Morrison Hotel) per plan. Mechanic @ 509 3RD AVE",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 9,
+    "type": "Permit",
+    "bid_number": "7100063-CN",
+    "close_date": "",
+    "description": "509 3RD AVE · est $25,000,000 · Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7100063-CN",
+    "found_date": "2026-08-20T19:48:41.702185",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Demolish existing two family dwelling (Building 38) per plan. Review and processing under  @ 11209 3RD AVE NE",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
