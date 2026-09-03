@@ -1,5 +1,26 @@
 [
   {
+    "name": "Project number has already been established and intake appointment set. As initial scope d @ 2101 NW 77TH ST",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 10,
+    "type": "Permit",
+    "bid_number": "7158306-CN",
+    "close_date": "",
+    "description": "2101 NW 77TH ST · est $17,350,000 · Non-Residential · Scheduled",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7158306-CN",
+    "found_date": "2026-09-03T21:45:02.021296",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Phased Project: Construct mixed-use apartment building with below-grade parking occupy per",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
