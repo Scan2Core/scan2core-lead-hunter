@@ -3507,6 +3507,27 @@
     "enriched": "none"
   },
   {
+    "name": "WinCo Foods is moving into and doing a Tenant Improvement to a vacant existing building th @ 13550 AURORA AVE N",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 9,
+    "type": "Permit",
+    "bid_number": "7160848-CN",
+    "close_date": "",
+    "description": "13550 AURORA AVE N · est $15,000,000 · Non-Residential · Scheduled",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7160848-CN",
+    "found_date": "2026-09-05T21:18:22.837163",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Establish use as housing for 173 stacked dwelling units per land use code. Construct new m @ 3615 WOODLAND PARK AVE N",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
