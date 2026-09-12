@@ -9051,6 +9051,27 @@
     "enriched": "none"
   },
   {
+    "name": "2026-2028 Pole Testing",
+    "source": "City Bids - Port Angeles",
+    "url": "https://www.cityofpa.us/Bids.aspx",
+    "city": "Port Angeles",
+    "county": "Clallam",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "452",
+    "close_date": "9/30/2026",
+    "description": "Contractors are invited to provide bids for power poles inspection and testing. One (1) contract will be awarded for this project. Contract term is for 3-years (2026-2028). Contract budget is $60,000 per year with a not-to-exceed contract amount of $180,000, Bid Due Date: No later than 2:00 PM, Wedn",
+    "direct_url": "https://www.cityofpa.us/bids.aspx?bidID=452",
+    "found_date": "2026-09-12T21:28:04.320424",
+    "contact_name": "Vic Smith",
+    "contact_title": "Project Manager",
+    "contact_department": "Public Works",
+    "contact_email": "",
+    "contact_phone": "(360) 417-4706",
+    "enriched": "ai_partial"
+  },
+  {
     "name": "Tree Trimming - 2026-2027",
     "source": "City Bids - Port Angeles",
     "url": "https://www.cityofpa.us/Bids.aspx",
