@@ -9051,6 +9051,27 @@
     "enriched": "none"
   },
   {
+    "name": "Programming and Design Services for Public Works Operations Center",
+    "source": "City Bids - Marysville",
+    "url": "https://www.marysvillewa.gov/Bids.aspx",
+    "city": "Marysville",
+    "county": "Snohomish",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "9",
+    "close_date": "10/15/2026",
+    "description": "The City is requesting statements of qualifications from Architect and Engineers either as a single entity or a team of consultants, with experience in strategic and concept planning of new public works facilities in support of city public works department activities, including administration, solid",
+    "direct_url": "https://www.marysvillewa.gov/bids.aspx?bidID=9",
+    "found_date": "2026-09-17T22:13:42.136825",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "tbauccioteschlog@marysvillewa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
+  },
+  {
     "name": "2026-2028 Pole Testing",
     "source": "City Bids - Port Angeles",
     "url": "https://www.cityofpa.us/Bids.aspx",
