@@ -7644,6 +7644,27 @@
     "enriched": "none"
   },
   {
+    "name": "Construct tenant improvements to existing commercial building at floors 15 16 and 18 ( Doc @ 1301 2ND AVE",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 7,
+    "type": "Permit",
+    "bid_number": "7152657-CN",
+    "close_date": "",
+    "description": "1301 2ND AVE · est $13,117,165 · Non-Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7152657-CN",
+    "found_date": "2026-09-20T21:37:02.030296",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Establish use as 112 stacked dwellings per land use code. Construct mixed use building occ @ 12537 28TH AVE NE",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
