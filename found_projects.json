@@ -7098,6 +7098,27 @@
     "enriched": "none"
   },
   {
+    "name": "2026 Sidewalk and Curb Ramp Improvements",
+    "source": "City Bids - Lake Stevens",
+    "url": "https://www.lakestevenswa.gov/Bids.aspx",
+    "city": "Lake Stevens",
+    "county": "Snohomish",
+    "state": "WA",
+    "priority": 8,
+    "type": "Public Bid",
+    "bid_number": "159",
+    "close_date": "",
+    "description": "",
+    "direct_url": "https://www.lakestevenswa.gov/bids.aspx?bidID=159",
+    "found_date": "2026-10-22T22:22:45.218575",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Construct a mixed-use residential high-rise building occupy per plan @ 1300 NE 45TH ST",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
