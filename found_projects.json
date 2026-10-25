@@ -7119,6 +7119,27 @@
     "enriched": "none"
   },
   {
+    "name": "ECA Exemption Request - Relief from Prohibition on Steep Slope Development @ 755 ALDER ST",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 8,
+    "type": "Permit",
+    "bid_number": "7167735-EX",
+    "close_date": "",
+    "description": "755 ALDER ST · est $121,000,000 · Non-Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7167735-EX",
+    "found_date": "2026-10-25T21:51:23.699200",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "2026 Sidewalk and Curb Ramp Improvements",
     "source": "City Bids - Lake Stevens",
     "url": "https://www.lakestevenswa.gov/Bids.aspx",
