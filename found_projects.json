@@ -9849,6 +9849,27 @@
     "enriched": "none"
   },
   {
+    "name": "SR 303 Adaptive Signals (Sheridan Rd to NE Riddell Rd)",
+    "source": "City Bids - Bremerton",
+    "url": "https://www.bremertonwa.gov/Bids.aspx",
+    "city": "Bremerton",
+    "county": "Kitsap",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "217",
+    "close_date": "11/20/2026",
+    "description": "This project includes installation of new vehicle detection systems and fiber optic communications system along SR 303, between Sheridan Road and NE Riddell Road, which will connect to the existing demarcation point within a city-owned facility complex located on Olympus Drive NE. Publication Date/T",
+    "direct_url": "https://www.bremertonwa.gov/bids.aspx?bidID=217",
+    "found_date": "2026-10-29T23:19:25.772744",
+    "contact_name": "Olivia Paraschiv",
+    "contact_title": "Project Manager",
+    "contact_department": "",
+    "contact_email": "olivia.paraschiv@ci.bremerton.wa.us",
+    "contact_phone": "",
+    "enriched": "ai_partial"
+  },
+  {
     "name": "RFQ Ediz Hook Boat Launch & Olympic Discovery Trail Repairs",
     "source": "City Bids - Port Angeles",
     "url": "https://www.cityofpa.us/Bids.aspx",
