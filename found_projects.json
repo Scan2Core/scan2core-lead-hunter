@@ -1,5 +1,26 @@
 [
   {
+    "name": "Erect (6) temporary structures for 2026 Christmas Market at Seattle Center from 11/20 - 12 @ 210 THOMAS ST",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 10,
+    "type": "Permit",
+    "bid_number": "7163182-CN",
+    "close_date": "",
+    "description": "210 THOMAS ST · est $100,000,000 · Non-Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7163182-CN",
+    "found_date": "2026-10-31T22:32:15.749395",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Demolish existing commercial building per plan. @ 400 W HARRISON ST",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
