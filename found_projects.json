@@ -1,5 +1,26 @@
 [
   {
+    "name": "Construct garage (including below grade portion) for future medical office building per pl @ 755 ALDER ST",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 10,
+    "type": "Permit",
+    "bid_number": "7145086-CN",
+    "close_date": "",
+    "description": "755 ALDER ST · est $121,000,000 · Non-Residential · Scheduled",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7145086-CN",
+    "found_date": "2026-11-01T22:52:58.728950",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Erect (6) temporary structures for 2026 Christmas Market at Seattle Center from 11/20 - 12 @ 210 THOMAS ST",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
