@@ -10038,6 +10038,27 @@
     "enriched": "none"
   },
   {
+    "name": "Request for Qualifications - On-Call Water Rights Technical Support Services",
+    "source": "City Bids - Pasco",
+    "url": "https://www.pasco-wa.gov/Bids.aspx",
+    "city": "Pasco",
+    "county": "Franklin",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "381",
+    "close_date": "12/8/2026",
+    "description": "CITY OF PASCO &ndash; REQUEST FOR QUALIFICATIONS (RFQ) On-Call Water Rights Technical Support Services Project No. 27001 The City of Pasco (&ldquo;City&rdquo;) is soliciting Statements of Qualifications (SOQs) from qualified firms (&ldquo;Consultant&rdquo;) to provide on-call technical support for w",
+    "direct_url": "https://www.pasco-wa.gov/bids.aspx?bidID=381",
+    "found_date": "2026-11-15T23:23:53.348915",
+    "contact_name": "Jon Correio",
+    "contact_title": "Public Works Project Coordinator",
+    "contact_department": "Public Works",
+    "contact_email": "",
+    "contact_phone": "(509) 545-3447",
+    "enriched": "ai_partial"
+  },
+  {
     "name": "Whitney Well Backup Generator",
     "source": "City Bids - Ellensburg",
     "url": "https://www.ci.ellensburg.wa.us/Bids.aspx",
