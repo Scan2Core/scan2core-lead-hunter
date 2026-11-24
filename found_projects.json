@@ -10059,6 +10059,27 @@
     "enriched": "none"
   },
   {
+    "name": "Guardrail Solutions for Lift Stations",
+    "source": "City Bids - Marysville",
+    "url": "https://www.marysvillewa.gov/Bids.aspx",
+    "city": "Marysville",
+    "county": "Snohomish",
+    "state": "WA",
+    "priority": 6,
+    "type": "Public Bid",
+    "bid_number": "12",
+    "close_date": "1/5/2027",
+    "description": "The City of Marysville is seeking proposals from qualified suppliers to furnish guardrail materials for use in fall protection applications at City lift stations. The purpose of this Request for Proposal (RFP) is to evaluate available guardrail solutions and identify options that enhance employee sa",
+    "direct_url": "https://www.marysvillewa.gov/bids.aspx?bidID=12",
+    "found_date": "2026-11-24T04:18:30.276791",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "tbauccioteschlog@marysvillewa.gov",
+    "contact_phone": "",
+    "enriched": "ai_partial"
+  },
+  {
     "name": "Whitney Well Back Up Generator",
     "source": "City Bids - Ellensburg",
     "url": "https://www.ci.ellensburg.wa.us/Bids.aspx",
