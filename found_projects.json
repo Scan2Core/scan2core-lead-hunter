@@ -1,5 +1,26 @@
 [
   {
+    "name": "Phased Project: Establish use as apartments per land use code. Construct mixed-use apartme @ 2520 32ND AVE W",
+    "source": "Permits - Seattle",
+    "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
+    "city": "Seattle",
+    "county": "King",
+    "state": "WA",
+    "priority": 10,
+    "type": "Permit",
+    "bid_number": "7166676-PH",
+    "close_date": "",
+    "description": "2520 32ND AVE W · est $64,989,224 · Residential · Reviews In Process",
+    "direct_url": "https://services.seattle.gov/portal/customize/LinkToRecord.aspx?altId=7166676-PH",
+    "found_date": "2026-11-28T02:01:40.266670",
+    "contact_name": "",
+    "contact_title": "",
+    "contact_department": "",
+    "contact_email": "",
+    "contact_phone": "",
+    "enriched": "none"
+  },
+  {
     "name": "Establish use as parking per land use code. Construct garage (including below grade portio @ 755 ALDER ST",
     "source": "Permits - Seattle",
     "url": "https://data.seattle.gov/resource/76t5-zqzr.json",
